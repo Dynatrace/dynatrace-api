@@ -1,5 +1,5 @@
 //
-// Local Node.js service that wraps Ruxit Data Export API calls for local JavaScript/Browser usage.
+// Local Node.js service that wraps Dynatrace Data Export API calls for local JavaScript/Browser usage.
 //
 var express = require('express');
 var app = express();
@@ -15,7 +15,7 @@ var YOUR_HOST = "HOST-A3C4D3D278C161FA";
 //
 app.get('/cpu', function (req, res) {
 	var options = {
-		host: 'kyp91462.live.ruxit.com',
+		host: 'kyp91462.live.dynatrace.com',
 		path: '/api/v1/timeseries/?Api-Token=' + YOUR_API_TOKEN + '&relativeTime=hour&entity=' + YOUR_HOST + '&aggregationType=AVG&timeseriesId=com.ruxit.builtin:host.cpu.user'	
 	};
 
