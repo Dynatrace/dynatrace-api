@@ -15,7 +15,6 @@ CONFIG = [ { 'containsString' : 'ser', 'tags': ['serTest', 'serTest2']},
            { 'containsString' : 'sland', 'tags': ['wol']}
 		 ]
 
-
 def tagComponent(entityId, tags):
 	#print(tags);	 
 	headers = {'Content-Type' : 'application/json', 'Authorization' : 'Api-Token ' + YOUR_API_TOKEN };
@@ -52,33 +51,4 @@ elif r.status_code == 401:
 elif r.status_code == 400:
     print('Bad request!');
 else:
-    print('Error ' + r);
-
-
-
-
-
-
-
-
-
-'''
-headers = {'Content-Type' : 'application/json', 'Authorization' : 'Api-Token ' + YOUR_API_TOKEN };
-url = 'https://' + YOUR_ENV_ID + '.live.ruxit.com/api/v1/timeseries/';
-data = {};
-r = requests.post(url, json=data, headers=headers);
-if r.status_code == 200:
-elif r.status_code == 401:
-	print('Dynatrace authentication failed, please check your API token!');
-elif r.status_code == 400:
-	print('Wrong timeseriesid, aggregation type or entity combination, please check Dynatrace API help for valid combinations!');
-else:
-	print('Error ' + r);
-
-'''
-		
-
-
-
-
-
+    print('Error ' + str(r));
