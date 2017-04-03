@@ -4,12 +4,8 @@
 import requests, datetime, time, sched, subprocess, shlex
 
 # Enter your own environment id and API key token here 
-#YOUR_ENV_ID = 'ENTER_YOUR_ENV_ID_HERE';
-#YOUR_API_TOKEN = 'ENTER_YOUR_API_TOKEN_HERE';
-
-YOUR_ENV_ID = 'demo';
-YOUR_API_TOKEN = 'enwUvuLgTnamCqFyibxD9';
-
+YOUR_ENV_ID = 'ENTER_YOUR_ENV_ID_HERE';
+YOUR_API_TOKEN = 'ENTER_YOUR_API_TOKEN_HERE';
 
 
 # Configure a list of monitored components you would like to transfer timeseries for.
