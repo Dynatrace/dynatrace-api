@@ -4,8 +4,13 @@
 import requests, datetime, time, sched, subprocess, shlex
 
 # Enter your own environment id and API key token here 
-YOUR_ENV_ID = 'ENTER_YOUR_ENV_ID_HERE';
-YOUR_API_TOKEN = 'ENTER_YOUR_API_TOKEN_HERE';
+#YOUR_ENV_ID = 'ENTER_YOUR_ENV_ID_HERE';
+#YOUR_API_TOKEN = 'ENTER_YOUR_API_TOKEN_HERE';
+
+YOUR_ENV_ID = 'demo';
+YOUR_API_TOKEN = 'enwUvuLgTnamCqFyibxD9';
+
+
 
 # Configure a list of monitored components you would like to transfer timeseries for.
 # Please mind that the component has to support the requested tye of timeseries and
@@ -13,8 +18,8 @@ YOUR_API_TOKEN = 'ENTER_YOUR_API_TOKEN_HERE';
 # Find details on metric types within our Dynatrace API help documentation here:
 # https://help.dynatrace.com/api-documentation/v1/
 CONFIG = [
-		{'timeseriesId':'com.ruxit.builtin:appmethod.useractionsperminute', 'aggregation':'COUNT', 'entities':['APPLICATION_METHOD-8FBD978961794991', 'APPLICATION_METHOD-66A8C6277F0B8186']},
-		{'timeseriesId':'com.ruxit.builtin:host.mem.used', 'aggregation':'AVG', 'entities':['HOST-DE6F9EC80D4D7C58']}
+		{'timeseriesId':'com.dynatrace.builtin:appmethod.useractionsperminute', 'aggregation':'COUNT', 'entities':['APPLICATION_METHOD-13A2457ABF20CF35', 'APPLICATION_METHOD-322A1F8DD1984123']},
+		{'timeseriesId':'com.dynatrace.builtin:host.mem.used', 'aggregation':'AVG', 'entities':['HOST-F5D85B7DCDD8A93C']}
 		]
 
 scheduler = sched.scheduler(time.time, time.sleep)
@@ -24,7 +29,7 @@ def export_metric(name):
 	for conf in CONFIG:
 		print('Pull timeseries ' + conf['timeseriesId']);
 		headers = {'Content-Type' : 'application/json', 'Authorization' : 'Api-Token ' + YOUR_API_TOKEN };
-		url = 'https://' + YOUR_ENV_ID + '.live.ruxit.com/api/v1/timeseries/';
+		url = 'https://' + YOUR_ENV_ID + '.live.dynatrace.com/api/v1/timeseries/';
 		data = {
 			'relativeTime' : '5mins',
 			'timeseriesId' : conf['timeseriesId'],

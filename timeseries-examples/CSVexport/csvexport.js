@@ -6,7 +6,7 @@ var fs = require('fs');
 
 var YOUR_API_KEY = ""; // replace with your own API key
 var YOUR_ENTITY = ""; // choose a specific monitored entity, such as a host e.g. HOST-B64B6B9CB11E2244
-var TSID = ""; // choose the timeseries to export, e.g. com.ruxit.builtin:host.cpu.user
+var TSID = ""; // choose the timeseries to export, e.g. com.dynatrace.builtin:host.cpu.user
 var AGGREGATION = "AVG";
 var TIME = "hour"
 var ENVIRONMENT = "" // replace with your own environment id
@@ -15,7 +15,7 @@ var ENVIRONMENT = "" // replace with your own environment id
 function fetchTimeseries(key, entity, tsid, aggr, time, env, rfunc) {
 
 	var options = {
-		host: env + '.live.ruxit.com',
+		host: env + '.live.dynatrace.com',
 		path: '/api/v1/timeseries/?Api-Token=' + key + '&relativeTime=' + time + '&entity=' + entity + '&aggregationType=' + aggr + '&timeseriesId=' + tsid	
 	};
 
