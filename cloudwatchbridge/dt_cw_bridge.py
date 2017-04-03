@@ -1,5 +1,5 @@
 #
-# Script for transfering Dynatrace timeseries into AWS CloudWatch.
+# Script for transferring Dynatrace timeseries into AWS CloudWatch.
 #
 import requests, datetime, time, sched, subprocess, shlex
 
@@ -55,12 +55,3 @@ def export_metric(name):
 			print('Error ' + r);
 scheduler.enter(1, 1, export_metric, ('first',))
 scheduler.run()
-
-
-
-		
-
-
-
-
-

@@ -54,12 +54,3 @@ def print_event(name):
 print("START")
 scheduler.enter(1, 1, print_event, ('first',))
 scheduler.run()
-
-
-
-		
-
-
-
-
-

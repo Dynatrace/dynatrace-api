@@ -84,6 +84,6 @@ def print_event(name):
 print("START")
 # Within this example a Python scheduler is used to trigger a metric update every minute.
 # To ensure the reliable execution of the script in a real world scenario you could either use a cron job
-# or to execture the script within a managed execution environment.
+# or execute the script within a managed execution environment.
 scheduler.enter(1, 1, print_event, ('first',))
 scheduler.run()
