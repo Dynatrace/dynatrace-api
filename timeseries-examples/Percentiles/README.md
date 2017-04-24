@@ -1,12 +1,9 @@
 ## Overview
 
-This Dynatrace timeseries data export API example demonstrate the export of CPU timeseries for a given host and how to
-chart the resulting data points by using Google charts.
-Mind that a Node.js service wrapper is used to cope with the Browsers security restriction to only load resources
-from the same origin. The service wrapper also hides the secret API token for accessing the Dynatrace tenant data instead
-of exposing it within the JavaScript.
+This Dynatrace API example demonstrate how to fetch and chart customizable percentiles for a given monitored software service.
+The percentiles data points are visualized by using Google charts.
 
-## Dynatrace data export API documentation
+## Dynatrace API documentation
 
 The full API documentation can be found here: 
 https://help.dynatrace.com/api-documentation/v1/timeseries

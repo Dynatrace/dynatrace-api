@@ -1,0 +1,79 @@
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
+	<script type="text/javascript"
+          src="https://www.google.com/jsapi?autoload={
+            'modules':[{
+              'name':'visualization',
+              'version':'1',
+              'packages':['corechart']
+            }]
+          }">
+	</script>
+	<script type="text/javascript">
+		var array = [];
+		
+		function fetchData(url, token, service, p1, p2) {
+			array = [];
+			// set header titles
+			array.push(['time', 'Response time (' + p1 + ' percentile)', 'Response time (' + p2 + ' percentile)']);
+					
+			$.get( url + "/api/v1/timeseries/?Api-Token=" + token + "&entity=" + service + "&timeseriesId=com.dynatrace.builtin:service.responsetime&aggregationType=percentile&percentile=" + p1 + "&relativeTime=2hours", function( data ) {
+				array = array.concat(data.result.dataPoints[service]);
+				
+				$.get( url + "/api/v1/timeseries/?Api-Token=" + token + "&entity=" + service + "&timeseriesId=com.dynatrace.builtin:service.responsetime&aggregationType=percentile&percentile=" + p2 + "&relativeTime=2hours", function( data ) {
+					
+					for(i = 1; i < array.length; i++) {
+						array[i].push(data.result.dataPoints[service][i-1][1]);
+						array[i][0] = new Date(array[i][0]).toLocaleTimeString();
+						array[i][1] = array[i][1] / 100;
+						array[i][2] = array[i][2] / 100;
+					}
+					// remove last two minutes, because could be incomplete data 
+					array.pop();
+					array.pop();
+					// and draw the data
+					drawChart();
+				});	
+			});
+		}
+		
+		function drawChart() {
+			var data = google.visualization.arrayToDataTable(array);
+
+			var options = {
+			  title: 'Response time percentiles',
+			  curveType: 'function',
+			  legend: { position: 'bottom' }
+			};
+
+			var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+			chart.draw(data, options);
+		}
+    </script>
+  </head>
+  <body>
+	<form style="margin-left:80;margin-top:50;" name="myform" >
+		<label for="dturl">Dynatrace API URL</label>
+		<input type="text" size="70" name="dturl"><br><br>
+		<label for="dttoken">Dynatrace API token</label>
+		<input type="text" size="30" name="dttoken"><br><br>
+		<label for="service">Service</label>
+		<input type="text" size="30" name="service"><br><br>
+		<label for="p1">Select first percentile</label>
+		<input type="number" width="20" name="p1"><br><br>
+		<label for="p2">Select second percentile</label>
+		<input type="number" name="p2"><br><br>
+		<input type="submit" name="draw" value="Plot"><br>
+	</form>
+  
+	<script type="text/javascript">
+		$("form").submit(function(){
+			event.preventDefault();
+			fetchData($("input[type=text][name=dturl]" ).val(), $("input[type=text][name=dttoken]" ).val(), $("input[type=text][name=service]" ).val(), $("input[type=number][name=p1]" ).val(), $("input[type=number][name=p2]" ).val());
+		});
+	</script>
+    <div id="curve_chart" style="width: 900px; height: 500px"></div>
+  </body>
+</html>
