@@ -18,5 +18,15 @@ In order to use the Dynatrace API, you need an API key for your Dynatrace tenant
 5. Enter a description label and submit the request
 6. Expand the created key via clicking on the "Edit"-label, copy the token and use it in your Dynatrace API examples
 
+## Using the API with Dynatrace Managed environments
+
+For Dynatrace Managed environments you need to use an URL with the following structure:
+
+    https://<hostname>/e/<tenant-id>/api/v1/
+
+e.g.
+
+    https://sample.dynatrace-managed.com/e/12345678-1234-1234-1234-abcdef12/api/v1/
+
 ## License
 This module is provided under BSD-3-Clause license. Please check out the details in the LICENSE.txt
