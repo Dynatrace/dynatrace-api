@@ -1,7 +1,7 @@
 """
 Example script for monitoring a Raspberry PI
 """
-import requests, time, sched, random, os
+import requests, time, sched, random, os, ssl
 
 YOUR_DT_API_URL = 'https://{id}.live.dynatrace.com';
 YOUR_DT_API_TOKEN = '{token}';
