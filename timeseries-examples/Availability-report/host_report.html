@@ -1,0 +1,126 @@
+<!-- HTML availability report generator for all hosts within a given Dynatrace environment
+     Date 24.06.2017
+     Author Wolfgang Beer
+     Copyright Dynatrace LLC -->
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
+	<script type="text/javascript">
+        
+		var array = [];
+        
+        function printSingleReport(meid, name, seen, firstSeen, totalTime, seenTime, unavailableTime, availability) {
+            var report = "";
+            
+            report += "<b> " + name + "</b></br>";
+            report += "<div style='margin-left:10px'>";
+            report += meid + "</br>";
+            if(seen) {
+                var font = "<font color='#ff0000'>";
+                if(availability == 100) {
+                    font = "<font color='#00AA00'>";
+                }
+                report += "<tab>Total time: " + totalTime + " min</br>";
+                report += "<tab>Time seen: " + seenTime + " min</br>";
+                report += "<tab>Time unavailable: " + unavailableTime + " min</br>";
+                report += "<tab>Availability: " + font + availability + " %</font>";
+            }
+            else {
+                report += "<tab>No data available";
+            }
+            report += "</div>";
+            report += "</br></br>";
+            return report;
+        }
+		
+		function fetchData(url, token, from, to) {
+			var sb = "";
+            if(!url.startsWith('https://')) {
+                url = "https://" + url;
+            }
+            if (url.charAt(url.length - 1) == '/') {
+                url = url.substr(0, url.length - 1);
+            }
+            $.get( url + "/api/v1/timeseries/?Api-Token=" + token + "&timeseriesId=com.dynatrace.builtin:host.availability&startTimestamp=" + from + "&endTimestamp=" + to, function( data ) {
+                  var hosts = data.result.entities;
+                  
+                  
+                  for (var key in hosts) {
+                    var seen = true;
+                    var firstSeen;
+                    var totalTime;
+                    var seenTime;
+                    var unavailableTime;
+                    var availability;
+                    if(data.result.dataPoints[key.trim()]) {
+                        var a = data.result.dataPoints[key.trim()];
+                        // first seen measurement timestamp
+                        firstSeen = a[0][0];
+                  
+                        // calc total time in millis
+                        totalTime =  to - from;
+                        // first calc the netto time between first seen measurement and last measurement
+                        seenTime = a[a.length-1][0] - a[0][0];
+                        // now substract all unavailable times from netto time
+                        unavailableTime = 0;
+                        for (i = 0; i < a.length; i++) {
+                            if(i < (a.length-1) && a[i][1] !== "AVAILABLE") {
+                                unavailableTime += a[i+1][0] - a[i][0];
+                            }
+                        }
+                        // and finally calc availability percent
+                        availability = (((1 - unavailableTime / seenTime) * 100)).toFixed(2);
+                  
+                    }
+                    else {
+                        seen = false;
+                    }
+                    sb += printSingleReport(key, hosts[key], seen, firstSeen, Math.trunc(totalTime / 60000), Math.trunc(seenTime / 60000), Math.trunc(unavailableTime / 60000), availability);
+                  }
+                  
+                  report = document.getElementById("report");
+                  report.innerHTML += sb;
+			});
+            
+		}
+    </script>
+  </head>
+  <body>
+	<form style="margin-left:10;margin-top:50;" name="myform" >
+        <label for="dturl">Enter your Dynatrace API URL:</label>
+		<input type="text" value="" size="70" name="dturl"><br><br>
+		<label for="dttoken">Enter your Dynatrace API token</label>
+		<input type="text" value="" size="30" name="dttoken"><br><br>
+        <label for="from">Report start date</label>
+        <input type="date" id="from" name="from"><br><br>
+        <label for="to">Report end date</label>
+        <input type="date" id="to" name="to"><br><br>
+		<input type="submit" name="draw" value="Report"><br>
+	</form>
+  
+	<script type="text/javascript">
+        // initialize date selector
+        var monthBefore = new Date();
+        monthBefore.setDate(monthBefore.getDate()-30);
+        
+        document.getElementById("from").valueAsDate = monthBefore;
+        document.getElementById("to").valueAsDate = new Date();
+        
+        // create report button
+		$("form").submit(function(){
+			event.preventDefault();
+            var from = new Date($('#from').val());
+            var to = new Date($('#to').val());
+            
+            report.innerHTML = "<h1>Host Availability Report</h1><h2>" + from.toLocaleString() + " - " + to.toLocaleString() + "</h2>";
+                         
+            fetchData($("input[type=text][name=dturl]" ).val(), $("input[type=text][name=dttoken]" ).val(), from.getTime(), to.getTime());
+            // delete token so that if the user is printing the report the token is not exposed
+            $("input[type=text][name=dttoken]" ).val("");
+		});
+	</script>
+    
+    <div id="report"></div>
+    
+  </body>
+</html>
