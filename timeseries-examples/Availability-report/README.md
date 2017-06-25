@@ -2,9 +2,9 @@
 
 This Dynatrace API example generates either a host or a full processes availability report in HTML.
 
-![Host availability report](/host_report.png?raw=true "Host availability report")
+![Host availability report](host_report.png?raw=true "Host availability report")
 
-![Process availability report](/process_report.png?raw=true "Process availability report")
+![Process availability report](process_report.png?raw=true "Process availability report")
 
 ## Dynatrace API documentation
 
