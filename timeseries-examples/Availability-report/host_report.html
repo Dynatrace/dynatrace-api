@@ -11,25 +11,31 @@
         
         function printSingleReport(meid, name, seen, firstSeen, totalTime, seenTime, unavailableTime, availability) {
             var report = "";
+            var tooltip = name;
+			if(name.length > 40) {
+				name = name.substr(0, 40);
+			}
+            report += "<div style='float: left; width: 400px;text-align: left'><b>" + name + "</b></div>";
             
-            report += "<b> " + name + "</b></br>";
-            report += "<div style='margin-left:10px'>";
-            report += meid + "</br>";
             if(seen) {
                 var font = "<font color='#ff0000'>";
                 if(availability == 100) {
                     font = "<font color='#00AA00'>";
                 }
-                report += "<tab>Total time: " + totalTime + " min</br>";
-                report += "<tab>Time seen: " + seenTime + " min</br>";
-                report += "<tab>Time unavailable: " + unavailableTime + " min</br>";
-                report += "<tab>Availability: " + font + availability + " %</font>";
+                report += "<div style='float: left; width: 150px;text-align: right'>" + totalTime + " min</div>";
+                report += "<div style='float: left; width: 150px;text-align: right'>" + seenTime + " min</div>";
+                report += "<div style='float: left; width: 150px;text-align: right'>" + unavailableTime + " min</div>";
+                report += "<div style='float: left; width: 150px;text-align: right'>" + font + availability + " %</font></div>";
             }
             else {
-                report += "<tab>No data available";
-            }
-            report += "</div>";
-            report += "</br></br>";
+				report += "<div style='float: left; width: 150px;text-align: right'>-</div>";
+                report += "<div style='float: left; width: 150px;text-align: right'>-</div>";
+                report += "<div style='float: left; width: 150px;text-align: right'>-</div>";
+                report += "<div style='float: left; width: 150px;text-align: right'>-</div>";
+			}
+            
+            report += "</br>";
+			
             return report;
         }
 		
@@ -112,7 +118,13 @@
             var from = new Date($('#from').val());
             var to = new Date($('#to').val());
             
-            report.innerHTML = "<h1>Host Availability Report</h1><h2>" + from.toLocaleString() + " - " + to.toLocaleString() + "</h2>";
+            report.innerHTML += "<h1>Host Availability Report</h1><h2>" + from.toLocaleString() + " - " + to.toLocaleString() + "</h2>";
+			report.innerHTML += "<div style='float: left; width: 400px;background-color: #CCCCCC'>Display name</div>";
+			report.innerHTML += "<div style='float: left; width: 150px;background-color: #CCCCCC;text-align: right'>Time total</div>";
+			report.innerHTML += "<div style='float: left; width: 150px;background-color: #CCCCCC;text-align: right'>Time seen</div>";
+			report.innerHTML += "<div style='float: left; width: 150px;background-color: #CCCCCC;text-align: right'>Time unavailable</div>";
+			report.innerHTML += "<div style='float: left; width: 150px;background-color: #CCCCCC;text-align: right'>Availability</div>";
+			report.innerHTML += "<br><br>";
                          
             fetchData($("input[type=text][name=dturl]" ).val(), $("input[type=text][name=dttoken]" ).val(), from.getTime(), to.getTime());
             // delete token so that if the user is printing the report the token is not exposed
