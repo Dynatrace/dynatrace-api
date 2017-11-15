@@ -1,0 +1,333 @@
+swagger: '2.0'
+info:
+  version: '0.0.1'
+  title: External Synthetic API
+  description: An API specification for sending external synthetic test results and events into Dynatrace SaaS/Managed
+  termsOfService: https://www.dynatrace.com/company/legal/license-agreement/
+  contact:
+    name: Wolfgang Beer
+    email: wolfgang.beer@dynatrace.com
+    url: http://www.dynatrace.com
+  license:
+    name: Commercial
+    url: https://github.com/Dynatrace/dynatrace-api/blob/master/LICENSE.TXT
+host: live.dynatrace.com
+basePath: /api/v1/
+schemes:
+  - https
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /time:
+    get:
+      description: Returns the actual Dynatrace cluster timestamp in UTC
+      operationId: timestamp
+      produces:
+        - text
+      responses:
+        '200':
+          description: actual cluster time in UTC
+          schema:
+            type: integer
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+  /synthetic/ext/tests:
+    post:
+      security:
+          - Bearer: []
+      description: Pushes one or more synthetic test results to Dynatrace.
+      operationId: testResults
+      produces:
+        - application/json
+      parameters:
+        - name: result
+          in: body
+          description: A list of synthetic test results
+          required: true
+          schema:
+            $ref: '#/definitions/result'
+      responses:
+        '204':
+          description: test result push response
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+  /synthetic/ext/events:
+    post:
+      security:
+          - Bearer: []
+      description: Pushes updates on open events to Dynatrace or closes previously open events.
+      operationId: events
+      produces:
+        - application/json
+      parameters:
+        - name: eventStates
+          in: body
+          description: A list of events state updates
+          required: true
+          schema:
+            $ref: '#/definitions/eventStates'
+      responses:
+        '204':
+          description: event state push response
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+definitions:
+  eventStates:
+    type: object
+    required:
+      - syntheticEngineName
+    properties:
+      syntheticEngineName:
+        type: string
+        description: name of the synthetic engine
+      open:
+        type: array
+        items:
+          type: object
+          properties:
+            testId:
+              type: string
+            eventId:
+              type: string
+            name:
+              description: pretty name which will be used to display the event in the UI
+              type: string
+            eventType:
+              description: the semantic type of the event, beiing either a slowdown or outage event
+              type: string
+              enum: [testSlowdown, testOutage]
+            reason:
+              description: pretty reason why this event was opened, will be used as description of the event in the UI
+              type: string
+            startTimestamp:
+              description: the start timestamp in millies UTC Dynatrace cluster time when this event was opened
+              format: int64
+              type: integer
+            timeoutTimeframeInMillis:
+              description: the timeframe in millis UTC at which this event will time out (resolved) if not refreshed via another open message or explicitly resolved
+              format: int64
+              type: integer
+            locationIds:
+              description: the location ids where the event happens
+              type: array
+              items:
+                type: string
+      resolved:
+        type: array
+        items:
+          type: object
+          properties:
+            testId:
+              type: string
+            eventId:
+              type: string
+            endIntervalMin:
+              description: the beginning timestamp of the end interval in millies UTC Dynatrace cluster time when this event was closed mi
+              format: int64
+              type: integer
+            endIntervalMax:
+              description: the ending timestamp of the end interval in millies UTC Dynatrace cluster time when this event was closed
+              format: int64
+              type: integer
+  result:
+    required:
+      - messageTimestamp
+      - syntheticEngineName
+      - syntheticEngineIconUrl
+      - testResults
+    properties:
+      messageTimestamp:
+        type: integer
+        format: int64
+        description: timestamp of when the message was created
+      syntheticEngineName:
+        type: string
+        description: name of the external synthetic engine
+      syntheticEngineIconUrl:
+        type: string
+        description: icon of the external synthetic engine
+      locations:
+        description: test site id definitions and metainfos on test sites
+        type: array
+        items:
+          type: object
+          required:
+            - id
+            - ip
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            ip:
+              type: string
+            iconUrl:
+              type: string
+      tests:
+        type: array
+        items:
+          type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+              description: a globally unique test id to reference the test
+            title:
+              type: string
+            description:
+              type: string
+            testSetup:
+              type: string
+              description: optional test setup information (e.g. browser)
+            expirationTimestamp:
+              type: integer
+              format: int64
+              description: optional date as timestamp in millis UTC Dynatrace Cluster Time when this test automatically expires
+            drilldownLink:
+              type: string
+              description: a URL to link to this test results
+            editLink:
+              type: string
+              description: link back to where the user can edit that test in the original UI
+            enabled:
+              type: boolean
+              description: True if enabled, false if disabled, defaulted to true
+            deleted:
+              type: boolean
+              description: True if deleted, false if not deleted, defaulted to false - additionally set enabled to false if this field is set to true
+            locations:
+              type: array
+              items:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    description: location id
+                  enabled:
+                    type: boolean
+                    description: True if enabled, false if disabled or deleted, defaulted to true
+            steps:
+              description: One or more steps with their meta info within a synthetic test
+              type: array
+              items:
+                type: object
+                required:
+                  - id
+                properties:
+                   id:
+                     type: integer
+                     format: int32
+                     description: a step id that is unique for this test definition
+                   title:
+                     type: string
+                     description: any step title, such as 'click on xy'
+      testResults:
+        description: array of one or more synthetic test run results
+        type: array
+        items:
+          type: object
+          required:
+            - id
+            - scheduleIntervalInSeconds
+            - locationResults
+            - totalStepCount
+          properties:
+            id:
+              type: string
+              description: a globally unique test id to reference the test
+            scheduleIntervalInSeconds:
+              type: integer
+              format: int32
+              description: the schedule in seconds
+            totalStepCount:
+              type: integer
+              format: int32
+              description: total count of configured steps
+            locationResults:
+              type: array
+              items:
+                type: object
+                required:
+                  - id
+                  - success
+                  - startTimestamp
+                  - stepResults
+                properties:
+                  id:
+                    type: string
+                    description: the locations unique id
+                  startTimestamp:
+                    type: integer
+                    format: int64
+                    description: the timestamp in millies UTC Dynatrace cluster time when the test was executed on this location
+                  availability:
+                    type: number
+                    format: double
+                    description: optional, the overall availability of this test on this location in percent. when absent, calculated as the number of successful steps vs. number of failed steps
+                  success:
+                    type: boolean
+                    description: indicates if the execution of the step should be seen as successful - will influence availability timeseries
+                  responseTimeMillis:
+                    type: integer
+                    format: int64
+                    description: optional, the overall response time of the test on this location in milliseconds. when absent, calculated as the sum of response times of all steps
+                  stepResults:
+                    description: One or more step results within a synthetic test
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - startTimestamp
+                      properties:
+                        id:
+                          type: integer
+                          format: int64
+                          description: a step id that is unique for this test definition
+                        startTimestamp:
+                          type: integer
+                          format: int64
+                          description: the timestamp in millies UTC Dynatrace cluster time when the step was executed on this location
+                        responseTimeMillis:
+                          type: integer
+                          format: int64
+                          description: optional, the response time of this step in milliseconds. absent when no meaningful response time available as may be the case for certain error conditions such as misconfigured step script
+                        error:
+                          type: object
+                          required:
+                            - code
+                            - message
+                          properties:
+                            code:
+                              type: integer
+                              format: int32
+                              description: the error code in case the execution of the step failed
+                            message:
+                              type: string
+  errorModel:
+    type: object
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
