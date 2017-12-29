@@ -1,10 +1,10 @@
 ## Overview
 This example demonstrates the use of Topology endpoints and small amounts of code to create familiar documents, such as an Excel spreadsheet.  The intent in the example was to quickly build a list of possible firewall rules from Dynatrace detected process to process connections.
 
-### From this
+### From this:
 ![](./images/SmartScape.png)
 
-### To this
+### To this:
 ![](./images/Spreadsheet.png)
 
 ## Areas for follow-up
