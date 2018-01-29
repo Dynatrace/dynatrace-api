@@ -1,0 +1,95 @@
+<html>
+<head>
+<script src="https://rawgit.com/Linkurious/linkurious.js/develop/dist/sigma.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sigma.js/1.1.0/plugins/sigma.layout.forceAtlas2.min.js"></script>
+<script>
+var YOUR_ENV_ID = 'ENTER YOUR ENVIRONMENT ID HERE',
+	YOUR_API_TOKEN = 'ENTER YOUR API TOKEN HERE',
+    CLUSTER = 'live.dynatrace.com',
+    i,
+    s,
+    g = {
+      nodes: [],
+      edges: []
+    };
+	
+	nodeIds = {};
+	
+	function init() {
+		$.ajax({
+			url: "https://" + YOUR_ENV_ID + "." + CLUSTER + "/api/v1/entity/services",
+			type: 'get',
+			headers: { 'Authorization': ' Api-Token ' + YOUR_API_TOKEN },
+			success: function(service_data) {
+				var i = 0;
+				// two passes, first one to create all service nodes
+				service_data.forEach(function(entry) {
+					//console.log(entry);
+					var node = {
+						id: entry.entityId,
+						label: entry.displayName,
+						x: Math.random(),
+						y: Math.random(),
+						size: 200,
+						color: '#666'
+					};
+					g.nodes.push(node);
+					nodeIds[entry.entityId] = true;
+				});
+				// second one to add only edges to existing service nodes 
+				service_data.forEach(function(entry) {
+					var callRel = entry.toRelationships.calls;
+					if(callRel) {
+						callRel.forEach(function(toId) {
+							if(nodeIds[toId]) {
+								g.edges.push({
+									id: 'e' + i,
+									source: entry.entityId,
+									target: toId,
+									size: 100,
+									color: '#ccc'
+								});
+								i++;
+							} 	
+						});
+					}
+				});
+	
+				// instantiate sigma
+				s = new sigma({
+					graph: g,
+					container: 'graph-container'
+				});
+				
+				s.bind('clickNode', function(e) {
+					$.ajax({
+						url: "https://" + YOUR_ENV_ID + "." + CLUSTER + "/api/v1/entity/services/" + e.data.node.id,
+						type: 'post',
+						headers: { 'Authorization': ' Api-Token ' + YOUR_API_TOKEN, "Content-Type": "application/json" },
+						data: '{ "tags": [ "customtagged" ] }',
+						dataType: 'json'
+					});
+				});
+	
+				// Start the ForceAtlas2 algorithm:
+				s.startForceAtlas2({worker: true, barnesHutOptimize: false});
+			}
+		});
+	}
+</script>
+</head>
+<body onload="init();">
+	<div id="container">
+	  <style>
+		#graph-container {
+		  top: 0;
+		  bottom: 0;
+		  left: 0;
+		  right: 0;
+		  position: absolute;
+		}
+	  </style>
+	  <div id="graph-container"></div>
+	</div>
+</html>
