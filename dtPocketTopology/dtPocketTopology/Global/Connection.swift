@@ -11,9 +11,9 @@ import SwiftKeychainWrapper
 class myConnection {
   
     //Default vals
-    var url = "https://XXXXXX.live.dynatrace.com/api/v1/"
-    var token = "XXXXXXXXXXXXXXX"
-    var email = "email@domain.com"
+    var url = ""
+    var token = ""
+    var email = ""
  
     
     var browserURL = ""
@@ -49,6 +49,9 @@ class myConnection {
             print("Successful load from keychain.")
             return true
         } else {
+            self.url = "https://XXXXXX.live.dynatrace.com/api/v1/"
+            self.token = "XXXXXXXXXXXXXXX"
+            self.email = "email@domain.com"
             print("Unsuccessful load from keychain.")
             return false
         }

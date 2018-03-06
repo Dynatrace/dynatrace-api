@@ -8,6 +8,17 @@
 
 /* Begin PBXBuildFile section */
 		511B1D8BD3CC31BDA07847A4 /* Pods_dtPocketTopology.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B7C5BA3DFF5A588D8EFE9CE /* Pods_dtPocketTopology.framework */; };
+		F4172A05204F3B8200C5AC92 /* Readme.md in Resources */ = {isa = PBXBuildFile; fileRef = F4172A04204F3B8200C5AC92 /* Readme.md */; };
+		F4172A11204F496F00C5AC92 /* Hosts.png in Resources */ = {isa = PBXBuildFile; fileRef = F4172A07204F496E00C5AC92 /* Hosts.png */; };
+		F4172A12204F496F00C5AC92 /* Menu.png in Resources */ = {isa = PBXBuildFile; fileRef = F4172A08204F496E00C5AC92 /* Menu.png */; };
+		F4172A13204F496F00C5AC92 /* Tags.png in Resources */ = {isa = PBXBuildFile; fileRef = F4172A09204F496E00C5AC92 /* Tags.png */; };
+		F4172A14204F496F00C5AC92 /* Host.png in Resources */ = {isa = PBXBuildFile; fileRef = F4172A0A204F496E00C5AC92 /* Host.png */; };
+		F4172A15204F496F00C5AC92 /* Tag.png in Resources */ = {isa = PBXBuildFile; fileRef = F4172A0B204F496E00C5AC92 /* Tag.png */; };
+		F4172A16204F496F00C5AC92 /* Process.png in Resources */ = {isa = PBXBuildFile; fileRef = F4172A0C204F496F00C5AC92 /* Process.png */; };
+		F4172A17204F496F00C5AC92 /* IPs.png in Resources */ = {isa = PBXBuildFile; fileRef = F4172A0D204F496F00C5AC92 /* IPs.png */; };
+		F4172A18204F496F00C5AC92 /* JSON.png in Resources */ = {isa = PBXBuildFile; fileRef = F4172A0E204F496F00C5AC92 /* JSON.png */; };
+		F4172A19204F496F00C5AC92 /* Login.png in Resources */ = {isa = PBXBuildFile; fileRef = F4172A0F204F496F00C5AC92 /* Login.png */; };
+		F4172A1A204F496F00C5AC92 /* Relationships.png in Resources */ = {isa = PBXBuildFile; fileRef = F4172A10204F496F00C5AC92 /* Relationships.png */; };
 		F434B2C3202115C20044B39B /* Topology.swift in Sources */ = {isa = PBXBuildFile; fileRef = F434B2C2202115C20044B39B /* Topology.swift */; };
 		F434B2C720214F040044B39B /* HostTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F434B2C620214F040044B39B /* HostTableViewCell.swift */; };
 		F434B2C9202245150044B39B /* HostsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F434B2C8202245150044B39B /* HostsTableViewController.swift */; };
@@ -49,10 +60,21 @@
 		4B7C5BA3DFF5A588D8EFE9CE /* Pods_dtPocketTopology.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_dtPocketTopology.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E6B35037E998F39A292553C /* Pods-dtPocketTopology.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dtPocketTopology.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dtPocketTopology/Pods-dtPocketTopology.debug.xcconfig"; sourceTree = "<group>"; };
 		F01514A88628291D3D80AEFC /* Pods-dtPocketTopology.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dtPocketTopology.release.xcconfig"; path = "Pods/Target Support Files/Pods-dtPocketTopology/Pods-dtPocketTopology.release.xcconfig"; sourceTree = "<group>"; };
+		F4172A04204F3B8200C5AC92 /* Readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Readme.md; sourceTree = "<group>"; };
+		F4172A07204F496E00C5AC92 /* Hosts.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Hosts.png; sourceTree = "<group>"; };
+		F4172A08204F496E00C5AC92 /* Menu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Menu.png; sourceTree = "<group>"; };
+		F4172A09204F496E00C5AC92 /* Tags.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tags.png; sourceTree = "<group>"; };
+		F4172A0A204F496E00C5AC92 /* Host.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Host.png; sourceTree = "<group>"; };
+		F4172A0B204F496E00C5AC92 /* Tag.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tag.png; sourceTree = "<group>"; };
+		F4172A0C204F496F00C5AC92 /* Process.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Process.png; sourceTree = "<group>"; };
+		F4172A0D204F496F00C5AC92 /* IPs.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = IPs.png; sourceTree = "<group>"; };
+		F4172A0E204F496F00C5AC92 /* JSON.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = JSON.png; sourceTree = "<group>"; };
+		F4172A0F204F496F00C5AC92 /* Login.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Login.png; sourceTree = "<group>"; };
+		F4172A10204F496F00C5AC92 /* Relationships.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Relationships.png; sourceTree = "<group>"; };
 		F434B2C2202115C20044B39B /* Topology.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Topology.swift; sourceTree = "<group>"; };
-		F434B2C620214F040044B39B /* HostTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HostTableViewCell.swift; path = /Users/lucas.hocker/Documents/XcodeProjects/dtPocketTopology/dtPocketTopology/Host/HostTableViewCell.swift; sourceTree = "<absolute>"; };
+		F434B2C620214F040044B39B /* HostTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostTableViewCell.swift; sourceTree = "<group>"; };
 		F434B2C8202245150044B39B /* HostsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostsTableViewController.swift; sourceTree = "<group>"; };
-		F434B2CC20225D820044B39B /* Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Connection.swift; path = /Users/lucas.hocker/Documents/XcodeProjects/dtPocketTopology/dtPocketTopology/Global/Connection.swift; sourceTree = "<absolute>"; };
+		F434B2CC20225D820044B39B /* Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connection.swift; sourceTree = "<group>"; };
 		F436A9782049EA8200E6F761 /* TagsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TagsTableViewCell.swift; path = dtPocketTopology/Tags/TagsTableViewCell.swift; sourceTree = SOURCE_ROOT; };
 		F436A9792049EA8200E6F761 /* TagsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TagsTableViewController.swift; path = dtPocketTopology/Tags/TagsTableViewController.swift; sourceTree = SOURCE_ROOT; };
 		F436A97C2049EA9300E6F761 /* IPTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IPTableViewCell.swift; path = dtPocketTopology/IPs/IPTableViewCell.swift; sourceTree = SOURCE_ROOT; };
@@ -117,6 +139,23 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		F4172A06204F492200C5AC92 /* Screenshots */ = {
+			isa = PBXGroup;
+			children = (
+				F4172A08204F496E00C5AC92 /* Menu.png */,
+				F4172A07204F496E00C5AC92 /* Hosts.png */,
+				F4172A0A204F496E00C5AC92 /* Host.png */,
+				F4172A0E204F496F00C5AC92 /* JSON.png */,
+				F4172A10204F496F00C5AC92 /* Relationships.png */,
+				F4172A0C204F496F00C5AC92 /* Process.png */,
+				F4172A09204F496E00C5AC92 /* Tags.png */,
+				F4172A0B204F496E00C5AC92 /* Tag.png */,
+				F4172A0D204F496F00C5AC92 /* IPs.png */,
+				F4172A0F204F496F00C5AC92 /* Login.png */,
+			);
+			path = Screenshots;
+			sourceTree = "<group>";
+		};
 		F4615A07201FA0BE0042C096 = {
 			isa = PBXGroup;
 			children = (
@@ -138,6 +177,8 @@
 		F4615A12201FA0BE0042C096 /* dtPocketTopology */ = {
 			isa = PBXGroup;
 			children = (
+				F4172A06204F492200C5AC92 /* Screenshots */,
+				F4172A04204F3B8200C5AC92 /* Readme.md */,
 				F4615A1F201FA0BE0042C096 /* Info.plist */,
 				F4615A1A201FA0BE0042C096 /* Assets.xcassets */,
 				F4615A17201FA0BE0042C096 /* Main.storyboard */,
@@ -161,8 +202,7 @@
 				F436A97D2049EA9300E6F761 /* IPsTableViewController.swift */,
 				F436A97C2049EA9300E6F761 /* IPTableViewCell.swift */,
 			);
-			name = IPs;
-			path = "New Group";
+			path = IPs;
 			sourceTree = "<group>";
 		};
 		F4E0A8522049061300C52639 /* Tags */ = {
@@ -314,9 +354,20 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F4172A14204F496F00C5AC92 /* Host.png in Resources */,
+				F4172A13204F496F00C5AC92 /* Tags.png in Resources */,
+				F4172A19204F496F00C5AC92 /* Login.png in Resources */,
 				F4615A1E201FA0BE0042C096 /* LaunchScreen.storyboard in Resources */,
+				F4172A16204F496F00C5AC92 /* Process.png in Resources */,
 				F4615A1B201FA0BE0042C096 /* Assets.xcassets in Resources */,
+				F4172A1A204F496F00C5AC92 /* Relationships.png in Resources */,
+				F4172A18204F496F00C5AC92 /* JSON.png in Resources */,
+				F4172A05204F3B8200C5AC92 /* Readme.md in Resources */,
+				F4172A15204F496F00C5AC92 /* Tag.png in Resources */,
 				F4615A19201FA0BE0042C096 /* Main.storyboard in Resources */,
+				F4172A17204F496F00C5AC92 /* IPs.png in Resources */,
+				F4172A12204F496F00C5AC92 /* Menu.png in Resources */,
+				F4172A11204F496F00C5AC92 /* Hosts.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
