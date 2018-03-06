@@ -1,0 +1,23 @@
+PODS:
+  - Alamofire (4.6.0)
+  - Dynatrace (7.0.18.1007):
+    - Dynatrace/framework (= 7.0.18.1007)
+  - Dynatrace/framework (7.0.18.1007)
+  - SwiftKeychainWrapper (3.0.1)
+  - SwiftyJSON (4.0.0)
+
+DEPENDENCIES:
+  - Alamofire
+  - Dynatrace
+  - SwiftKeychainWrapper
+  - SwiftyJSON
+
+SPEC CHECKSUMS:
+  Alamofire: f41a599bd63041760b26d393ec1069d9d7b917f4
+  Dynatrace: 6bc5f37e7661dffece34315c595798ea7ea7c61e
+  SwiftKeychainWrapper: 38952a3636320ae61bad3513cadd870929de7a4a
+  SwiftyJSON: 070dabdcb1beb81b247c65ffa3a79dbbfb3b48aa
+
+PODFILE CHECKSUM: 3de3450907a9976690a521512a925f3b3eb9cf63
+
+COCOAPODS: 1.4.0
