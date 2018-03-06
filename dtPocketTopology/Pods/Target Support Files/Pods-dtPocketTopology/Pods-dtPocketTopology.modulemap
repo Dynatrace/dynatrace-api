@@ -1,0 +1,6 @@
+framework module Pods_dtPocketTopology {
+  umbrella header "Pods-dtPocketTopology-umbrella.h"
+
+  export *
+  module * { export * }
+}
