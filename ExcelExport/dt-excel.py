@@ -1,7 +1,8 @@
 import pycurl
 import json
 import csv
-from StringIO import StringIO
+import certifi
+import io
 from openpyxl import Workbook
 from openpyxl.styles import Alignment,Font
 
@@ -16,15 +17,16 @@ DEST_FILENAME='dt-export.xlsx'
 
 ### function to go get the data
 def dtApiQuery(endpoint):
-	buffer=StringIO()
+	buffer=io.BytesIO()
 	c = pycurl.Curl()
 	c.setopt(c.URL, URL + endpoint)
+	c.setopt(pycurl.CAINFO, certifi.where())
 	c.setopt(c.HTTPHEADER, ['Authorization: Api-Token ' + APITOKEN] )
 	c.setopt(pycurl.WRITEFUNCTION, buffer.write)
 	c.perform()
 	print('Status: %d' % c.getinfo(c.RESPONSE_CODE))
 	c.close()
-	return(buffer)
+	return(buffer.getvalue().decode('UTF-8'))
 
 
 ### Setup workbook
@@ -34,14 +36,13 @@ wsHostHost = wb.create_sheet("host-host")
 wsProcess = wb.create_sheet("processes")
 wsProcessProcess = wb.create_sheet("process-process")
 wsProcessHost = wb.create_sheet("process-host")
-wb.remove_sheet(wb.active)
+wb.remove(wb.active)
 
 
 
 ### Get & Process hosts data
 hostsIO=dtApiQuery('entity/infrastructure/hosts')
-#print(hostsIO.getvalue())
-hosts=json.loads(hostsIO.getvalue())
+hosts=json.loads(hostsIO)
 
 wsHosts.append( ['hostId','displayName','osType','osVersion','hypervisorType','ipAddress1','ipAddress2','ipAddress3'] )
 for host in hosts:
@@ -67,8 +68,7 @@ for fromHost in hosts:
 
 ### Get & Process processes data
 processesIO=dtApiQuery('entity/infrastructure/processes')
-#print(processesIO.getvalue())
-processes=json.loads(processesIO.getvalue())
+processes=json.loads(processesIO)
 
 wsProcess.append( ['processId','displayName','softwareType','softwareVersion','port1','port2','port3','port4','port5'] )
 for process in processes:
