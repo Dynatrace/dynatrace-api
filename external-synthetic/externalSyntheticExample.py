@@ -40,11 +40,11 @@ payload = {
         "steps": [ {
             "id": 1,
             "title": "Get request example.com"
-        }]
+        }],
+        "scheduleIntervalInSeconds": 60
     }],    
     "testResults": [{
         "id": "1",
-        "scheduleIntervalInSeconds": 60,
         "totalStepCount": 1,
         "locationResults": [{
             "id": "1",
@@ -55,8 +55,9 @@ payload = {
                 "startTimestamp": timestamp,
                 "responseTimeMillis": responseTime * 1000
             }]
+        }]
     }]
-}]};
+};
 
 headers = {'content-type': 'application/json'};
 r = requests.post(YOUR_DT_API_URL + '/api/v1/synthetic/ext/tests?Api-Token=' + YOUR_DT_API_TOKEN, json=payload, headers=headers);
