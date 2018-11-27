@@ -29,6 +29,7 @@ payload = {
     }],
     "tests" : [ {
         "id": "1",
+        "scheduleIntervalInSeconds": 60,
         "title": "Example.com",
         "testSetup":  "Python script",
         "drilldownLink": "http://example.com/",
@@ -44,7 +45,6 @@ payload = {
     }],    
     "testResults": [{
         "id": "1",
-        "scheduleIntervalInSeconds": 60,
         "totalStepCount": 1,
         "locationResults": [{
             "id": "1",
