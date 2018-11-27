@@ -1,7 +1,6 @@
 ## Overview
-The Dynatrace external synthetic API (currently early access) allows you to send synthetic data from 3rd party or home-grown 
-synthetic solutions into Dynatrace. Here you will find the current Swagger specification of the API as well as a simple
-Python example to get you started.
+The Dynatrace external synthetic API allows you to push synthetic data from 3rd party or home-grown 
+synthetic solutions into Dynatrace. Here you will find a simple Python example to get you started.
 
 ## Example
 Just replace the placeholders with your Dynatrace environment id & token and run the script.
