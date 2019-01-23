@@ -17,4 +17,5 @@ It is strongly suggested to run this script in a minute Cron-job, which gives yo
 ## Necessary parameters
 
 **YOUR_DT_API_URL** must be replaced with your own environments API URL
+
 **YOUR_API_TOKEN** must be replaced with your own environments API token
