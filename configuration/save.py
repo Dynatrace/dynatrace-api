@@ -1,7 +1,7 @@
 """
 Example script for fetching given Dynatrace config list items and store them on disk. 
 """
-import requests, ssl, os, sys
+import requests, ssl, os, sys, json
 
 ENV = 'https://<YOUR_ENVIRONMENT.live.dynatrace.com'
 TOKEN = '<YOUR_API_TOKEN>'
@@ -12,7 +12,7 @@ def save(path, file, content):
 	if not os.path.isdir(PATH + path): 
 		os.makedirs(PATH + path)
 	with open(PATH + path + "/" + file, "w", encoding='utf8') as text_file:
-		text_file.write("%s" % content)
+		text_file.write("%s" % json.dumps(content))
 
 def saveList(list_type):
 	try:
