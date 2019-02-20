@@ -1,0 +1,9 @@
+ConfigArgParse
+argcomplete
+requests
+dnspython
+datetime
+pings
+pymysql
+pymongo
+setuptools>=35.0.2
