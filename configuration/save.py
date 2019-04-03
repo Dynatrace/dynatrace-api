@@ -3,7 +3,7 @@ Example script for fetching given Dynatrace config list items and store them on 
 """
 import requests, ssl, os, sys, json
 
-ENV = 'https://<YOUR_ENVIRONMENT.live.dynatrace.com'
+ENV = 'https://<YOUR_ENVIRONMENT>.live.dynatrace.com'
 TOKEN = '<YOUR_API_TOKEN>'
 HEADERS = {'Authorization': 'Api-Token ' + TOKEN}
 PATH = os.getcwd()
