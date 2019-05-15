@@ -7,7 +7,7 @@ var https = require('https');
 
 app.use(express.static('public'));
 
-var YOUR_API_TOKEN = "j2pnF2JGR9mhF1ABFna1_";
+var YOUR_API_TOKEN = "<YOUR_TOKEN>";
 var YOUR_HOST = "HOST-A3C4D3D278C161FA";
 
 //
@@ -15,7 +15,7 @@ var YOUR_HOST = "HOST-A3C4D3D278C161FA";
 //
 app.get('/cpu', function (req, res) {
 	var options = {
-		host: 'kyp91462.live.dynatrace.com',
+		host: '<YOUR_ENVIRONMENT>.live.dynatrace.com',
 		path: '/api/v1/timeseries/?Api-Token=' + YOUR_API_TOKEN + '&relativeTime=hour&entity=' + YOUR_HOST + '&aggregationType=AVG&timeseriesId=com.dynatrace.builtin:host.cpu.user'	
 	};
 
