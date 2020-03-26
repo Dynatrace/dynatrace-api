@@ -26,7 +26,7 @@ and then download the python dependencies with pip.
 
 #### Navigate to tool location
 
-    cd dynatrace-api/external-synthetic/external-tester
+    cd dynatrace-api/third-party-synthetic/third-party-tester
 
 #### Download and install the requirements with pip
 To install python project dependencies simply run the following command:
@@ -142,7 +142,7 @@ Main loop will only stop on user request (eg. by `SIGTERM`).
 ### Project structure & description
 
 ```
-synthetic-external-tester
+third-party-tester
 ├── examples                        Folder with example test.
 │   └── file_exists_test.py         Example test.
 │
