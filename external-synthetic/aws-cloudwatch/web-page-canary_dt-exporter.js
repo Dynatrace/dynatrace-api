@@ -17,12 +17,12 @@
     const host = 'demo.dev.dynatracelabs.com';
     // Dynatrace api token with permissions to post monitor results
     const apiToken = '';
-    // The dynatrace external-monitor endpoint
+    // The dynatrace synthetic third-party endpoint
     const apiPath = '/api/v1/synthetic/ext/tests';
 
-    // External monitor config
+    // Third-party monitor engine
     const awsSyntheticEngineName = 'AWS CloudWatch';
-    const awsSyntheticEngineIcon = 'https://raw.githubusercontent.com/Dynatrace/dynatrace-api/master/external-synthetic/aws-cloudwatch/cloud-watch-icon.png';
+    const awsSyntheticEngineIcon = 'https://raw.githubusercontent.com/Dynatrace/dynatrace-api/master/third-party-synthetic/aws-cloudwatch/cloud-watch-icon.png';
 
     // necessary imports
     const log = require('SyntheticsLogger');
@@ -81,7 +81,7 @@
     }
 
     async function buildDtTestResult(stepResults, canaryWasSuccessful) {
-        log.info('DT: Building external-monitor result');
+        log.info('DT: Building third-party monitor result');
 
         // Grab the current timestamp before we waste time on anything else
         const doneAt = new Date().getTime();
@@ -150,12 +150,12 @@
             ]
         };
 
-        log.info('DT: Built external-monitor result successfully');
+        log.info('DT: Built third-party monitor result successfully');
         return testResult;
     }
 
     async function postDtTestResult(testResult) {
-        log.info(`DT: Posting external-monitor result to: ${host}${apiPath}.`);
+        log.info(`DT: Posting third-party monitor result to: ${host}${apiPath}.`);
 
         return new Promise((resolve) => {
             // Configure the request
@@ -175,12 +175,12 @@
                 response.setEncoding('utf8');
 
                 if (isSuccessfulStatusCode(code)) {
-                    log.info('DT: Posted external-monitor result successfully');
+                    log.info('DT: Posted third-party monitor result successfully');
                 }
 
                 response.on('data', (data) => {
                     if (!isSuccessfulStatusCode(code)) {
-                        log.error(`DT: Posting external-monitor result failed: ${code}. ${JSON.stringify(data)}.`);
+                        log.error(`DT: Posting third-party monitor result failed: ${code}. ${JSON.stringify(data)}.`);
                     }
                 });
 
@@ -188,7 +188,7 @@
             });
 
             request.on('error', (error) => {
-                log.error(`DT: Posting external-monitor result failed wtih error: ${JSON.stringify(error)}.`);
+                log.error(`DT: Posting third-party monitor result failed wtih error: ${JSON.stringify(error)}.`);
                 resolve();
             });
 

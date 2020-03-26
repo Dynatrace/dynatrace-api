@@ -1,11 +1,11 @@
-## Dynatrace external synthetic API examples
+## Dynatrace third-party synthetic API examples
 
-The Dynatrace external synthetic API allows you to push synthetic data from 3rd party or home-grown 
+The Dynatrace third-party synthetic API allows you to push synthetic data from 3rd party or home-grown 
 synthetic solutions to Dynatrace. Here are some example implementations to get you started.
 
 ### Python
 
-See `externalSyntheticExample.py` for a generic example written in Python.
+See `thirdPartySyntheticExample.py` for a generic example written in Python.
 
 Just replace the placeholders with your Dynatrace environment id & token and run the script.
 If everything works it should return HTTP status code 204 (no content) and the synthetic data will show up in the Dynatrace UI.
