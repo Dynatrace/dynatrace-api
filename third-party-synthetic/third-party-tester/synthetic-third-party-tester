@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from syntester.syntester import SyntheticExternalTester
+from syntester.syntester import SyntheticThirdPartyTester
 import logging
 
 
@@ -12,5 +12,5 @@ if '__main__' == __name__:
         level=logging.INFO
     )
 
-    synTester = SyntheticExternalTester()
+    synTester = SyntheticThirdPartyTester()
     synTester.run()

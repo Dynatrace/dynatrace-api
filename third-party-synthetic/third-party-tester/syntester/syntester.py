@@ -3,7 +3,7 @@ from tests import Test
 from reporting import ResultsReporter
 import argcomplete
 
-# Used in SyntheticExternalTester._configure_test_types when iterating through all test definitions
+# Used in SyntheticThirdPartyTester._configure_test_types when iterating through all test definitions
 from tests.testdefinitions import *
 
 import time
@@ -11,7 +11,7 @@ import logging
 import sys
 
 
-class SyntheticExternalTester:
+class SyntheticThirdPartyTester:
     """
     Application main class.
 
@@ -42,7 +42,7 @@ class SyntheticExternalTester:
 
     def __init__(self):
         """
-        Create a SyntheticExternalTester object.
+        Create a SyntheticThirdPartyTester object.
         """
         self.logger = logging.getLogger(__name__)
 
@@ -75,7 +75,7 @@ class SyntheticExternalTester:
             self.logger.info("Interrupt received, stopping.")
 
     def _configure(self, args):
-        """ Configure the SyntheticExternalTester class.
+        """ Configure the SyntheticThirdPartyTester class.
 
         For internal use only.
         """
@@ -159,7 +159,7 @@ class SyntheticExternalTester:
         """
 
         parser = ArgParser(
-            description="Dynatrace external test utility.",
+            description="Dynatrace third-party test utility.",
             default_config_files=['./config.ini'],
             add_config_file_help=False
         )

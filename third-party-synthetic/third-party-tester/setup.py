@@ -21,7 +21,7 @@ setup(
     version="0.1.1",
     author="Dynatrace",
     author_email="pawel.nalezyty@dynatrace.com",
-    description="Example tester that reports results to Dynatrace external synthetic api",
+    description="Example tester that reports results to Dynatrace third-party synthetic api",
     license="Apache License 2.0",
     keywords="dynatrace",
     install_requires=parse_requirements(reqs_filename),
@@ -30,7 +30,7 @@ setup(
     include_package_data=True,
     package_data={'templates': ['*'], 'data': ['*']},
     long_description=read(readme_filename),
-    scripts=['synthetic-external-tester'],
+    scripts=['synthetic-third-party-tester'],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3"

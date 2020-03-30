@@ -1,4 +1,4 @@
-# External synthetic example tester
+# Third-Party synthetic example tester
 
 This is a simple python application that periodically executes user defined tests
 and sends results to Dynatrace cluster with few examples included.
@@ -6,7 +6,7 @@ This script should be used as an example.
 If you're not familiar with Dynatrace API check out the
 [documentation](https://www.dynatrace.com/support/help/dynatrace-api/ "Dynatrace API"),
 especially the
-[external synthetic call](https://www.dynatrace.com/support/help/dynatrace-api/environment/synthetic-api/external-synthetic-api/)
+[third-party synthetic call](https://www.dynatrace.com/support/help/dynatrace-api/environment/synthetic-api/external-synthetic-api/)
 so you can build your own tests the way you need it.
 
 ## Getting started
@@ -26,7 +26,7 @@ and then download the python dependencies with pip.
 
 #### Navigate to tool location
 
-    cd dynatrace-api/external-synthetic/external-tester
+    cd dynatrace-api/third-party-synthetic/third-party-tester
 
 #### Download and install the requirements with pip
 To install python project dependencies simply run the following command:
@@ -40,7 +40,7 @@ Alternatively tester can be installed/build by running following command in the 
 
 Bash completion can be enabled by running:
 
-    eval "$(register-python-argcomplete synthetic-external-tester)"
+    eval "$(register-python-argcomplete synthetic-third-party-tester)"
 
 or by globally activating `argcomplete` for python scripts.
 
@@ -52,15 +52,15 @@ Tester checks which tests are available by looking for all subclasses of
 [Test](tests/test.py) class. Each such subclass is identified by its `TEST_NAME` field.
 To list all available tests simply run:
 
-    ./synthetic-external-tester --help
+    ./synthetic-third-party-tester --help
 
 Running specific test:
 
-    ./synthetic-external-tester test-name --test-args...
+    ./synthetic-third-party-tester test-name --test-args...
 
 To get more information about specific test use `--help` flag.
 
-    ./synthetic-external-tester test-name --help
+    ./synthetic-third-party-tester test-name --help
 
 Every test will require those basic parameters:
 
@@ -128,26 +128,26 @@ In more detail, to create your own test you'll need to:
  base class for each step. Set `test_step_name` values and `__call__` method
  and populate `steps` list in test class.
 
-New test should be accessible by running `./synthetic-external-tester {TEST_NAME}`.
+New test should be accessible by running `./synthetic-third-party-tester {TEST_NAME}`.
 Test specific help message will be automatically generated.
 
 ### Exit codes
 Tester will return exit code `1` when two different test definitions have the same `TEST_NAME`
 defined or when `ping_test` on unix system is not executed by `root`.
 
-When configured correctly `synthetic-external-tester` will lunch defined test in infinite loop
+When configured correctly `synthetic-third-party-tester` will lunch defined test in infinite loop
 at specified intervals. Exceptions raised by executed test will be caught and logged.
 Main loop will only stop on user request (eg. by `SIGTERM`).
 
 ### Project structure & description
 
 ```
-synthetic-external-tester
+third-party-tester
 ├── examples                        Folder with example test.
 │   └── file_exists_test.py         Example test.
 │
 ├── reporting                       Folder with classes dedicated to sending results.
-│   ├── api_constants.py            Python representation of external test api.
+│   ├── api_constants.py            Python representation of third-party test api.
 │   └── resultsreporter.py          Class responsible for sending test reports.
 │
 ├── syntester                       Folder with main application class.
@@ -168,7 +168,7 @@ synthetic-external-tester
 ├── README.md                       This readme file.
 ├── requirements.txt                Python project dependencies.
 ├── setup.py                        Setup script.
-└── synthetic-external-tester       Main application
+└── synthetic-third-party-tester       Main application
 ```
 
 ## License

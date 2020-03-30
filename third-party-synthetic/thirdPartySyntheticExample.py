@@ -1,5 +1,5 @@
 """
-Example script that shows how to send external synthetic data into Dynatrace.
+Example script that shows how to send third-party synthetic data into Dynatrace.
 """
 import requests, time
 
