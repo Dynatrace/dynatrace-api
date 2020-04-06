@@ -1,48 +1,37 @@
-## AWS CloudWatch examples
+## AWS CloudWatch
 
-AWS CloudWatch canaries are executed in a Node.js lambda. Here are some examples of how to edit the lambda script to push the canary results to Dynatrace.
+AWS CloudWatch canaries are executed in a Node.js lambda. The dynatrace exporter script (`dynatrace-canary-exporter.js`) can be appended to the end of the lambda script to push the canary results to a Dynatrace synthetic third-party monitor. In order to push results to Dynatrace simply:
+1) Append the script to the end of the canary
+2) Set the Dynatrace `host` and `apiToken` (or configure the parameter that contains the token with `dynatraceApiTokenParameterName` and/or `dynatraceApiTokenParameterRegion`) for accessing the API
+3) Set the `canaryInterval` (in seconds), so that Dynatrace knows how often to expect results
+4) Optionally customize the monitor display name used in the Dynatrace UI (defaults to the canary name)
 
-> At the time of writing, the only **performance metric** provided by canaries is the lambda execution time. This metric obviously isn't available inside the lambda execution. These example access other metrics that **are** available. As a result, the metrics in the Dynatrace UI won't match the canary metrics in the CloudWatch UI.
+At the time of writing, AWS CloudWatch provides four different canary blueprints that can be grouped into two types. The provided script handles both of these types:
+- **Web page**: *Heartbeat monitoring*, *GUI workflow builder* and *Broken link checker*
+- **Web API**: *API canary*
 
-At the time of writing, AWS CloudWatch provides four canary blueprints. Three are designed to monitor **web pages** (*Heartbeat monitoring*, *GUI workflow builder* and *Broken link checker*) and the fourth to monitor **web APIs** (*API canary*). There are currently only examples for web page canaries.
+> At the time of writing, the only **performance metric** provided by canaries is the lambda execution time. This metric obviously isn't available *inside* the lambda execution, so these examples use different metrics. As a result, the metrics in the Dynatrace UI won't match the canary metrics in the CloudWatch UI.
 
-All the examples work by simply appending a script to the end of the canary and setting some hard-coded values necessary for building a valid result for Dynatrace.
+### Examples
 
-### Web page Canaries
-
-#### Scripts
-
-Web page canaries can use `web-page-canary_dt-exporter.js` to push results to Dynatrace. The content of the script can be appended to each of the following canaries to create a working example:
+The following canaries were generated in the AWS CloudWatch UI and have been verified to work with the exporter script. To test a canary simply append the exporter script to the end of it:
 
 - `web-page-canary_heartbeat-monitoring.js`
 - `web-page-canary_broken-link-checker.js`
 - `web-page-canary_GUI-workflow-builder.js`
+- `web-api-canary_API-canary.js`
 
-#### Configuration
+> The broken link checker canary recursively checks whatever links it finds on a page. Each link gets recorded as a step in Dynatrace, but different runs may find different links/steps. The previous step names will simply be overwritten by the new names. Thus, the historic data of a step may not necessarily correspond to its current name.
 
-The exporter script requires several variables to be configured:
+### Metrics
 
-```javascript
-// -- Hard-coded aws/canary values --
-// The monitor display name in Dynatrace
-const canaryName = 'Test Canary name';
-// The location display name in Dynatrace
-const awsLocationName = 'US East (N. Virginia)';
-// To uniquely identify the location and generate links in Dynatrace back to the canary
-const awsLocationId = 'us-east-1';
-// How often the canary is scheduled to run (so that Dynatrace can correctly detect and display availability)
-const canaryInterval = 3600;
+#### Web page canaries
 
-// -- DT API --
-// Dynatrace host name the results should be sent to
-const host = 'demo.dev.dynatracelabs.com';
-// Dynatrace api token with permissions to post monitor results
-const apiToken = '';
-```
+For web page canaries a monitor step result is generated for each page load event. The step performance is measured using the `DomContentLoaded` metric from puppeteer.
 
-#### Results
+#### Web API Canaries
 
-A monitor step result is generated for each page load event. The `DomContentLoaded` metric from puppeteer is used to measure step performance.
+For web API canaries a monitor step result is generated for each web request sent with the `http` or `https` packages. The step performance is measured using the `request.end` and `response.end` events.
 
 ## License
 

@@ -23,4 +23,4 @@ exports.handler = async () => {
     return await pageLoadBlueprint();
 };
 
-// INSERT `web-page-canary_dt-exporter.js` HERE
+// INSERT `dynatrace-canary-exporter.js` HERE
