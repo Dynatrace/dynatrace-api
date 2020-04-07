@@ -21,7 +21,7 @@ const grabURLs = async function(page) {
 
 const webCrawlerBlueprint = async function () {
     // INSERT URL here
-    let urls = ["https://www.amazon.com"];
+    let urls = ["https://www.amazon.com/"];
 
     //set contains the explored urls
     const explored = new Set(urls);
@@ -100,4 +100,4 @@ exports.handler = async () => {
     return await webCrawlerBlueprint();
 };
 
-// INSERT `web-page-canary_dt-exporter.js` HERE
+// INSERT `dynatrace-canary-exporter.js` HERE

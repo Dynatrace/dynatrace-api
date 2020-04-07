@@ -32,4 +32,4 @@ exports.handler = async () => {
     return await flowBuilderBlueprint();
 };
 
-// INSERT `web-page-canary_dt-exporter.js` HERE
+// INSERT `dynatrace-canary-exporter.js` HERE
