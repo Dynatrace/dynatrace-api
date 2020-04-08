@@ -13,13 +13,8 @@
         // Dynatrace host the results will be sent to
         const dynatraceHost = 'tenant-id.live.dynatrace.com';
         // Dynatrace API Token with permission to create synthetic monitors
-        // dynatraceApiToken will be used if it is set, otherwise...
-        const dynatraceApiToken = '';
-        // ...dynatraceApiTokenParameterName will be used to look up the token as a SecureString parameter
-        // either in the current region or...
-        const dynatraceApiTokenParameterName = '/CloudWatchSynthetics/DynatraceSyntheticsApiToken';
-        // ...if set, the specified aws region.
-        const dynatraceApiTokenParameterRegion = ''; // eg. us-east-1
+        // Either the token itself OR load the token from the parameter store
+        const dynatraceApiToken = '' || getParameter('/CloudWatchSynthetics/DynatraceSyntheticsApiToken'/*, 'us-east-1'*/);
 
         // -- Display values --
         // How often the canary is scheduled to run (so that Dynatrace can correctly detect availability and display metrics)
@@ -91,11 +86,8 @@
                 });
             });
 
-            // Each time a page/dom loads we save the result as a step
-            page.on('domcontentloaded', async () => {
-                const metrics = (await page._client.send('Performance.getMetrics')).metrics;
-
-                const metric = metrics.find(m => m.name === 'DomContentLoaded').value;
+            // Each time a page loads we save the result as a step
+            page.on('load', async () => {
                 const response = responses.find((response) => page.url() === response.url);
 
                 if (!response) {
@@ -103,13 +95,15 @@
                         log.error('DT: A response was unexpectedly missing for the URL: ' + page.url());
                     }
                 } else {
+                    const metric = await page.evaluate(() => performance.getEntriesByType('navigation')[0].duration);
+                    const startTime = await page.evaluate(() => performance.timeOrigin);
                     const status = response.status;
                     const success = isSuccessfulStatusCode(status);
                     const title = (await page.title()) || page.url();
 
                     const stepResult = {
                         title: title,
-                        startTimestamp: Date.now() - metric,
+                        startTimestamp: startTime,
                         responseTimeMillis: metric,
                         errorWrapper: success ? {} : {
                             error: {
@@ -342,7 +336,7 @@
         async function postDtTestResult(testResult) {
             log.info(`DT: Posting third-party monitor result to: ${dynatraceHost}${apiPath}.`);
 
-            const apiToken = await getApiToken();
+            const apiToken = await dynatraceApiToken;
 
             return new Promise((resolve) => {
                 // Configure the request
@@ -413,18 +407,13 @@
             return exportNames[0];
         }
 
-        async function getApiToken() {
-            if (typeof dynatraceApiToken === 'string' && dynatraceApiToken) {
-                return dynatraceApiToken;
-            } else {
-                const config = typeof dynatraceApiTokenParameterRegion === 'string' && dynatraceApiTokenParameterRegion ?
-                    { region: dynatraceApiTokenParameterRegion } : undefined;
-                const parameterStore = new AWS.SSM(config);
-                return new Promise((resolve, reject) => parameterStore.getParameter(
-                    { Name: dynatraceApiTokenParameterName, WithDecryption: true },
-                    (error, data) => error ? reject(error) : resolve(data.Parameter.Value),
-                ));
-            }
+        async function getParameter(name, region) {
+            const config = typeof region === 'string' ? { region } : undefined;
+            const parameterStore = new AWS.SSM(config);
+            return new Promise((resolve, reject) => parameterStore.getParameter(
+                { Name: name, WithDecryption: true },
+                (error, data) => error ? reject(error) : resolve(data.Parameter.Value),
+            ));
         }
 
     } catch (error) {

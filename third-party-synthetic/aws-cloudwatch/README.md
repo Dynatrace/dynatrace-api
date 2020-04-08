@@ -2,7 +2,7 @@
 
 AWS CloudWatch canaries are executed in a Node.js lambda. The dynatrace exporter script (`dynatrace-canary-exporter.js`) can be appended to the end of the lambda script to push the canary results to a Dynatrace synthetic third-party monitor. In order to push results to Dynatrace simply:
 1) Append the script to the end of the canary
-2) Set the Dynatrace `host` and `apiToken` (or configure the parameter that contains the token with `dynatraceApiTokenParameterName` and/or `dynatraceApiTokenParameterRegion`) for accessing the API
+2) Set the Dynatrace `host` and `apiToken` for accessing the API (optionally loading the token from the parameter store)
 3) Set the `canaryInterval` (in seconds), so that Dynatrace knows how often to expect results
 4) Optionally customize the monitor display name used in the Dynatrace UI (defaults to the canary name)
 
@@ -27,11 +27,11 @@ The following canaries were generated in the AWS CloudWatch UI and have been ver
 
 #### Web page canaries
 
-For web page canaries a monitor step result is generated for each page load event. The step performance is measured using the `DomContentLoaded` metric from puppeteer.
+For web page canaries a monitor step result is generated for each page load event. The step response time is measured using the `PerformanceNavigationTiming.duration` [browser web API](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming) retrieved using `performance.getEntriesByType('navigation')[0].duration`.
 
 #### Web API Canaries
 
-For web API canaries a monitor step result is generated for each web request sent with the `http` or `https` packages. The step performance is measured using the `request.end` and `response.end` events.
+For web API canaries a monitor step result is generated for each web request sent with the `http` or `https` packages. The step response time is measured using the `request.end` and `response.end` events.
 
 ## License
 
