@@ -86,11 +86,8 @@
                 });
             });
 
-            // Each time a page/dom loads we save the result as a step
-            page.on('domcontentloaded', async () => {
-                const metrics = (await page._client.send('Performance.getMetrics')).metrics;
-
-                const metric = metrics.find(m => m.name === 'DomContentLoaded').value;
+            // Each time a page loads we save the result as a step
+            page.on('load', async () => {
                 const response = responses.find((response) => page.url() === response.url);
 
                 if (!response) {
@@ -98,13 +95,15 @@
                         log.error('DT: A response was unexpectedly missing for the URL: ' + page.url());
                     }
                 } else {
+                    const metric = await page.evaluate(() => performance.getEntriesByType('navigation')[0].duration);
+                    const startTime = await page.evaluate(() => performance.timeOrigin);
                     const status = response.status;
                     const success = isSuccessfulStatusCode(status);
                     const title = (await page.title()) || page.url();
 
                     const stepResult = {
                         title: title,
-                        startTimestamp: Date.now() - metric,
+                        startTimestamp: startTime,
                         responseTimeMillis: metric,
                         errorWrapper: success ? {} : {
                             error: {

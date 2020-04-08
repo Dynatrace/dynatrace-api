@@ -27,11 +27,11 @@ The following canaries were generated in the AWS CloudWatch UI and have been ver
 
 #### Web page canaries
 
-For web page canaries a monitor step result is generated for each page load event. The step performance is measured using the `DomContentLoaded` metric from puppeteer.
+For web page canaries a monitor step result is generated for each page load event. The step response time is measured using the `PerformanceNavigationTiming.duration` [browser web API](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming) retrieved using `performance.getEntriesByType('navigation')[0].duration`.
 
 #### Web API Canaries
 
-For web API canaries a monitor step result is generated for each web request sent with the `http` or `https` packages. The step performance is measured using the `request.end` and `response.end` events.
+For web API canaries a monitor step result is generated for each web request sent with the `http` or `https` packages. The step response time is measured using the `request.end` and `response.end` events.
 
 ## License
 
