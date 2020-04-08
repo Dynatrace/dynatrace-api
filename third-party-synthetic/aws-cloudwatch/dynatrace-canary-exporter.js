@@ -13,13 +13,8 @@
         // Dynatrace host the results will be sent to
         const dynatraceHost = 'tenant-id.live.dynatrace.com';
         // Dynatrace API Token with permission to create synthetic monitors
-        // dynatraceApiToken will be used if it is set, otherwise...
-        const dynatraceApiToken = '';
-        // ...dynatraceApiTokenParameterName will be used to look up the token as a SecureString parameter
-        // either in the current region or...
-        const dynatraceApiTokenParameterName = '/CloudWatchSynthetics/DynatraceSyntheticsApiToken';
-        // ...if set, the specified aws region.
-        const dynatraceApiTokenParameterRegion = ''; // eg. us-east-1
+        // Either the token itself OR load the token from the parameter store
+        const dynatraceApiToken = '' || getParameter('/CloudWatchSynthetics/DynatraceSyntheticsApiToken'/*, 'us-east-1'*/);
 
         // -- Display values --
         // How often the canary is scheduled to run (so that Dynatrace can correctly detect availability and display metrics)
@@ -342,7 +337,7 @@
         async function postDtTestResult(testResult) {
             log.info(`DT: Posting third-party monitor result to: ${dynatraceHost}${apiPath}.`);
 
-            const apiToken = await getApiToken();
+            const apiToken = await dynatraceApiToken;
 
             return new Promise((resolve) => {
                 // Configure the request
@@ -413,18 +408,13 @@
             return exportNames[0];
         }
 
-        async function getApiToken() {
-            if (typeof dynatraceApiToken === 'string' && dynatraceApiToken) {
-                return dynatraceApiToken;
-            } else {
-                const config = typeof dynatraceApiTokenParameterRegion === 'string' && dynatraceApiTokenParameterRegion ?
-                    { region: dynatraceApiTokenParameterRegion } : undefined;
-                const parameterStore = new AWS.SSM(config);
-                return new Promise((resolve, reject) => parameterStore.getParameter(
-                    { Name: dynatraceApiTokenParameterName, WithDecryption: true },
-                    (error, data) => error ? reject(error) : resolve(data.Parameter.Value),
-                ));
-            }
+        async function getParameter(name, region) {
+            const config = typeof region === 'string' ? { region } : undefined;
+            const parameterStore = new AWS.SSM(config);
+            return new Promise((resolve, reject) => parameterStore.getParameter(
+                { Name: name, WithDecryption: true },
+                (error, data) => error ? reject(error) : resolve(data.Parameter.Value),
+            ));
         }
 
     } catch (error) {

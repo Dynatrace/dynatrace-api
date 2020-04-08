@@ -2,7 +2,7 @@
 
 AWS CloudWatch canaries are executed in a Node.js lambda. The dynatrace exporter script (`dynatrace-canary-exporter.js`) can be appended to the end of the lambda script to push the canary results to a Dynatrace synthetic third-party monitor. In order to push results to Dynatrace simply:
 1) Append the script to the end of the canary
-2) Set the Dynatrace `host` and `apiToken` (or configure the parameter that contains the token with `dynatraceApiTokenParameterName` and/or `dynatraceApiTokenParameterRegion`) for accessing the API
+2) Set the Dynatrace `host` and `apiToken` for accessing the API (optionally loading the token from the parameter store)
 3) Set the `canaryInterval` (in seconds), so that Dynatrace knows how often to expect results
 4) Optionally customize the monitor display name used in the Dynatrace UI (defaults to the canary name)
 
