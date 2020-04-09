@@ -95,7 +95,7 @@
                         log.error('DT: A response was unexpectedly missing for the URL: ' + page.url());
                     }
                 } else {
-                    const metric = await page.evaluate(() => performance.getEntriesByType('navigation')[0].duration);
+                    const metric = await page.evaluate(() => performance.getEntriesByType('navigation')[0].loadEventStart);
                     const startTime = await page.evaluate(() => performance.timeOrigin);
                     const status = response.status;
                     const success = isSuccessfulStatusCode(status);
