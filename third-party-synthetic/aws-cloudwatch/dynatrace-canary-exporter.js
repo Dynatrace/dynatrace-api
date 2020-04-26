@@ -9,16 +9,20 @@
         const http = require('http');
         const AWS = require('aws-sdk')
 
-        // -- DT API --
-        // Dynatrace host the results will be sent to
-        const dynatraceHost = 'tenant-id.live.dynatrace.com';
+        // -- Dynatrace configuration --
+        // Dynatrace URL e.g.
+        // Managed: https://managed.dynatrace.com/e/00000000-0000-0000-0000-000000000000
+        //    SaaS: https://tenant-id.live.dynatrace.com
+        // Either the URL itself OR load the URL from the parameter store
+        const dynatraceUrl = '' || getParameter('/CloudWatchSynthetics/DynatraceUrl'/*, 'us-east-1'*/);
         // Dynatrace API Token with permission to create synthetic monitors
         // Either the token itself OR load the token from the parameter store
         const dynatraceApiToken = '' || getParameter('/CloudWatchSynthetics/DynatraceSyntheticsApiToken'/*, 'us-east-1'*/);
 
         // -- Display values --
         // How often the canary is scheduled to run (so that Dynatrace can correctly detect availability and display metrics)
-        const canaryInterval = 3600; // In seconds
+        // Note: the configured canary schedule must be manually synchronized with this value
+        const canaryInterval = 300; // In seconds
         // The monitor display name in Dynatrace (by default the canary name)
         const dynatraceMonitorName = '' || canaryConfig().canaryName;
 
@@ -334,15 +338,16 @@
         }
 
         async function postDtTestResult(testResult) {
-            log.info(`DT: Posting third-party monitor result to: ${dynatraceHost}${apiPath}.`);
-
+            const apiUrl = new URL(apiPath, await dynatraceUrl);
             const apiToken = await dynatraceApiToken;
+
+            log.info(`DT: Posting third-party monitor result to: ${apiUrl.toString()}.`);
 
             return new Promise((resolve) => {
                 // Configure the request
                 const request = https.request({
-                    host: dynatraceHost,
-                    path: apiPath,
+                    host: apiUrl.host,
+                    path: apiUrl.pathname,
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
