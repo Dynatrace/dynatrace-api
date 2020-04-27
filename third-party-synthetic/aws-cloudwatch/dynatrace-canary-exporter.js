@@ -28,7 +28,7 @@
 
         // -- Dynatrace third-party monitor constants --
         // The dynatrace synthetic third-party endpoint
-        const apiPath = '/api/v1/synthetic/ext/tests';
+        const apiPath = 'api/v1/synthetic/ext/tests';
         // Dynatrace monitor type/engine
         const dynatraceMonitorType = 'AWS CloudWatch Synthetics';
         const dynatraceMonitorTypeIcon = 'https://raw.githubusercontent.com/Dynatrace/dynatrace-api/master/third-party-synthetic/aws-cloudwatch/cloud-watch-icon.png';
@@ -338,7 +338,7 @@
         }
 
         async function postDtTestResult(testResult) {
-            const apiUrl = new URL(apiPath, await dynatraceUrl);
+            const apiUrl = new URL(apiPath, await getDynatraceUrl());
             const apiToken = await dynatraceApiToken;
 
             log.info(`DT: Posting third-party monitor result to: ${apiUrl.toString()}.`);
@@ -419,6 +419,13 @@
                 { Name: name, WithDecryption: true },
                 (error, data) => error ? reject(error) : resolve(data.Parameter.Value),
             ));
+        }
+
+        async function getDynatraceUrl() {
+            let cleanUrl = await dynatraceUrl;
+            cleanUrl = cleanUrl.startsWith('https://') ? cleanUrl : `https://${cleanUrl}`;
+            cleanUrl = cleanUrl.endsWith('/') ? cleanUrl : `${cleanUrl}/`;
+            return cleanUrl;
         }
 
     } catch (error) {
