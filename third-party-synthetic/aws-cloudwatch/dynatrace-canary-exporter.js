@@ -1,4 +1,7 @@
-// DYNATRACE CANARY EXPORT SCRIPT START
+/**
+ * Dynatrace AWS CloudWatch Synthetics Canary exporter
+ * v1.0.1
+ */
 
 (function () {
     try {
@@ -10,9 +13,10 @@
         const AWS = require('aws-sdk')
 
         // -- Dynatrace configuration --
-        // Dynatrace URL e.g.
-        // Managed: https://managed.dynatrace.com/e/00000000-0000-0000-0000-000000000000
-        //    SaaS: https://tenant-id.live.dynatrace.com
+        // Dynatrace Tenant or ActiveGate URL e.g.
+        //               SaaS: https://tenant-id.live.dynatrace.com
+        //            Managed: https://sample.dynatrace-managed.com/e/00000000-0000-0000-0000-000000000000
+        // Managed ActiveGate: https://sample.dynatrace-managed.com:9999/e/00000000-0000-0000-0000-000000000000
         // Either the URL itself OR load the URL from the parameter store
         const dynatraceUrl = '' || getParameter('/CloudWatchSynthetics/DynatraceUrl'/*, 'us-east-1'*/);
         // Dynatrace API Token with permission to create synthetic monitors
@@ -346,8 +350,9 @@
             return new Promise((resolve) => {
                 // Configure the request
                 const request = https.request({
-                    host: apiUrl.host,
+                    host: apiUrl.hostname,
                     path: apiUrl.pathname,
+                    port: apiUrl.port,
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
