@@ -6,7 +6,7 @@ This script should be used as an example.
 If you're not familiar with Dynatrace API check out the
 [documentation](https://www.dynatrace.com/support/help/dynatrace-api/ "Dynatrace API"),
 especially the
-[third-party synthetic call](https://www.dynatrace.com/support/help/dynatrace-api/environment/synthetic-api/external-synthetic-api/)
+[third-party synthetic call](https://www.dynatrace.com/support/help/dynatrace-api/environment-api/synthetic/third-party-synthetic/)
 so you can build your own tests the way you need it.
 
 ## Getting started
