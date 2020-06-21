@@ -1,6 +1,6 @@
 {
     "name": "custom.remote.python.external_ping",
-    "version": "1.042",
+    "version": "1.043",
     "type": "python",
     "entity": "CUSTOM_DEVICE",
     "technologies": ["ICMP"],
