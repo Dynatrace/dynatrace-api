@@ -93,7 +93,7 @@
         "timeseries": {
             "key": "ping_extension_tests",
             "unit": "Count",
-            "displayname": "Ping Extension - Tests"
+            "displayname": "Ping"
         }}
     ]
 
