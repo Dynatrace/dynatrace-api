@@ -28,7 +28,7 @@ class PortExtension(RemoteBasePlugin):
             for port in target_ports:
                 if port:
                     success, response_time = test_port(target_ip, int(port))
-                    test_name = f"name {target_ip}:{port}"
+                    test_name = f"{name} {target_ip}:{port}"
                     log.info(f"{target_ip}:{port} = {success}, {response_time}")
 
                     self.client.report_simple_test(test_name, location, success, response_time, test_type="Port")
