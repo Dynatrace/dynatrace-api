@@ -36,6 +36,10 @@
             "key": "log_level",
             "type": "Dropdown",
             "dropdownValues": ["INFO", "DEBUG"]
+        },
+        {
+            "key": "frequency",
+            "type": "String"
         }
 
     ],
@@ -65,14 +69,21 @@
                 "displayHint": "IP address or hostname",
                 "displayOrder": 4
             },
-            {
-                "key": "test_location",
-                "displayName": "(Optional) Location name",
+                        {
+                "key": "frequency",
+                "displayName": "(Optional) Frequency",
+                "displayHint": "Frequency in minutes",
                 "displayOrder": 5
             },
             {
+                "key": "test_location",
+                "displayName": "(Optional) Location name",
+                "displayOrder": 6
+            },
+            {
                 "key": "log_level",
-                "displayName": "Log level"
+                "displayName": "Log level",
+                "displayOrder": 7
 
             }
         ]
