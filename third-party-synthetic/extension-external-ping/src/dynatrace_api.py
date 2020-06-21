@@ -245,7 +245,14 @@ class DynatraceAPI(object):
         return self._make_request(url, body=events.json(), method="POST")
 
     def report_simple_test(
-        self, name: str, location_name: str, success: bool, response_time: int, timestamp: datetime = None, test_type="Ping"
+        self,
+        name: str,
+        location_name: str,
+        success: bool,
+        response_time: int,
+        timestamp: datetime = None,
+        test_type="Ping",
+        interval: int = 60,
     ):
         test_id = f'custom_external_{name.lower().replace(" ", "_")}'
         if timestamp is None:
@@ -253,7 +260,7 @@ class DynatraceAPI(object):
         step_id = 1
         location = ExternalSyntheticLocation(location_name, location_name)
         step = SyntheticTestStep(step_id, name)
-        monitor = ExternalSyntheticMonitor(test_id, name, 60, description=name, locations=[location], steps=[step])
+        monitor = ExternalSyntheticMonitor(test_id, name, interval, description=name, locations=[location], steps=[step])
         step_result = SyntheticMonitorStepResult(1, timestamp, response_time)
         loc_result = ExternalSyntheticLocationTestResult(location_name, timestamp, success, stepResults=[step_result])
         test_res = ExternalSyntheticTestResult(test_id, 0, [loc_result])

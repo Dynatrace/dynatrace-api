@@ -1,13 +1,13 @@
 from datetime import datetime
-from typing import List
+from typing import List, Dict
 
 import json
 import logging
 import requests
 
-import urllib3
-
 default_logger = logging.getLogger(__name__)
+
+import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -245,7 +245,14 @@ class DynatraceAPI(object):
         return self._make_request(url, body=events.json(), method="POST")
 
     def report_simple_test(
-        self, name: str, location_name: str, success: bool, response_time: int, timestamp: datetime = None, test_type="Ping"
+        self,
+        name: str,
+        location_name: str,
+        success: bool,
+        response_time: int,
+        timestamp: datetime = None,
+        test_type="Ping",
+        interval: int = 60,
     ):
         test_id = f'custom_external_{name.lower().replace(" ", "_")}'
         if timestamp is None:
@@ -253,7 +260,7 @@ class DynatraceAPI(object):
         step_id = 1
         location = ExternalSyntheticLocation(location_name, location_name)
         step = SyntheticTestStep(step_id, name)
-        monitor = ExternalSyntheticMonitor(test_id, name, 60, description=name, locations=[location], steps=[step])
+        monitor = ExternalSyntheticMonitor(test_id, name, interval, description=name, locations=[location], steps=[step])
         step_result = SyntheticMonitorStepResult(1, timestamp, response_time)
         loc_result = ExternalSyntheticLocationTestResult(location_name, timestamp, success, stepResults=[step_result])
         test_res = ExternalSyntheticTestResult(test_id, 0, [loc_result])
@@ -287,8 +294,6 @@ class DynatraceAPI(object):
             )
 
         elif state == "resolved":
-            self.log.info(self.open_events)
-            self.log.info(test_id)
             if test_id in self.open_events:
                 event_ids = [f"{test_id}_{i + 1}" for i in range(self.open_events[test_id])]
                 for event_id in event_ids:

@@ -31,7 +31,9 @@ class PortExtension(RemoteBasePlugin):
                     test_name = f"{name} {target_ip}:{port}"
                     log.info(f"{target_ip}:{port} = {success}, {response_time}")
 
-                    self.client.report_simple_test(test_name, location, success, response_time, test_type="Port")
+                    self.client.report_simple_test(
+                        test_name, location, success, response_time, test_type="Port", interval=frequency * 60
+                    )
 
                     if not success:
                         self.client.report_simple_event(
