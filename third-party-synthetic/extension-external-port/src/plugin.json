@@ -49,7 +49,7 @@
 
     ],
     "configUI": {
-        "displayName": "Ping Extension",
+        "displayName": "Port check",
         "properties": [
             {
                 "key": "api_url",
@@ -104,7 +104,7 @@
         "timeseries": {
             "key": "port_extension_tests",
             "unit": "Count",
-            "displayname": "Port Check"
+            "displayname": "Port Check - Tests"
         }}
     ]
 }

@@ -44,7 +44,7 @@
 
     ],
     "configUI": {
-        "displayName": "Ping Extension",
+        "displayName": "Ping",
         "properties": [
             {
                 "key": "api_url",
@@ -93,7 +93,7 @@
         "timeseries": {
             "key": "ping_extension_tests",
             "unit": "Count",
-            "displayname": "Ping"
+            "displayname": "Ping Extension - Checks"
         }}
     ]
 
