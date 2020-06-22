@@ -23,7 +23,7 @@ class DNSExtension(RemoteBasePlugin):
         dns_server = self.config.get("dns_server")
         host = self.config.get("host")
         location = self.config.get("test_location") if self.config.get("test_location") else "ActiveGate"
-        frequency = self.config.get("frequency") if self.config.get("frequency") else 1
+        frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 1
 
         if self.executions % frequency == 0:
             success, response_time = test_dns(dns_server, host)

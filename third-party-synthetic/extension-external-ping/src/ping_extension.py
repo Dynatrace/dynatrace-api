@@ -21,7 +21,7 @@ class PingExtension(RemoteBasePlugin):
         name = self.config.get("test_name")
         target = self.config.get("test_target")
         location = self.config.get("test_location", "") if self.config.get("test_location") else "ActiveGate"
-        frequency = self.config.get("frequency") if self.config.get("frequency") else 1
+        frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 1
 
         if self.executions % frequency == 0:
             ping_result = ping(target)
