@@ -1,14 +1,14 @@
 {
-    "name": "custom.remote.python.external_ping",
-    "version": "1.043",
+    "name": "custom.remote.python.thirdparty_dns",
+    "version": "1.001",
     "type": "python",
     "entity": "CUSTOM_DEVICE",
-    "technologies": ["ICMP"],
-    "metricGroup": "tech.Ping",
+    "technologies": ["DNS"],
+    "metricGroup": "tech.DNS",
     "source": {
-        "package": "ping_extension",
-        "className": "PingExtension",
-        "install_requires": ["pingparsing"],
+        "package": "dns_extension",
+        "className": "DNSExtension",
+        "install_requires": ["dnspython3"],
         "activation": "Remote"
     },
     "properties": [
@@ -25,7 +25,11 @@
             "type": "String"
         },
         {
-            "key": "test_target",
+            "key": "dns_server",
+            "type": "String"
+        },
+                {
+            "key": "host",
             "type": "String"
         },
         {
@@ -44,7 +48,7 @@
 
     ],
     "configUI": {
-        "displayName": "Ping",
+        "displayName": "DNS",
         "properties": [
             {
                 "key": "api_url",
@@ -64,26 +68,31 @@
                 "displayOrder": 3
             },
             {
-                "key": "test_target",
-                "displayName": "Test target",
+                "key": "dns_server",
+                "displayName": "DNS server",
                 "displayHint": "IP address or hostname",
                 "displayOrder": 4
             },
-                        {
+            {
+                "key": "host",
+                "displayName": "Hostname to resolve",
+                "displayOrder": 5
+            },
+            {
                 "key": "frequency",
                 "displayName": "(Optional) Frequency",
                 "displayHint": "Frequency in minutes",
-                "displayOrder": 5
+                "displayOrder": 6
             },
             {
                 "key": "test_location",
                 "displayName": "(Optional) Location name",
-                "displayOrder": 6
+                "displayOrder": 7
             },
             {
                 "key": "log_level",
                 "displayName": "Log level",
-                "displayOrder": 7
+                "displayOrder": 8
 
             }
         ]
@@ -91,9 +100,9 @@
     "metrics": [{
         "entity": "CUSTOM_DEVICE",
         "timeseries": {
-            "key": "ping_extension_tests",
+            "key": "dns_extension_tests",
             "unit": "Count",
-            "displayname": "Ping Extension - Checks"
+            "displayname": "DNS Extension - Checks"
         }}
     ]
 

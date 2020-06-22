@@ -12,7 +12,16 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-class ExternalSyntheticLocation:
+class SyntheticTestStep:
+    def __init__(self, step_id, title):
+        self.id = step_id
+        self.title = title
+
+    def json(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
+
+class ThirdPartySyntheticLocation:
     def __init__(self, location_id, name, ip=None):
         self.id = location_id
         self.name = name
@@ -23,13 +32,7 @@ class ExternalSyntheticLocation:
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
-class SyntheticTestStep:
-    def __init__(self, step_id, name):
-        self.id = step_id
-        self.title = name
-
-
-class ExternalSyntheticMonitor:
+class ThirdPartySyntheticMonitor:
     def __init__(
         self,
         test_id: str,
@@ -42,7 +45,7 @@ class ExternalSyntheticMonitor:
         editLink: str = None,
         enabled: bool = True,
         deleted: bool = False,
-        locations: List[ExternalSyntheticLocation] = None,
+        locations: List[ThirdPartySyntheticLocation] = None,
         steps: List[SyntheticTestStep] = None,
         noDataTimeout: int = None,
     ):
@@ -99,16 +102,7 @@ class SyntheticMonitorStepResult:
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
-class SyntheticTestStep:
-    def __init__(self, step_id, title):
-        self.id = step_id
-        self.title = title
-
-    def json(self):
-        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
-
-
-class ExternalSyntheticLocationTestResult:
+class ThirdPartySyntheticLocationTestResult:
     def __init__(
         self,
         location_id: str,
@@ -129,8 +123,8 @@ class ExternalSyntheticLocationTestResult:
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
-class ExternalSyntheticTestResult:
-    def __init__(self, test_result_id, totalStepCount, locationResults: List[ExternalSyntheticLocationTestResult]):
+class ThirdPartySyntheticTestResult:
+    def __init__(self, test_result_id, totalStepCount, locationResults: List[ThirdPartySyntheticLocationTestResult]):
         self.id = test_result_id
         self.totalStepCount = totalStepCount
         self.locationResults = locationResults
@@ -139,7 +133,7 @@ class ExternalSyntheticTestResult:
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
-class ExternalEventResolvedNotification:
+class ThirdPartyEventResolvedNotification:
     def __init__(self, testId, eventId, endTimestamp: datetime):
         self.testId = testId
         self.eventId = eventId
@@ -149,9 +143,9 @@ class ExternalEventResolvedNotification:
         return json.loads(json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4))
 
 
-class ExternalEventOpenNotification:
+class ThirdPartyEventOpenNotification:
     def __init__(
-        self, testId, eventId, name, eventType, reason, locations: List[ExternalSyntheticLocation], startTimestamp: datetime
+        self, testId, eventId, name, eventType, reason, locations: List[ThirdPartySyntheticLocation], startTimestamp: datetime
     ):
         self.testId = testId
         self.eventId = eventId
@@ -165,9 +159,12 @@ class ExternalEventOpenNotification:
         return json.loads(json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4))
 
 
-class ExternalSyntheticEvents:
+class ThirdPartySyntheticEvents:
     def __init__(
-        self, syntheticEngineName, open: List[ExternalEventOpenNotification], resolved: List[ExternalEventResolvedNotification]
+        self,
+        syntheticEngineName,
+        open: List[ThirdPartyEventOpenNotification],
+        resolved: List[ThirdPartyEventResolvedNotification],
     ):
         self.syntheticEngineName = syntheticEngineName
         self.open = open
@@ -177,14 +174,14 @@ class ExternalSyntheticEvents:
         return json.loads(json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4))
 
 
-class ExternalSyntheticTests:
+class ThirdPartySyntheticTests:
     def __init__(
         self,
         syntheticEngineName,
         messageTimestamp: datetime,
-        locations: List[ExternalSyntheticLocation],
-        tests: List[ExternalSyntheticMonitor],
-        testResults: List[ExternalSyntheticTestResult] = None,
+        locations: List[ThirdPartySyntheticLocation],
+        tests: List[ThirdPartySyntheticMonitor],
+        testResults: List[ThirdPartySyntheticTestResult] = None,
         syntheticEngineIconUrl: str = None,
     ):
         self.syntheticEngineName = syntheticEngineName
@@ -236,11 +233,11 @@ class DynatraceAPI(object):
                 return response
         return response
 
-    def post_external_synthetic_tests(self, tests: ExternalSyntheticTests):
+    def post_thirdparty_synthetic_tests(self, tests: ThirdPartySyntheticTests):
         url = "/api/v1/synthetic/ext/tests"
         return self._make_request(url, body=tests.json(), method="POST")
 
-    def post_external_synthetic_event(self, events: ExternalSyntheticEvents):
+    def post_thirdparty_synthetic_event(self, events: ThirdPartySyntheticEvents):
         url = "/api/v1/synthetic/ext/events"
         return self._make_request(url, body=events.json(), method="POST")
 
@@ -254,23 +251,23 @@ class DynatraceAPI(object):
         test_type="Ping",
         interval: int = 60,
     ):
-        test_id = f'custom_external_{name.lower().replace(" ", "_")}'
+        test_id = f'custom_thirdparty_{name.lower().replace(" ", "_")}'
         if timestamp is None:
             timestamp = datetime.now()
         step_id = 1
-        location = ExternalSyntheticLocation(location_name, location_name)
+        location = ThirdPartySyntheticLocation(location_name, location_name)
         step = SyntheticTestStep(step_id, name)
-        monitor = ExternalSyntheticMonitor(test_id, name, interval, description=name, locations=[location], steps=[step])
+        monitor = ThirdPartySyntheticMonitor(test_id, name, interval, description=name, locations=[location], steps=[step])
         step_result = SyntheticMonitorStepResult(1, timestamp, response_time)
-        loc_result = ExternalSyntheticLocationTestResult(location_name, timestamp, success, stepResults=[step_result])
-        test_res = ExternalSyntheticTestResult(test_id, 0, [loc_result])
-        test = ExternalSyntheticTests(test_type, timestamp, locations=[location], tests=[monitor], testResults=[test_res])
-        return self.post_external_synthetic_tests(test)
+        loc_result = ThirdPartySyntheticLocationTestResult(location_name, timestamp, success, stepResults=[step_result])
+        test_res = ThirdPartySyntheticTestResult(test_id, 0, [loc_result])
+        test = ThirdPartySyntheticTests(test_type, timestamp, locations=[location], tests=[monitor], testResults=[test_res])
+        return self.post_thirdparty_synthetic_tests(test)
 
     def report_simple_event(
         self, name: str, description, location_name, timestamp: datetime = None, state="open", test_type="Ping"
     ):
-        test_id = f'custom_external_{name.lower().replace(" ", "_")}'
+        test_id = f'custom_thirdparty_{name.lower().replace(" ", "_")}'
         if timestamp is None:
             timestamp = datetime.now()
         open = []
@@ -282,13 +279,13 @@ class DynatraceAPI(object):
                 self.open_events[test_id] = 1
             event_id = f"{test_id}_{self.open_events[test_id]}"
             open.append(
-                ExternalEventOpenNotification(
+                ThirdPartyEventOpenNotification(
                     test_id,
                     event_id,
                     name,
                     "testOutage",
                     description,
-                    [ExternalSyntheticLocation(location_name, location_name)],
+                    [ThirdPartySyntheticLocation(location_name, location_name)],
                     timestamp,
                 )
             )
@@ -297,10 +294,10 @@ class DynatraceAPI(object):
             if test_id in self.open_events:
                 event_ids = [f"{test_id}_{i + 1}" for i in range(self.open_events[test_id])]
                 for event_id in event_ids:
-                    resolved.append(ExternalEventResolvedNotification(test_id, event_id, timestamp))
+                    resolved.append(ThirdPartyEventResolvedNotification(test_id, event_id, timestamp))
                 del self.open_events[test_id]
 
-        events = ExternalSyntheticEvents(test_type, open, resolved)
+        events = ThirdPartySyntheticEvents(test_type, open, resolved)
 
         if open or resolved:
-            return self.post_external_synthetic_event(events)
+            return self.post_thirdparty_synthetic_event(events)

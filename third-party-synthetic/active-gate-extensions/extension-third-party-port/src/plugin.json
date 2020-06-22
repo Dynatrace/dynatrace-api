@@ -1,5 +1,5 @@
 {
-	"name": "custom.remote.python.external_port",
+	"name": "custom.remote.python.thirdparty_port",
 	"version": "1.005",
 	"metricGroup": "tech.Port", 
 	"type": "python",
