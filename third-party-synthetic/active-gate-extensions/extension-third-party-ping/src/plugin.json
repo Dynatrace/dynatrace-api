@@ -1,0 +1,100 @@
+{
+    "name": "custom.remote.python.thirdparty_ping",
+    "version": "1.043",
+    "type": "python",
+    "entity": "CUSTOM_DEVICE",
+    "technologies": ["ICMP"],
+    "metricGroup": "tech.Ping",
+    "source": {
+        "package": "ping_extension",
+        "className": "PingExtension",
+        "install_requires": ["pingparsing"],
+        "activation": "Remote"
+    },
+    "properties": [
+        {
+            "key": "api_url",
+            "type": "String"
+        },
+        {
+            "key": "api_token",
+            "type": "Password"
+        },
+        {
+            "key": "test_name",
+            "type": "String"
+        },
+        {
+            "key": "test_target",
+            "type": "String"
+        },
+        {
+            "key": "test_location",
+            "type": "String"
+        },
+        {
+            "key": "log_level",
+            "type": "Dropdown",
+            "dropdownValues": ["INFO", "DEBUG"]
+        },
+        {
+            "key": "frequency",
+            "type": "String"
+        }
+
+    ],
+    "configUI": {
+        "displayName": "Ping",
+        "properties": [
+            {
+                "key": "api_url",
+                "displayName": "Tenant URL",
+                "displayHint": "https://<my.managed.host>/e/<tenant_id> or https://<tenant_id>.live.dynatrace.com",
+                "displayOrder": 1
+            },
+            {
+                "key": "api_token",
+                "displayName": "API Token",
+                "displayHint": "Requires \"Create and read synthetic monitors, locations, and nodes\" permission",
+                "displayOrder": 2
+            },
+            {
+                "key": "test_name",
+                "displayName": "Test name",
+                "displayOrder": 3
+            },
+            {
+                "key": "test_target",
+                "displayName": "Test target",
+                "displayHint": "IP address or hostname",
+                "displayOrder": 4
+            },
+                        {
+                "key": "frequency",
+                "displayName": "(Optional) Frequency",
+                "displayHint": "Frequency in minutes",
+                "displayOrder": 5
+            },
+            {
+                "key": "test_location",
+                "displayName": "(Optional) Location name",
+                "displayOrder": 6
+            },
+            {
+                "key": "log_level",
+                "displayName": "Log level",
+                "displayOrder": 7
+
+            }
+        ]
+    },
+    "metrics": [{
+        "entity": "CUSTOM_DEVICE",
+        "timeseries": {
+            "key": "ping_extension_tests",
+            "unit": "Count",
+            "displayname": "Ping Extension - Checks"
+        }}
+    ]
+
+}
