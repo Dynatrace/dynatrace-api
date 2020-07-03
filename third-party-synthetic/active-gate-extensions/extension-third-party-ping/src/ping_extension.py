@@ -28,7 +28,12 @@ class PingExtension(RemoteBasePlugin):
             log.info(ping_result.as_dict())
 
             self.client.report_simple_test(
-                name, location, ping_result.packet_loss_rate == 0, ping_result.rtt_avg or 0, interval=frequency * 60
+                name,
+                location,
+                ping_result.packet_loss_rate == 0,
+                ping_result.rtt_avg or 0,
+                interval=frequency * 60,
+                edit_link=f"#settings;gf=all/customextension;id={self.plugin_info.name};gf=all",
             )
 
             if ping_result.packet_loss_rate > 0:

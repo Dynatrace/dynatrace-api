@@ -32,7 +32,13 @@ class PortExtension(RemoteBasePlugin):
                     log.info(f"{target_ip}:{port} = {success}, {response_time}")
 
                     self.client.report_simple_test(
-                        test_name, location, success, response_time, test_type="Port", interval=frequency * 60
+                        test_name,
+                        location,
+                        success,
+                        response_time,
+                        test_type="Port",
+                        interval=frequency * 60,
+                        edit_link=f"#settings;gf=all/customextension;id={self.plugin_info.name};gf=all",
                     )
 
                     if not success:

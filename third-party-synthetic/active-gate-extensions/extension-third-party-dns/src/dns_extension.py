@@ -29,7 +29,15 @@ class DNSExtension(RemoteBasePlugin):
             success, response_time = test_dns(dns_server, host)
             log.info(f"DNS test, DNS server: {dns_server}, host: {host}, success: {success}, time: {response_time} ")
 
-            self.client.report_simple_test(name, location, success, response_time, test_type="DNS", interval=frequency * 60)
+            self.client.report_simple_test(
+                name,
+                location,
+                success,
+                response_time,
+                test_type="DNS",
+                interval=frequency * 60,
+                edit_link=f"#settings;gf=all/customextension;id={self.plugin_info.name};gf=all",
+            )
 
             if not success:
                 self.client.report_simple_event(

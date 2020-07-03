@@ -1,6 +1,6 @@
 {
     "name": "custom.remote.python.thirdparty_dns",
-    "version": "1.001",
+    "version": "1.002",
     "type": "python",
     "entity": "CUSTOM_DEVICE",
     "technologies": ["DNS"],
@@ -81,12 +81,13 @@
             {
                 "key": "frequency",
                 "displayName": "(Optional) Frequency",
-                "displayHint": "Frequency in minutes",
+                "displayHint": "Frequency in minutes, default: 1",
                 "displayOrder": 6
             },
             {
                 "key": "test_location",
                 "displayName": "(Optional) Location name",
+                "displayHint": "Default: ActiveGate",
                 "displayOrder": 7
             },
             {
