@@ -1,12 +1,12 @@
 /**
  * Dynatrace AWS CloudWatch Synthetics Canary exporter
- * v1.0.1
+ * v1.0.2
  */
 
 (function () {
+    // -- Imports --
+    const log = require('SyntheticsLogger');
     try {
-        // -- Imports --
-        const log = require('SyntheticsLogger');
         const synthetics = require('Synthetics');
         const https = require('https');
         const http = require('http');
