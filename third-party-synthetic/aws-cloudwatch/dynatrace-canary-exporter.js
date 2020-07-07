@@ -1,6 +1,6 @@
 /**
  * Dynatrace AWS CloudWatch Synthetics Canary exporter
- * v1.0.2
+ * v1.0.3
  */
 
 (function () {
@@ -43,8 +43,8 @@
         // Save references to the overridden functions, so they can be restored
         // and prevent intercepting requests after the canary
         const originalFuncs = [];
-        const saveFunc = (package, funcName) => originalFuncs.push({ package, funcName, func: package[funcName] });
-        const restoreSavedFuncs = () => originalFuncs.forEach(({ package, funcName, func }) => package[funcName] = func);
+        const saveFunc = (funcModule, funcName) => originalFuncs.push({ funcModule, funcName, func: funcModule[funcName] });
+        const restoreSavedFuncs = () => originalFuncs.forEach(({ funcModule, funcName, func }) => funcModule[funcName] = func);
 
         function beforeCanary() {
             // Reset the state manually, because the lambda script isn't always reloaded before each canary execution
@@ -65,11 +65,11 @@
 
             // ----- Web api Canary instrumentation: START -----
             // Override methods that make requests, so we can intercept them
-            [http, https].forEach((package) => ['get', 'request'].forEach((funcName) => {
-                saveFunc(package, funcName);
-                const originalFunc = package[funcName];
-                package[funcName] = function (urlOrOptions) {
-                    const request = originalFunc.apply(package, arguments);
+            [http, https].forEach((funcModule) => ['get', 'request'].forEach((funcName) => {
+                saveFunc(funcModule, funcName);
+                const originalFunc = funcModule[funcName];
+                funcModule[funcName] = function (urlOrOptions) {
+                    const request = originalFunc.apply(funcModule, arguments);
                     handleCanaryRequest(request, urlOrOptions, (stepResult) => _stepResults$.push(stepResult));
                     return request;
                 }
