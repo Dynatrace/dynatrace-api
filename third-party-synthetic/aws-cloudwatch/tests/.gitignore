@@ -1,0 +1,6 @@
+# dependencies
+node_modules
+
+# test output
+out
+coverage

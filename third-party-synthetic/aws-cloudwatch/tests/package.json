@@ -1,0 +1,22 @@
+{
+  "name": "aws-cloudwatch",
+  "version": "1.0.1",
+  "description": "Pushes AWS CloudWatch Synthetics results to the Dynatrace third-party synthetic API",
+  "main": "dynatrace-canary-exporter.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "@babel/core": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
+    "@babel/preset-typescript": "^7.10.4",
+    "@types/jest": "^26.0.3",
+    "babel-jest": "^26.1.0",
+    "concat": "^1.0.3",
+    "jest": "^26.1.0",
+    "ts-jest": "^26.1.1",
+    "typescript": "^3.9.6"
+  }
+}
