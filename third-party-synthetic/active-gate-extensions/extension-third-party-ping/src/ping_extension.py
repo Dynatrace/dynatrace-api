@@ -30,13 +30,13 @@ class PingExtension(RemoteBasePlugin):
             self.client.report_simple_test(
                 name,
                 location,
-                ping_result.packet_loss_rate == 0,
+                ping_result.packet_loss_rate is not None and ping_result.packet_loss_rate == 0,
                 ping_result.rtt_avg or 0,
                 interval=frequency * 60,
                 edit_link=f"#settings;gf=all/customextension;id={self.plugin_info.name};gf=all",
             )
 
-            if ping_result.packet_loss_rate > 0:
+            if ping_result.packet_loss_rate is None or ping_result.packet_loss_rate > 0:
                 self.client.report_simple_event(name, f"Ping failed for {name}, target: {target}", location)
             else:
                 self.client.report_simple_event(name, f"Ping failed for {name}, target: {target}", location, state="resolved")
