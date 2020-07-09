@@ -1,0 +1,29 @@
+name: Test Dynatrace Canary Exporter
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths: 
+      - 'third-party-synthetic/aws-cloudwatch/**'
+
+jobs:
+  test:
+    name: Test on node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./third-party-synthetic/aws-cloudwatch/tests
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci
+    - run: npm test
