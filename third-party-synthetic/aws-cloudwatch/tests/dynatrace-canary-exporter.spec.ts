@@ -305,7 +305,7 @@ describe('dynatrace-canary-exporter', () => {
           enabled: true,
         }],
         steps: [{
-          id: 1,
+          id: 2,
           title: pageTitle,
         }],
         scheduleIntervalInSeconds: any(Number),
