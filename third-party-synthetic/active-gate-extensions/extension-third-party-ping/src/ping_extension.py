@@ -33,7 +33,7 @@ class PingExtension(RemoteBasePlugin):
                 ping_result.packet_loss_rate is not None and ping_result.packet_loss_rate == 0,
                 ping_result.rtt_avg or 0,
                 interval=frequency * 60,
-                edit_link=f"#settings;gf=all/customextension;id={self.plugin_info.name};gf=all",
+                edit_link=f"#settings/customextension;id={self.plugin_info.name}",
             )
 
             if ping_result.packet_loss_rate is None or ping_result.packet_loss_rate > 0:

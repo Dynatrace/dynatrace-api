@@ -38,7 +38,7 @@ class PortExtension(RemoteBasePlugin):
                         response_time,
                         test_type="Port",
                         interval=frequency * 60,
-                        edit_link=f"#settings;gf=all/customextension;id={self.plugin_info.name};gf=all",
+                        edit_link=f"#settings/customextension;id={self.plugin_info.name}",
                     )
 
                     if not success:
