@@ -1,6 +1,6 @@
 {
 	"name": "custom.remote.python.thirdparty_port",
-	"version": "1.002",
+	"version": "1.004",
 	"metricGroup": "tech.Port", 
 	"type": "python",
 	"entity": "CUSTOM_DEVICE",
@@ -83,7 +83,7 @@
             {
                 "key": "frequency",
                 "displayName": "(Optional) Frequency",
-                "displayHint": "Frequency in minutes, default: 1",
+                "displayHint": "Frequency in minutes, default: 15",
                 "displayOrder": 6
             },
             {

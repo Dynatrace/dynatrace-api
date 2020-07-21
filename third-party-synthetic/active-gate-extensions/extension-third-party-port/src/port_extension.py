@@ -22,7 +22,7 @@ class PortExtension(RemoteBasePlugin):
         target_ip = self.config.get("test_target_ip")
         target_ports = self.config.get("test_target_ports", "").split(",")
         location = self.config.get("test_location", "") if self.config.get("test_location") else "ActiveGate"
-        frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 1
+        frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 15
 
         if self.executions % frequency == 0:
             for port in target_ports:

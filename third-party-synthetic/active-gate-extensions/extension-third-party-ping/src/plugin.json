@@ -1,6 +1,6 @@
 {
     "name": "custom.remote.python.thirdparty_ping",
-    "version": "1.003",
+    "version": "1.004",
     "type": "python",
     "entity": "CUSTOM_DEVICE",
     "technologies": ["ICMP"],
@@ -72,7 +72,7 @@
             {
                 "key": "frequency",
                 "displayName": "(Optional) Frequency",
-                "displayHint": "Frequency in minutes, default: 1",
+                "displayHint": "Frequency in minutes, default: 15",
                 "displayOrder": 6
             },
             {

@@ -226,6 +226,7 @@ class DynatraceAPI(object):
             self.log.debug(f"Received response '{r}'")
             response = {}
             if r.text:
+                self.log.debug(f"Response: {r.text}")
                 response = r.json()
             if r.status_code >= 400:
                 self.log.error(f"Error making request. Url:'{url}', body:{body}, params:{params}, response: '{r.text}'")
