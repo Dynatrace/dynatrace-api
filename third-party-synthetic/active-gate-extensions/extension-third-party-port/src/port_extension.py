@@ -22,7 +22,7 @@ class PortExtension(RemoteBasePlugin):
         target_ip = self.config.get("test_target_ip")
         target_ports = self.config.get("test_target_ports", "").split(",")
         location = self.config.get("test_location", "") if self.config.get("test_location") else "ActiveGate"
-        frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 1
+        frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 15
 
         if self.executions % frequency == 0:
             for port in target_ports:
@@ -32,7 +32,13 @@ class PortExtension(RemoteBasePlugin):
                     log.info(f"{target_ip}:{port} = {success}, {response_time}")
 
                     self.client.report_simple_test(
-                        test_name, location, success, response_time, test_type="Port", interval=frequency * 60
+                        test_name,
+                        location,
+                        success,
+                        response_time,
+                        test_type="Port",
+                        interval=frequency * 60,
+                        edit_link=f"#settings/customextension;id={self.plugin_info.name}",
                     )
 
                     if not success:

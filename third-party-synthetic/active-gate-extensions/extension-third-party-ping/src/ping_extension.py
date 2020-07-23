@@ -21,17 +21,22 @@ class PingExtension(RemoteBasePlugin):
         name = self.config.get("test_name")
         target = self.config.get("test_target")
         location = self.config.get("test_location", "") if self.config.get("test_location") else "ActiveGate"
-        frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 1
+        frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 15
 
         if self.executions % frequency == 0:
             ping_result = ping(target)
             log.info(ping_result.as_dict())
 
             self.client.report_simple_test(
-                name, location, ping_result.packet_loss_rate == 0, ping_result.rtt_avg or 0, interval=frequency * 60
+                name,
+                location,
+                ping_result.packet_loss_rate is not None and ping_result.packet_loss_rate == 0,
+                ping_result.rtt_avg or 0,
+                interval=frequency * 60,
+                edit_link=f"#settings/customextension;id={self.plugin_info.name}",
             )
 
-            if ping_result.packet_loss_rate > 0:
+            if ping_result.packet_loss_rate is None or ping_result.packet_loss_rate > 0:
                 self.client.report_simple_event(name, f"Ping failed for {name}, target: {target}", location)
             else:
                 self.client.report_simple_event(name, f"Ping failed for {name}, target: {target}", location, state="resolved")

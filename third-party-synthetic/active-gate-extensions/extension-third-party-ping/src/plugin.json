@@ -1,6 +1,6 @@
 {
     "name": "custom.remote.python.thirdparty_ping",
-    "version": "1.043",
+    "version": "1.004",
     "type": "python",
     "entity": "CUSTOM_DEVICE",
     "technologies": ["ICMP"],
@@ -69,21 +69,22 @@
                 "displayHint": "IP address or hostname",
                 "displayOrder": 4
             },
-                        {
+            {
                 "key": "frequency",
                 "displayName": "(Optional) Frequency",
-                "displayHint": "Frequency in minutes",
-                "displayOrder": 5
+                "displayHint": "Frequency in minutes, default: 15",
+                "displayOrder": 6
             },
             {
                 "key": "test_location",
                 "displayName": "(Optional) Location name",
-                "displayOrder": 6
+                "displayHint": "Default: ActiveGate",
+                "displayOrder": 7
             },
             {
                 "key": "log_level",
                 "displayName": "Log level",
-                "displayOrder": 7
+                "displayOrder": 8
 
             }
         ]

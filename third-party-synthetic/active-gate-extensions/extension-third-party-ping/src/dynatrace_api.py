@@ -61,7 +61,7 @@ class ThirdPartySyntheticMonitor:
         if drilldownLink is not None:
             self.drilldownLink = drilldownLink
         if editLink is not None:
-            self.editLing = editLink
+            self.editLink = editLink
         self.enabled = enabled
         self.deleted = deleted
 
@@ -226,6 +226,7 @@ class DynatraceAPI(object):
             self.log.debug(f"Received response '{r}'")
             response = {}
             if r.text:
+                self.log.debug(f"Response: {r.text}")
                 response = r.json()
             if r.status_code >= 400:
                 self.log.error(f"Error making request. Url:'{url}', body:{body}, params:{params}, response: '{r.text}'")
@@ -250,6 +251,7 @@ class DynatraceAPI(object):
         timestamp: datetime = None,
         test_type="Ping",
         interval: int = 60,
+        edit_link: str = None,
     ):
         test_id = f'custom_thirdparty_{name.lower().replace(" ", "_")}'
         if timestamp is None:
@@ -257,7 +259,9 @@ class DynatraceAPI(object):
         step_id = 1
         location = ThirdPartySyntheticLocation(location_name, location_name)
         step = SyntheticTestStep(step_id, name)
-        monitor = ThirdPartySyntheticMonitor(test_id, name, interval, description=name, locations=[location], steps=[step])
+        monitor = ThirdPartySyntheticMonitor(
+            test_id, name, interval, description=name, locations=[location], steps=[step], editLink=edit_link
+        )
         step_result = SyntheticMonitorStepResult(1, timestamp, response_time)
         loc_result = ThirdPartySyntheticLocationTestResult(location_name, timestamp, success, stepResults=[step_result])
         test_res = ThirdPartySyntheticTestResult(test_id, 0, [loc_result])

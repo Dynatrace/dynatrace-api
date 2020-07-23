@@ -1,6 +1,6 @@
 {
 	"name": "custom.remote.python.thirdparty_port",
-	"version": "1.005",
+	"version": "1.004",
 	"metricGroup": "tech.Port", 
 	"type": "python",
 	"entity": "CUSTOM_DEVICE",
@@ -80,21 +80,22 @@
                 "displayHint": "Ports, separated by comma",
                 "displayOrder": 4
             },
-                        {
+            {
                 "key": "frequency",
                 "displayName": "(Optional) Frequency",
-                "displayHint": "Frequency in minutes",
-                "displayOrder": 5
+                "displayHint": "Frequency in minutes, default: 15",
+                "displayOrder": 6
             },
             {
                 "key": "test_location",
                 "displayName": "(Optional) Location name",
-                "displayOrder": 6
+                "displayHint": "Default: ActiveGate",
+                "displayOrder": 7
             },
             {
                 "key": "log_level",
                 "displayName": "Log level",
-                "displayOrder": 7
+                "displayOrder": 8
 
             }
         ]
