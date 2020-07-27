@@ -36,3 +36,11 @@ For web API canaries a monitor step result is generated for each web request sen
 ## License
 
 This module is provided under BSD-3-Clause license. Please check out the details in LICENSE.txt
+
+### Tests
+
+To run the exporter script tests:
+
+1. Navigate to the `tests` folder
+2. `npm install`
+3. `npm test`
