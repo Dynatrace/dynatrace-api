@@ -1,6 +1,6 @@
 {
     "name": "custom.remote.python.thirdparty_dns",
-    "version": "1.004",
+    "version": "1.005",
     "type": "python",
     "entity": "CUSTOM_DEVICE",
     "technologies": ["DNS"],
@@ -44,6 +44,18 @@
         {
             "key": "frequency",
             "type": "String"
+        },
+        {
+            "key": "proxy_address",
+            "type": "String"
+        },
+        {
+            "key": "proxy_username",
+            "type": "String"
+        },
+        {
+            "key": "proxy_password",
+            "type": "Password"
         }
 
     ],
@@ -91,10 +103,27 @@
                 "displayOrder": 7
             },
             {
-                "key": "log_level",
-                "displayName": "Log level",
+                "key": "proxy_address",
+                "displayName": "(Optional) Proxy Address",
                 "displayOrder": 8
 
+            },
+            {
+                "key": "proxy_username",
+                "displayName": "(Optional) Proxy Username",
+                "displayOrder": 9
+
+            },
+            {
+                "key": "proxy_password",
+                "displayName": "(Optional) Proxy Password",
+                "displayOrder": 10
+
+            },
+            {
+                "key": "log_level",
+                "displayName": "Log level",
+                "displayOrder": 11
             }
         ]
     },

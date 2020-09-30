@@ -11,8 +11,28 @@ log = logging.getLogger(__name__)
 class PingExtension(RemoteBasePlugin):
     def initialize(self, **kwargs):
         # The Dynatrace API client
-        self.client = DynatraceAPI(self.config.get("api_url"), self.config.get("api_token"), log=log)
+        self.client = DynatraceAPI(
+            self.config.get("api_url"), self.config.get("api_token"), log=log, proxies=self.build_proxy_url()
+        )
         self.executions = 0
+
+    def build_proxy_url(self):
+        proxy_address = self.config.get("proxy_address")
+        proxy_username = self.config.get("proxy_username")
+        proxy_password = self.config.get("proxy_password")
+
+        if proxy_address:
+            protocol, address = proxy_address.split("://")
+            proxy_url = f"{protocol}://"
+            if proxy_username:
+                proxy_url += proxy_username
+            if proxy_password:
+                proxy_url += f":{proxy_password}"
+            proxy_url += f"@{address}"
+            log.info(f"Built proxy url: {proxy_url}")
+            return {"https": proxy_url}
+
+        return {}
 
     def query(self, **kwargs) -> None:
 

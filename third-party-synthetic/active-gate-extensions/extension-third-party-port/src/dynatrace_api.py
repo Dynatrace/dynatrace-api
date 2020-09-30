@@ -200,9 +200,11 @@ class ThirdPartySyntheticTests:
 
 
 class DynatraceAPI(object):
-    def __init__(self, url: str, token: str, log=default_logger, open_events=None):
+    def __init__(self, url: str, token: str, log=default_logger, open_events=None, proxies=None):
         self.base_url = url
-        self.proxies = {}
+        self.proxies = proxies
+        if self.proxies is None:
+            self.proxies = {}
 
         self.open_events = open_events
         if open_events is None:
