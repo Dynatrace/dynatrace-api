@@ -29,7 +29,6 @@ class PortExtension(RemoteBasePlugin):
             if proxy_password:
                 proxy_url += f":{proxy_password}"
             proxy_url += f"@{address}"
-            log.info(f"Built proxy url: {proxy_url}")
             return {"https": proxy_url}
 
         return {}
