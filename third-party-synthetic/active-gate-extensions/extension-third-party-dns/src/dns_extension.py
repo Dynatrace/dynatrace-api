@@ -60,11 +60,15 @@ class DNSExtension(RemoteBasePlugin):
 
             if not success:
                 self.client.report_simple_event(
-                    name, f"DNS lookup failed for {name}, server: {dns_server}, host: {host}", location
+                    name, f"DNS lookup failed for {name}, server: {dns_server}, host: {host}", location, test_type="DNS"
                 )
             else:
                 self.client.report_simple_event(
-                    name, f"DNS lookup failed for {name}, server: {dns_server}, host: {host}", location, state="resolved"
+                    name,
+                    f"DNS lookup failed for {name}, server: {dns_server}, host: {host}",
+                    location,
+                    state="resolved",
+                    test_type="DNS",
                 )
 
         self.executions += 1
