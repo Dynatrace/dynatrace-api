@@ -1,6 +1,6 @@
 {
     "name": "custom.remote.python.thirdparty_dns",
-    "version": "1.005",
+    "version": "1.006",
     "type": "python",
     "entity": "CUSTOM_DEVICE",
     "technologies": ["DNS"],
@@ -8,7 +8,7 @@
     "source": {
         "package": "dns_extension",
         "className": "DNSExtension",
-        "install_requires": ["dnspython3"],
+        "install_requires": ["dnspython3", "dtapi"],
         "activation": "Remote"
     },
     "properties": [
@@ -76,19 +76,19 @@
             },
             {
                 "key": "test_name",
-                "displayName": "Test name",
-                "displayOrder": 3
+                "displayName": "(Optional) Synthetic monitor name",
+                "displayOrder": 5
             },
             {
                 "key": "dns_server",
                 "displayName": "DNS server",
                 "displayHint": "IP address or hostname",
-                "displayOrder": 4
+                "displayOrder": 3
             },
             {
                 "key": "host",
                 "displayName": "Hostname to resolve",
-                "displayOrder": 5
+                "displayOrder": 4
             },
             {
                 "key": "frequency",

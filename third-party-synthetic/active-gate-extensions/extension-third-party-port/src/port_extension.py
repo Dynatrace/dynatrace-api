@@ -3,7 +3,9 @@ from datetime import datetime
 import logging
 import socket
 
-from dynatrace_api import DynatraceAPI
+from dynatrace import Dynatrace
+from dynatrace.synthetic_third_party import SYNTHETIC_EVENT_TYPE_OUTAGE
+
 
 log = logging.getLogger(__name__)
 
@@ -11,7 +13,7 @@ log = logging.getLogger(__name__)
 class PortExtension(RemoteBasePlugin):
     def initialize(self, **kwargs):
         # The Dynatrace API client
-        self.client = DynatraceAPI(
+        self.dt_client = Dynatrace(
             self.config.get("api_url"), self.config.get("api_token"), log=log, proxies=self.build_proxy_url()
         )
         self.executions = 0
@@ -37,45 +39,46 @@ class PortExtension(RemoteBasePlugin):
 
         log.setLevel(self.config.get("log_level"))
 
-        name = self.config.get("test_name")
         target_ip = self.config.get("test_target_ip")
+
         target_ports = self.config.get("test_target_ports", "").split(",")
         location = self.config.get("test_location", "") if self.config.get("test_location") else "ActiveGate"
+        location_id = location.replace(" ", "_").lower()
         frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 15
 
         if self.executions % frequency == 0:
             for port in target_ports:
                 if port:
                     success, response_time = test_port(target_ip, int(port))
-                    test_name = f"{name} {target_ip}:{port}"
                     log.info(f"{target_ip}:{port} = {success}, {response_time}")
 
-                    self.client.report_simple_test(
-                        test_name,
-                        location,
-                        success,
-                        response_time,
-                        test_type="Port",
-                        interval=frequency * 60,
+                    step_title = f"{target_ip}:{port}"
+                    test_title = f"self.config.get('test_name') port {port}" if self.config.get("test_name") else step_title
+
+                    self.dt_client.report_simple_thirdparty_synthetic_test(
+                        engine_name="Port",
+                        timestamp=datetime.now(),
+                        location_id=location_id,
+                        location_name=location,
+                        test_id=f"{self.activation.entity_id}{port}",
+                        test_title=test_title,
+                        step_title=step_title,
+                        schedule_interval=frequency * 60,
+                        success=success,
+                        response_time=response_time,
                         edit_link=f"#settings/customextension;id={self.plugin_info.name}",
                     )
 
-                    if not success:
-                        self.client.report_simple_event(
-                            test_name,
-                            f"Port check failed for {name}, target: {target_ip}:{port}",
-                            location,
-                            state="open",
-                            test_type="Port",
-                        )
-                    else:
-                        self.client.report_simple_event(
-                            test_name,
-                            f"Port check failed for {name}, target: {target_ip}:{port}",
-                            location,
-                            state="resolved",
-                            test_type="Port",
-                        )
+                    self.dt_client.report_simple_thirdparty_synthetic_test_event(
+                        test_id=f"{self.activation.entity_id}{port}",
+                        name=f"Port check failed for {step_title}",
+                        location_id=location_id,
+                        timestamp=datetime.now(),
+                        state="open" if not success else "resolved",
+                        event_type=SYNTHETIC_EVENT_TYPE_OUTAGE,
+                        reason=f"Port check failed for {step_title}",
+                        engine_name="Port",
+                    )
 
         self.executions += 1
 

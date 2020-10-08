@@ -1,6 +1,6 @@
 {
 	"name": "custom.remote.python.thirdparty_port",
-	"version": "1.005",
+	"version": "1.006",
 	"metricGroup": "tech.Port", 
 	"type": "python",
 	"entity": "CUSTOM_DEVICE",
@@ -9,7 +9,7 @@
 	"source": {
 		"package": "port_extension",
 		"className": "PortExtension",
-		"install_requires": [],
+		"install_requires": ["dtapi"],
 		"activation": "Remote"
 	},
 	"properties": [
@@ -77,14 +77,14 @@
             },
             {
                 "key": "test_name",
-                "displayName": "Test name",
-                "displayOrder": 3
+                "displayName": "(Optional) Synthetic monitor name",
+                "displayOrder": 5
             },
             {
                 "key": "test_target_ip",
                 "displayName": "Test target IP",
                 "displayHint": "IP address or hostname",
-                "displayOrder": 4
+                "displayOrder": 3
             },
 			{
                 "key": "test_target_ports",
