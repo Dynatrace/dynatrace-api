@@ -47,38 +47,54 @@ class PortExtension(RemoteBasePlugin):
         frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 15
 
         if self.executions % frequency == 0:
-            for port in target_ports:
+            # This test has multiple steps, these variables will be modfied as the steps are created
+            test_success = True
+            test_response_time = 0
+            test_steps = []
+            test_step_results = []
+            test_title = f"{self.config.get('test_name')}" if self.config.get("test_name") else f"Port checks for {target_ip}"
+
+            for i, port in enumerate(target_ports):
                 if port:
-                    success, response_time = test_port(target_ip, int(port))
-                    log.info(f"{target_ip}:{port} = {success}, {response_time}")
+                    step_success, step_response_time = test_port(target_ip, int(port))
+                    if not step_success:
+                        test_success = False
+                    test_response_time += step_response_time
 
+                    log.info(f"{target_ip}:{port} = {step_success}, {step_response_time}")
                     step_title = f"{target_ip}:{port}"
-                    test_title = f"self.config.get('test_name') port {port}" if self.config.get("test_name") else step_title
+                    event_name = f"Port check failed for {test_title} ({step_title})"
 
-                    self.dt_client.report_simple_thirdparty_synthetic_test(
-                        engine_name="Port",
-                        timestamp=datetime.now(),
-                        location_id=location_id,
-                        location_name=location,
-                        test_id=f"{self.activation.entity_id}{port}",
-                        test_title=test_title,
-                        step_title=step_title,
-                        schedule_interval=frequency * 60,
-                        success=success,
-                        response_time=response_time,
-                        edit_link=f"#settings/customextension;id={self.plugin_info.name}",
+                    test_steps.append(self.dt_client.create_synthetic_test_step(i + 1, step_title))
+                    test_step_results.append(
+                        self.dt_client.create_synthetic_test_step_result(i + 1, datetime.now(), step_response_time)
                     )
 
                     self.dt_client.report_simple_thirdparty_synthetic_test_event(
-                        test_id=f"{self.activation.entity_id}{port}",
-                        name=f"Port check failed for {step_title}",
+                        test_id=f"{self.activation.entity_id}",
+                        name=event_name,
                         location_id=location_id,
                         timestamp=datetime.now(),
-                        state="open" if not success else "resolved",
+                        state="open" if not test_success else "resolved",
                         event_type=SYNTHETIC_EVENT_TYPE_OUTAGE,
-                        reason=f"Port check failed for {step_title}",
+                        reason=event_name,
                         engine_name="Port",
                     )
+
+            self.dt_client.report_simple_thirdparty_synthetic_test(
+                engine_name="Port",
+                timestamp=datetime.now(),
+                location_id=location_id,
+                location_name=location,
+                test_id=f"{self.activation.entity_id}",
+                test_title=test_title,
+                schedule_interval=frequency * 60,
+                success=test_success,
+                response_time=test_response_time,
+                edit_link=f"#settings/customextension;id={self.plugin_info.name}",
+                detailed_steps=test_steps,
+                detailed_step_results=test_step_results,
+            )
 
         self.executions += 1
 
