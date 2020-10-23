@@ -82,7 +82,7 @@
             },
             {
                 "key": "test_target_ip",
-                "displayName": "Test target IP",
+                "displayName": "Test target host",
                 "displayHint": "IP address or hostname",
                 "displayOrder": 3
             },

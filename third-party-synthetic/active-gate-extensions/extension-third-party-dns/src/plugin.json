@@ -87,7 +87,7 @@
             },
             {
                 "key": "host",
-                "displayName": "Hostname to resolve",
+                "displayName": "Test target host",
                 "displayOrder": 4
             },
             {

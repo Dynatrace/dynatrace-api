@@ -77,7 +77,7 @@
             },
             {
                 "key": "test_target",
-                "displayName": "Test target",
+                "displayName": "Test target host",
                 "displayHint": "IP address or hostname",
                 "displayOrder": 3
             },
