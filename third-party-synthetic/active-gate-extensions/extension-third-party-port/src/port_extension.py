@@ -94,6 +94,7 @@ class PortExtension(RemoteBasePlugin):
                 edit_link=f"#settings/customextension;id={self.plugin_info.name}",
                 detailed_steps=test_steps,
                 detailed_step_results=test_step_results,
+                icon_url="https://raw.githubusercontent.com/Dynatrace/dynatrace-api/tree/master/third-party-synthetic/active-gate-extensions/extension-third-party-port/port.png",
             )
 
         self.executions += 1
