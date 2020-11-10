@@ -1,6 +1,6 @@
 {
 	"name": "custom.remote.python.thirdparty_port",
-	"version": "1.004",
+	"version": "1.006",
 	"metricGroup": "tech.Port", 
 	"type": "python",
 	"entity": "CUSTOM_DEVICE",
@@ -9,7 +9,7 @@
 	"source": {
 		"package": "port_extension",
 		"className": "PortExtension",
-		"install_requires": [],
+		"install_requires": ["dtapi"],
 		"activation": "Remote"
 	},
 	"properties": [
@@ -45,6 +45,18 @@
         {
             "key": "frequency",
             "type": "String"
+        },
+        {
+            "key": "proxy_address",
+            "type": "String"
+        },
+        {
+            "key": "proxy_username",
+            "type": "String"
+        },
+        {
+            "key": "proxy_password",
+            "type": "Password"
         }
 
     ],
@@ -65,14 +77,14 @@
             },
             {
                 "key": "test_name",
-                "displayName": "Test name",
-                "displayOrder": 3
+                "displayName": "(Optional) Synthetic monitor name",
+                "displayOrder": 5
             },
             {
                 "key": "test_target_ip",
-                "displayName": "Test target IP",
+                "displayName": "Test target host",
                 "displayHint": "IP address or hostname",
-                "displayOrder": 4
+                "displayOrder": 3
             },
 			{
                 "key": "test_target_ports",
@@ -93,9 +105,27 @@
                 "displayOrder": 7
             },
             {
+                "key": "proxy_address",
+                "displayName": "(Optional) Proxy Address",
+                "displayOrder": 8
+
+            },
+            {
+                "key": "proxy_username",
+                "displayName": "(Optional) Proxy Username",
+                "displayOrder": 9
+
+            },
+            {
+                "key": "proxy_password",
+                "displayName": "(Optional) Proxy Password",
+                "displayOrder": 10
+
+            },
+            {
                 "key": "log_level",
                 "displayName": "Log level",
-                "displayOrder": 8
+                "displayOrder": 11
 
             }
         ]

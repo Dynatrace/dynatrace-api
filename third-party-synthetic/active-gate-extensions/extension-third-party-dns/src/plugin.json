@@ -1,6 +1,6 @@
 {
     "name": "custom.remote.python.thirdparty_dns",
-    "version": "1.004",
+    "version": "1.006",
     "type": "python",
     "entity": "CUSTOM_DEVICE",
     "technologies": ["DNS"],
@@ -8,7 +8,7 @@
     "source": {
         "package": "dns_extension",
         "className": "DNSExtension",
-        "install_requires": ["dnspython3"],
+        "install_requires": ["dnspython3", "dtapi"],
         "activation": "Remote"
     },
     "properties": [
@@ -44,6 +44,18 @@
         {
             "key": "frequency",
             "type": "String"
+        },
+        {
+            "key": "proxy_address",
+            "type": "String"
+        },
+        {
+            "key": "proxy_username",
+            "type": "String"
+        },
+        {
+            "key": "proxy_password",
+            "type": "Password"
         }
 
     ],
@@ -64,19 +76,19 @@
             },
             {
                 "key": "test_name",
-                "displayName": "Test name",
-                "displayOrder": 3
+                "displayName": "(Optional) Synthetic monitor name",
+                "displayOrder": 5
             },
             {
                 "key": "dns_server",
                 "displayName": "DNS server",
                 "displayHint": "IP address or hostname",
-                "displayOrder": 4
+                "displayOrder": 3
             },
             {
                 "key": "host",
-                "displayName": "Hostname to resolve",
-                "displayOrder": 5
+                "displayName": "Test target host",
+                "displayOrder": 4
             },
             {
                 "key": "frequency",
@@ -91,10 +103,27 @@
                 "displayOrder": 7
             },
             {
-                "key": "log_level",
-                "displayName": "Log level",
+                "key": "proxy_address",
+                "displayName": "(Optional) Proxy Address",
                 "displayOrder": 8
 
+            },
+            {
+                "key": "proxy_username",
+                "displayName": "(Optional) Proxy Username",
+                "displayOrder": 9
+
+            },
+            {
+                "key": "proxy_password",
+                "displayName": "(Optional) Proxy Password",
+                "displayOrder": 10
+
+            },
+            {
+                "key": "log_level",
+                "displayName": "Log level",
+                "displayOrder": 11
             }
         ]
     },
