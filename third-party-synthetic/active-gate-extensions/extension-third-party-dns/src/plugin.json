@@ -1,6 +1,6 @@
 {
     "name": "custom.remote.python.thirdparty_dns",
-    "version": "1.006",
+    "version": "1.007",
     "type": "python",
     "entity": "CUSTOM_DEVICE",
     "technologies": ["DNS"],
