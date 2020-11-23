@@ -63,22 +63,12 @@ class PortExtension(RemoteBasePlugin):
 
                     log.info(f"{target_ip}:{port} = {step_success}, {step_response_time}")
                     step_title = f"{target_ip}:{port}"
-                    event_name = f"Port check failed for {test_title} ({step_title})"
 
-                    test_steps.append(self.dt_client.create_synthetic_test_step(i + 1, step_title))
+                    test_steps.append(
+                        {"step": self.dt_client.create_synthetic_test_step(i + 1, step_title), "success": step_success}
+                    )
                     test_step_results.append(
                         self.dt_client.create_synthetic_test_step_result(i + 1, datetime.now(), step_response_time)
-                    )
-
-                    self.dt_client.report_simple_thirdparty_synthetic_test_event(
-                        test_id=f"{self.activation.entity_id}",
-                        name=event_name,
-                        location_id=location_id,
-                        timestamp=datetime.now(),
-                        state="open" if not test_success else "resolved",
-                        event_type=SYNTHETIC_EVENT_TYPE_OUTAGE,
-                        reason=event_name,
-                        engine_name="Port",
                     )
 
             self.dt_client.report_simple_thirdparty_synthetic_test(
@@ -92,10 +82,23 @@ class PortExtension(RemoteBasePlugin):
                 success=test_success,
                 response_time=test_response_time,
                 edit_link=f"#settings/customextension;id={self.plugin_info.name}",
-                detailed_steps=test_steps,
+                detailed_steps=[test_step["step"] for test_step in test_steps],
                 detailed_step_results=test_step_results,
-                icon_url="https://raw.githubusercontent.com/Dynatrace/dynatrace-api/tree/master/third-party-synthetic/active-gate-extensions/extension-third-party-port/port.png",
+                icon_url="https://raw.githubusercontent.com/Dynatrace/dynatrace-api/master/third-party-synthetic/active-gate-extensions/extension-third-party-port/port.png",
             )
+
+            for step in test_steps:
+                event_name = f"Port check failed for {test_title} ({step['step'].title})"
+                self.dt_client.report_simple_thirdparty_synthetic_test_event(
+                    test_id=f"{self.activation.entity_id}",
+                    name=event_name,
+                    location_id=location_id,
+                    timestamp=datetime.now(),
+                    state="open" if not step["success"] else "resolved",
+                    event_type=SYNTHETIC_EVENT_TYPE_OUTAGE,
+                    reason=event_name,
+                    engine_name="Port",
+                )
 
         self.executions += 1
 

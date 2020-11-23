@@ -67,7 +67,7 @@ class PingExtension(RemoteBasePlugin):
                 success=success,
                 response_time=response_time,
                 edit_link=f"#settings/customextension;id={self.plugin_info.name}",
-                icon_url="https://raw.githubusercontent.com/Dynatrace/dynatrace-api/tree/master/third-party-synthetic/active-gate-extensions/extension-third-party-ping/ping.png",
+                icon_url="https://raw.githubusercontent.com/Dynatrace/dynatrace-api/master/third-party-synthetic/active-gate-extensions/extension-third-party-ping/ping.png",
             )
 
             self.dt_client.report_simple_thirdparty_synthetic_test_event(
