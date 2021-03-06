@@ -112,6 +112,6 @@ def test_port(ip: str, port: int) -> (bool, int):
         result = sock.connect_ex((ip, port))
         sock.close()
     except Exception as ex:
-        log.error(f"Could not connect to {ip}{port}: {ex}")
+        log.error(f"Could not connect to {ip}:{port} - {ex}")
 
     return result == 0, int((datetime.now() - start).total_seconds() * 1000)
