@@ -105,9 +105,13 @@ class PortExtension(RemoteBasePlugin):
 
 def test_port(ip: str, port: int) -> (bool, int):
     start = datetime.now()
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(2)
-    result = sock.connect_ex((ip, port))
-    sock.close()
+    result = 1
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(2)
+        result = sock.connect_ex((ip, port))
+        sock.close()
+    except Exception as ex:
+        log.error(f"Could not connect to {ip}{port}: {ex}")
 
     return result == 0, int((datetime.now() - start).total_seconds() * 1000)
