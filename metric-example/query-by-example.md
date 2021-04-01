@@ -183,7 +183,7 @@ To check for available aggregation techniques, obtain the array in `/metrics/<m
 | `count` | Determines the value count in the time slot, not counting `null` | Response time, Action duration |
 | `percentile(N)` | Estimates the n-th percentile, where N in range [0,100) is mapped to p in range [0,1) | Response time, Action duration |
 
-Percentile aggregations are available for many response- time based metrics. The count is often useful to determine the reliability of quantile estimations. Generally, more samples allow for a more exact estimation or more exact averages.
+Percentile aggregations are available for many response-time-based metrics. The count is often useful to determine the reliability of quantile estimations. Generally, more samples allow for a more exact estimation or more exact averages.
 
 Time aggregation methods are actually the simplest form of a more general concept, namely result transformers. All transformers modify the underlying metric to create a new one with possibly different dimensions, available aggregation types and data point values. Either dimension tuples are extended, trimmed or modified, result rows are removed, or, as before, the techniques used to derive numbers from associated data are changed.
 
