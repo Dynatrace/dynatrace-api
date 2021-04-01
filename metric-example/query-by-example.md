@@ -1,6 +1,6 @@
 # Introduction
 
-The REST API for metrics gives you access to timeseries data, such as CPU utilization of a host or service or the bounce rate of a web application. For instance, free disk space, per host, per disk, is uniquely identified with `builtin:host.disk.avail`. This hierarchical identifier is referred to as a metric key.
+The REST API for metrics gives you access to timeseries data, such as CPU utilization of a host or service or the bounce rate of a web application. For instance, free disk space, per host, per disk is uniquely identified with `builtin:host.disk.avail`. This hierarchical identifier is referred to as a metric key.
 
 A plain metric key is also the simplest form of a metric selector, which is used to specify one or more metrics to the Metric REST API for query, with the option to have the API perform additional transformations on the metric data, such as taking the average, sorting the result, or keeping only data points for satisfied users.
 
@@ -8,7 +8,7 @@ A plain metric key is also the simplest form of a metric selector, which is used
 
 Before jumping into the usage scenarios, make sure that you have the following information at hand:
 
-*   the hostname you want to run metric queries again,
+*   the hostname you want to run metric queries against,
 *   a valid API-token with the `MetricsRead` permission ("Read metrics" in the UI) for the host.
 
 Some of the examples use `curl` to make the actual requests. If you are comfortable with testing an API using the terminal, make sure you have it installed.
@@ -47,7 +47,7 @@ builtin:cloud.vmware.hypervisor.nic.dataTx
 
 The metric key alone only gives us a vague idea about what data the metric provides. To learn more about the metrics we can select optional fields using the fields parameter.
 
-When omitting `fields`, then `metricId`, `displayName`, `description` and `unit` will be included into the descriptor. If we are only interested in keys, but not in the metadata, the `fields` parameter can be set to only the fields of interest, e.g. just `metricId`:
+When omitting `fields`, then `metricId`, `displayName`, `description` and `unit` will be included in the descriptor. If we are only interested in keys, but not in the metadata, the `fields` parameter can be set to only the fields of interest, e.g. just `metricId`:
 
 ```
 GET {base}/metrics?fields=metricId
@@ -109,7 +109,7 @@ Sometimes, we are not only interested in similar keys with a common parent, but 
 builtin:host.cpu.*
 ```
 
-Note that wildcard selectors are allowed for descriptor queries, but not for bulk metric data queries. Such bulk queries have an upper bound of twelve metrics at a time, and allowing wildcards for query will make adding new metric keys a breaking change.
+Note that wildcard selectors are allowed for descriptor queries, but not for bulk metric data queries. Such bulk queries have an upper bound of twelve metrics at a time, and allowing wildcards in a query would make adding new metric keys a breaking change.
 
 # Scenario 5: Full-text Metric Search
 
@@ -126,7 +126,7 @@ GET /api/v2/metrics?text=cpu
 
 Turns out there are a whole lot of other metrics related to CPU! Most of them include `cpu` in the metric key, but e.g. `builtin:cloud.kubernetes.cluster.cores` does not. Why does it show up in the result, then? It does because `text` also uses the display name and the description for this search. This is also what the Data Explorer uses to present available metrics when you start typing into the metric field.
 
-# Scenario 6: Querying Timeseries Data
+# Scenario 6: Querying Time Series Data
 
 >**Task**
 >We would like to query CPU usage on some hosts during the last 2 weeks.
@@ -141,8 +141,8 @@ Note that while not strictly part of the metric selector, there are some closely
 
 | Query parameter | Example | Default value | Description |
 |:---|---|---|---|
-| `from` | `1554798800839` | `now-2w` | Lower bound of query time frame |
-| `to` | `2019-06-03` | `now` | Upper bound of query time frame |
+| `from` | `1554798800839` | `now-2w` | Lower bound of query timeframe |
+| `to` | `2019-06-03` | `now` | Upper bound of query timeframe |
 | `resolution` | `Inf`, `5`, `15m` | `120` | Desired data point count (unit-less) or step between data points (with unit of time) |
 
 The above query yields a result in the following format when the output format is chosen to be CSV:
@@ -183,7 +183,7 @@ To check for available aggregation techniques, obtain the array in `/metrics/<m
 | `count` | Determines the value count in the time slot, not counting `null` | Response time, Action duration |
 | `percentile(N)` | Estimates the n-th percentile, where N in range [0,100) is mapped to p in range [0,1) | Response time, Action duration |
 
-Percentile aggregations are available for many response time-based metrics. The count is often useful to determine the reliability of quantile estimations. Generally, more samples allow for a more exact estimation or more exact averages.
+Percentile aggregations are available for many response- time based metrics. The count is often useful to determine the reliability of quantile estimations. Generally, more samples allow for a more exact estimation or more exact averages.
 
 Time aggregation methods are actually the simplest form of a more general concept, namely result transformers. All transformers modify the underlying metric to create a new one with possibly different dimensions, available aggregation types and data point values. Either dimension tuples are extended, trimmed or modified, result rows are removed, or, as before, the techniques used to derive numbers from associated data are changed.
 
@@ -264,7 +264,7 @@ Dropping robots is easy with :`filter`, which drops results based on a condition
 ```
 :filter(and(eq(VisitorType,NEW_VISITOR),ne(VisitType,ROBOT)))
 ```
-We observe that the payload has changed to only contain the result data we are interested in. For each application, two data points remain per timeslot, one for `SYNTHETIC`, and one for `REAL_USER`, while the visitor type is constant at `NEW_VISITOR`. We actually want the average of synthetic and real, so that we have one data point per application. We can easily view them as a combined data point by using a `merge` transformer. It takes the names or indexes of dimensions to remove as arguments, merging data points that have become equal when the dimension is removed:
+We observe that the payload has changed to only contain the result data we are interested in. For each application, two data points remain per timeslot, one for `SYNTHETIC`, and one for `REAL_USER`, while the visitor type is constant at `NEW_VISITOR`. We actually want the average of synthetic and real, so that we have one data point per application. We can easily view them as a combined data point by using a `merge` transformer. It takes the names or indexes of dimensions to remove as arguments, merging data points that become equal when the dimensions are removed:
 ```
 :merge(VisitType,VisitorType)
 ```
@@ -272,7 +272,7 @@ Alternatively, we can select only the dimensions to show up in the result and me
 ```
 :splitBy(dt.entity.application)
 ```
-Combining or `:filter` and our `:merge` transformation, we see that we have solved our problem and get the data in the exact format that we need it in:
+Combining our `:filter` and `:merge` transformations, we see that we have solved our problem and get the data in the exact format that we need it in:
 ```
 metricId,dt.entity.application,time,value
 "builtin:apps.web.sessionDuration:filter(and(eq(VisitorType,NEW_VISITOR),ne(VisitType,ROBOT))):merge(VisitType,VisitorType)",APPLICATION-1AF167A3A7B45A8A,2019-04-09 00:00:00,20.51584226122635
@@ -291,7 +291,7 @@ Transformers allow us to shape a metric to our needs. Until now, we have done th
 
 Consider the following problem: The metric `builtin:service.keyRequest.errors.fourxx` is recorded per service method. We are interested in the service methods, but we want to filter the result payload by the ID of the service, namely `SERVICE-0123456789ABCDEF`. We cannot use a scope, since the primary entity is `SERVICE_METHOD` and not `SERVICE`. A `:filter` transformation would work, if the metric contained a secondary service dimension, which it does not. It can easily be added, though, by prepending the transformer `:parents`.
 
-`:parents` is not only suitable for adding application entities. The general contract of `:parents` is that for each monitored entity dimension, a new dimension will be added before the existing one, if the entity is naturally embedded inside a larger entity of which there can only be one. Disks are a good example. The disk needs the host, otherwise monitoring is not possible. The following have similar disk-like relations that `:parents` is suitable for:
+`:parents` is not only suitable for adding application entities. The general contract of `:parents` is that for each monitored entity dimension, a new dimension will be added before the existing one, if the entity is naturally embedded inside a larger entity of which there can only be one. Disks are a good example. A disk needs a host, otherwise monitoring is not possible. The following have similar disk-host-like relations that `:parents` is suitable for:
 
 | Child Dimension Type | Child Synonyms | :parent Dimension Type | :parent Synonyms |
 |---|---|---|---|
@@ -301,7 +301,7 @@ Consider the following problem: The metric `builtin:service.keyRequest.errors.fo
 | `DISK` | — | `HOST` | — |
 | `SYNTHETIC_TEST_STEP` | — | `SYNTHETIC_TEST` | — |
 
-We try accessing the descriptor for `builtin:service.keyRequest.errors.fourxx.rate:parents` and observe that we have gained a new dimension `dt.entity.service`. We know the ID of the service we are interested in and put the new dimension to use by referencing it in a `:filter` transformer and see that the result data meets our expectations:
+We try accessing the descriptor for `builtin:service.keyRequest.errors.fourxx.rate:parents` and observe that we have gained a new dimension `dt.entity.service`. We know the ID of the service we are interested in and reference it via the relevant dimension in a `:filter` transformer and see that the result data meets our expectations:
 ```
 GET {{base}}/metrics/query?metricSelector=builtin:service.keyRequest.errors.fourxx.rate:parents:filter(eq(dt.entity.service,SERVICE-0123456789ABCDEF))
 Accept: text/csv
@@ -321,7 +321,7 @@ If we want to lose the service dimension again after filtering, we can use a `:m
 
 Most metrics use entities in at least one dimension. The metric for Apdex split by operating system and version has two entity dimensions and one string dimension, namely the application (primary entity) being measured and the operating system (secondary entity) and version (string) for which the data is valid.
 
-When we wish to only obtain data for a specific application, of which we know the name, we may use a scope expression with the `entity` predicate. We cannot use the same technique to instead filter operating systems by name, since scopes do not apply to secondary entities, but we may filter secondary entities by name using a transformer chain. For this, we use a combination of `:name`s and `:filter`.
+When we wish to only obtain data for a specific application, of which we know the name, we may use a scope expression with the `entity` predicate. We cannot use the same technique to instead filter operating systems by name, since scopes do not apply to secondary entities, but we may filter secondary entities by name using a transformer chain. For this, we use a combination of `:names` and `:filter`.
 
 Accessing the descriptor of `builtin:apps.other.apdex.osAndVersion`, we find out the names of the individual dimensions. The dimension `dt.entity.os` contains unique IDs for operating systems, but we do not know what the formal ID of iOS is, we only know that its name is `"iOS"`. To `:filter` against the display name version of `dt.entity.os`, we first append the transformer `:names` to the metric key, giving us the new dimensions `dt.entity.os.name` and `dt.entity.device_application.name`. As a next step, we can filter out the applications with name iOS. We end up with the following transformer chain:
 ```
@@ -347,7 +347,7 @@ metricId,dt.entity.device_application.name,dt.entity.device_application,dt.entit
 
 This common transformation pattern looks like a mistake at first, because the output of `:max` is a plain number, which can not be aggregated with `:sum` (only `:value` is supported for plain numbers, which is a no-op) and `:splitBy` as we used it until now does not change the data type being passed through it. In our use case, `:splitBy` _does_ change the output data type, in order for `:sum` to become a supported aggregation type. This feature is often referred to as _bucket inference_, because `:splitBy` and `merge` intelligently decide which data structure (bucket) will be used to collect the merged values, by looking to the right for the next aggregation being applied to the merged values, changing the output data type of the merging.
 
-Conceptually, you can think of the next aggregation after a `:merge` or `:splitBy` to operate on a list of merged values, supporting any of min, max, avg, sum, median, percentile on that list. Depending on the space aggregation in use, the API will use a suitable data structure to model this conceptual list of merged values (typically a statistical summary or percentile estimator).
+Conceptually, you can think of the next aggregation after a `:merge` or `:splitBy` to operate on a list of merged values, supporting any of min, max, avg, sum, median or percentile on that list. Depending on the space aggregation in use, the API will use a suitable data structure to model this conceptual list of merged values (typically a statistical summary or percentile estimator).
 
 # Scenario 13: Combine Series and Point Queries with Folding
 
@@ -356,7 +356,7 @@ Conceptually, you can think of the next aggregation after a `:merge` or `:splitB
 
 In some situations, it is useful to transmute a series result into a point result in any position of the transformer chain. One such example is when we want mixed series and point results.
 
-Say, we want to access `builtin:host.cpu.usage` over the complete last year from January to just before January this year (`now-y/y` to `now/y`). We want a resolution of `1M`, but we are also interested in the average value over the whole year. This can be done in a single bulk query, once using `:fold` and once omitting it:
+Say we want to access `builtin:host.cpu.usage` over the complete last year from January to just before January this year (`now-y/y` to `now/y`). We want a resolution of `1M`, but we are also interested in the average value over the whole year. This can be done in a single bulk query, once using `:fold` and once omitting it:
 ```
 GET {base}/metrics/query?metricId=builtin:host.cpu.usage:fold,builtin:host.cpu.usage&from=now-y/y&to=now/y&resolution=1M
 ```
@@ -370,15 +370,15 @@ When can apply what we learned above and query for a series of the average over 
 builtin:host.cpu.usage:avg  
 builtin:host.cpu.usage:fold:max
 ```
-The second line merges the statistical data over all time slots, and then extracts the maximum value from the statistical data. This works, but the folded value will be actual maximum sample. If we draw the series and the maximum together into a chart, the folded value may exceed the highest average value, since each value in the chart is actually an aggregate of multiple samples (the average of samples in our case). What if we want to query for the maximum of average values in the chart, not the actual maximum sample?
+The second line merges the statistical data over all time slots, and then extracts the maximum value from the statistical data. This works, but the folded value will be the actual maximum sample. If we draw the series and the maximum together into a chart, the folded value may exceed the highest average value, since each value in the chart is actually an aggregate of multiple samples (the average of samples in our case). What if we want to query for the maximum of average values in the chart, not the actual maximum sample?
 
 For that use case, we want to build a list of averages rather than a list of original samples, and extract the maximum from these averages.
 
-We can take advantage of the fact that `:splitBy` collects pre-aggregated input values (e.g. averages) into a list if the next aggregation after the merge requires it. If we pass all dimensions of the metric to `:splitBy,` no dimensions will be removed and hence no actual merging will happen, instead we have a list with a single average for each time slots. Before the final aggregation, we need to insert `:fold` so that the lists are merged into one over time. From this merged list, we finally extract the maximum with `:max`. Taking all of this together we end up with this selector:
+We can take advantage of the fact that `:splitBy` collects pre-aggregated input values (e.g. averages) into a list if the next aggregation after the merge requires it. If we pass all dimensions of the metric to `:splitBy,` no dimensions will be removed and hence no actual merging will happen. Instead we have a list with a single average for each time slot. Before the final aggregation, we need to insert `:fold` so that the lists are merged into one over time. From this merged list, we finally extract the maximum with `:max`. Taking all of this together we end up with this selector:
 ```
 builtin:host.cpu.usage:avg:splitBy(dt.entity.host):fold:max
 ```
-The result is exactly what we wanted: the maximum of average values over time - We can draw the maximum into the chart and see that it will exactly touch the peak of the graph.
+The result is exactly what we wanted: the maximum average values over time. We can chart the maximum and see that it will exactly touch the peak of the graph.
 
 If you query this selector together with `builtin:host.cpu.usage:avg` you see that the single value is always exactly equal to the maximum entry of the corresponding series.
 
@@ -391,9 +391,9 @@ Some characters have a special meaning in metric selectors: ( ) : , ~ "
 
 Additionally, white space is used to tell where an identifier such as "dt.entity.host" ends. Replacing the periods (full stops) with spaces would result in three identifiers next to each other, rather than a single one that contains white space.
 
-If white space or any of mentioned characters are to be used within a dimension name, in a filter matcher reference, or otherwise in their "literal" sense, rather than as syntax, we need to be careful and escape or quote them. Knowing about proper escaping is especially important when we build our selectors in code that handles user input. In such scenarios, e.g. when a user can provide a filter reference in a text field, we want to prevent them from making the resulting selector syntactically invalid or even worse, allow them to change its meaning and insert a malicious piece of code into our selector.
+If white space or any of the characters mentioned above are to be used within a dimension name, a filter matcher reference, or otherwise in their "literal" sense, rather than as syntax, we need to escape or quote them. Knowing about proper escaping is especially important when we build our selectors in code that handles user input (e.g. when a user can provide a filter reference in a text field). In such scenarios, we want to prevent them from making the resulting selector syntactically invalid or, even worse, allow them to change its meaning and insert a malicious piece of code into our selector.
 
-Say, our user legitimately wants to filter for a host with name `Host 14.A "Alice" ~80° (Europe, North Africa)`. This filter reference can not be inserted into the selector as it is, since it contains a period, double quotes, a tilde, brackets, spaces and a comma. In order not to understand these characters and syntax, we surround the string with double quotes, and escape the contained double quotes with a tilde to indicate that the quoted part is not over yet, but that we have an instance of a literal quote:
+Say, our user legitimately wants to filter for a host with name `Host 14.A "Alice" ~80° (Europe, North Africa)`. This filter reference can not be inserted into the selector as it is, since it contains a period, double quotes, a tilde, brackets, spaces and a comma. In order not to understand these characters as syntax, we surround the string with double quotes and escape the contained double quotes with a tilde to indicate that the quoted part is not over yet, but that we have an instance of a literal quote:
 ```
 "Host 14.A ~"Alice~" ~~80° (Europe, North Africa)"
 ```
@@ -401,7 +401,7 @@ Alternatively, we can rely entirely on escaping instead of quoting, but this get
 ```
 Host~ 14~.A~ "Alice"~ ~~80° ~(Europe~,~ North~ Africa~)
 ```
-To filter for this name, we can use a combination of :names and :filter and use our quoted version for the filter matcher to end up with a valid selector that uses special characters:
+To filter for this name, we can use a combination of `:names` and `:filter` and use our quoted version for the filter matcher to create a valid selector that uses special characters:
 ```
 builtin:host.disk.avail  
 : names  
@@ -422,7 +422,7 @@ There is only one `entitySelector` GET parameter, and an entity selector queries
 
 How can we query the PGI-based metric `builtin:tech.generic.cpu.usage` together with `builtin:host.cpu.usage` with the hosts and process group instances both filtered using a tag "business-critical"?
 
-This is easily possible by embedding entity selectors into filters using the `in` matcher with the right-hand side of `in` supplied using the `entitySelector` function that sets off an entity query from within a metric selector. Since entity selectors use a lot of special characters, the argument to the `entitySelector` function should always be quoted:
+This is easily possible by embedding entity selectors into filters using the `in` matcher. The right-hand side of `in` can be supplied with an `entitySelector` function that runs an entity query from within a metric selector. Since entity selectors use a lot of special characters, the argument of the `entitySelector` function should always be quoted:
 ```
 builtin:tech.generic.cpu.usage
 : filter(  
@@ -446,25 +446,25 @@ builtin:host.cpu.usage
 >**Task**
 >We want to see the CPU utilization graph of yesterday and the day before yesterday, displayed on top of each other in a chart, so that we can look out for differences.
 
-A specific process group instance has been running on a new version yesterday. We want to display a graph of yesterdays CPU usage and for comparison, we want the day before layered on top of yesterday. We get yesterday with `from=now/d-d&to=now/d`. This time window can then be moved per each queried metric by using the `timeshift` operator, which takes a time interval to move the data by, but keeping the original timestamps, so that it can be layered on top of the other graph. In our case, with the time frame from before we need `timeshift(-1d)`:
+A specific process group instance ran on a new version yesterday. We want to display a graph of yesterday's CPU usage and for comparison, we want the day before layered on top of yesterday. We get yesterday with `from=now/d-d&to=now/d`. This time window can then be moved per each queried metric by using the `timeshift` operator, which takes a time interval to move the data by, but keeping the original timestamps, so that it can be layered on top of the other graph. In our case, with the timeframe from before we need `timeshift(-1d)`:
 ```
 builtin:tech.generic.cpu.usage,  
 builtin:tech.generic.cpu.usage:timeshift(-1d),
 ```
-The second time series is shifted one day into the past, showing data from the day before yesterday, but with the same time stamps as the un-shifted first series. When drawing these into a chart, they will be displayed on top of each other.
+The second time series is shifted one day into the past, showing data from the day before yesterday, but with the same timestamps as the first, un-shifted series. When charting these, they will be displayed on top of each other.
 
 # Scenario 18: Last Stock Price Yesterday
 
 >**Task**
 >We want the last reported value just before midnight yesterday, but if the last time slot contains a gap in the data, we want to go back and instead see the last non-null data.
 
-To get the latest non-null value, use the `:last` operator, e.g. when the time frame is set to yesterday, but there might be wholes in the data (maybe the stock exchange computers have a maintenance window) we use, e.g.:
+To get the latest non-null value, use the `:last` operator. E.g. when the timeframe is set to yesterday, but there might be holes in the data (maybe the stock exchange computers have a maintenance window) we use, e.g.:
 ```
 stock_price:last
 ```
-If there is at least one non-null piece of data, the result will use the latest value or otherwise be empty.
+If there is at least one non-null data point, the result will use the latest value or otherwise be empty.
 
-You can customize the behavior of last by specifying as a first parameter how many entries should be considered from the end of the series (default: all entries), and as a second parameter how many of the last data points should be aggregated together for the final result (default: one, only use the final datum), if you, e.g. want the average of the last three values instead:
+You can customize the behavior of `:last` by specifying as a first parameter how many entries should be considered from the end of the series (default: all entries), and as a second parameter how many of the last data points should be aggregated together for the final result (default: one). E.g. if you want the average of the last three values:
 ```
 stock_price:last(24,3)
 ```
@@ -487,9 +487,9 @@ Sometimes, especially when using the API interactively, it is desirable to use a
 | `now/w-d` | Also beginning of the week, depending on who you ask (Sunday, 00:00:00.00) |
 | `now/M+5m` | Five minutes into the current month |
 
-Resolution accepts identical units, e.g. `M` or `1M` signifies one month of time between data points. Instead of directly specifying the resolution, a unit-less quantity can be specified that identifies a number of data points that should be equally distributed in the desired query time frame. The API will then choose the most coarse resolution available that will result in at least the desired amount of data points.
+Resolution accepts identical units, e.g. `M` or `1M` signifies one month of time between data points. Instead of directly specifying the resolution, a unit-less quantity can be specified that identifies a number of data points that should be equally distributed in the desired query timeframe. The API will then choose the most coarse resolution available that will result in at least the desired amount of data points.
 
-It is important to note that the resolution is intended as a hint to the server about a preferred count or resolution. When the wish for a resolution cannot be fulfilled exactly, e.g. when requesting eleven minutes between data points, the API will try to find the most satisfying available resolution. Further, the query time frame may not be aligned with how data points are stored internally, causing the API to extend the time frame outwards. For these reasons, the API sometimes returns more data points than requested.
+It is important to note that the resolution is intended as a hint to the server about a preferred count or resolution. When the wish for a resolution cannot be fulfilled exactly, e.g. when requesting eleven minutes between data points, the API will try to find the most satisfying available resolution. Further, the query timeframe may not be aligned with how data points are stored internally, causing the API to extend the timeframe outwards. For these reasons, the API sometimes returns more data points than requested.
 
 ## Entity Selector
 
@@ -508,8 +508,6 @@ Dynatrace has a powerful tagging system. It can automatically apply tags to host
 entitySelector=type(HOST),tag(Europe),tag(Linux)
 ```
 You can see that compound scope expressions are built by AND-connecting predicate expressions with the comma character.
-
-Scopes are a powerful concept and explained in more detail in dedicated guide documents. For more information on scopes, the sibling document _Scope by Example_ is available. In-depth discussions of scope concepts can be found in the .
 
 # Further Reading
 
