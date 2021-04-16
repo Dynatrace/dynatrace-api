@@ -18,6 +18,8 @@ class PingExtension(RemoteBasePlugin):
             self.config.get("api_url"), self.config.get("api_token"), log=log, proxies=self.build_proxy_url()
         )
         self.executions = 0
+        self.failureDetected = 0
+
 
     def build_proxy_url(self):
         proxy_address = self.config.get("proxy_address")
@@ -42,6 +44,8 @@ class PingExtension(RemoteBasePlugin):
 
         target = self.config.get("test_target")
 
+        failureCount = self.config["failureCount"]
+
         step_title = f"{target}"
         test_title = self.config.get("test_name") if self.config.get("test_name") else step_title
         location = self.config.get("test_location", "") if self.config.get("test_location") else "ActiveGate"
@@ -53,9 +57,19 @@ class PingExtension(RemoteBasePlugin):
             log.info(ping_result.as_dict())
 
             success = ping_result.packet_loss_rate is not None and ping_result.packet_loss_rate == 0
+
+            if not success:
+                self.failureDetected += 1
+                if self.failureDetected < failureCount and self.failureDetected < self.executions:
+                    log.info("Overriding state")
+                    success = True
+            else:
+                self.failureDetected = 0
+            #log.info("success:" + str(success) + ":" + str(self.failureDetected) + ":" + str(self.executions))
+                         
             response_time = ping_result.rtt_avg or 0
 
-            self.dt_client.report_simple_thirdparty_synthetic_test(
+            self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test(
                 engine_name="Ping",
                 timestamp=datetime.now(),
                 location_id=location_id,
@@ -69,8 +83,8 @@ class PingExtension(RemoteBasePlugin):
                 edit_link=f"#settings/customextension;id={self.plugin_info.name}",
                 icon_url="https://raw.githubusercontent.com/Dynatrace/dynatrace-api/master/third-party-synthetic/active-gate-extensions/extension-third-party-ping/ping.png",
             )
-
-            self.dt_client.report_simple_thirdparty_synthetic_test_event(
+            
+            self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test_event(
                 test_id=self.activation.entity_id,
                 name=f"Ping failed for {step_title}",
                 location_id=location_id,
@@ -80,7 +94,9 @@ class PingExtension(RemoteBasePlugin):
                 reason=f"Ping failed for {step_title}. Result: {str(ping_result.as_dict())}",
                 engine_name="Ping",
             )
+                
         self.executions += 1
+
 
 
 def ping(host: str) -> pingparsing.PingStats:
