@@ -65,13 +65,13 @@ class PortExtension(RemoteBasePlugin):
                     step_title = f"{target_ip}:{port}"
 
                     test_steps.append(
-                        {"step": self.dt_client.create_synthetic_test_step(i + 1, step_title), "success": step_success}
+                        {"step": self.dt_client.third_part_synthetic_tests.create_synthetic_test_step(i + 1, step_title), "success": step_success}
                     )
                     test_step_results.append(
-                        self.dt_client.create_synthetic_test_step_result(i + 1, datetime.now(), step_response_time)
+                        self.dt_client.third_part_synthetic_tests.create_synthetic_test_step_result(i + 1, datetime.now(), step_response_time)
                     )
 
-            self.dt_client.report_simple_thirdparty_synthetic_test(
+            self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test(
                 engine_name="Port",
                 timestamp=datetime.now(),
                 location_id=location_id,
@@ -89,7 +89,7 @@ class PortExtension(RemoteBasePlugin):
 
             for step in test_steps:
                 event_name = f"Port check failed for {test_title} ({step['step'].title})"
-                self.dt_client.report_simple_thirdparty_synthetic_test_event(
+                self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test_event(
                     test_id=f"{self.activation.entity_id}",
                     name=event_name,
                     location_id=location_id,
