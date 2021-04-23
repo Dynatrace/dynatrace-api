@@ -1,6 +1,6 @@
 {
   "name": "custom.remote.python.thirdparty_ping",
-  "version": "1.2",
+  "version": "1.009",
   "type": "python",
   "entity": "CUSTOM_DEVICE",
   "technologies": [ "ICMP" ],
@@ -54,7 +54,7 @@
       "type": "Password"
     },
     {
-      "key":  "failureCount",
+      "key":  "failure_count",
       "type":  "integer",
       "defaultValue":  1
     }
@@ -123,7 +123,7 @@
 
       },
       {
-          "key":  "failureCount",
+          "key":  "failure_count",
           "displayName":  "Failure count",
           "displayOrder":  12,
           "displayHint":  "Number of consecutive failures before reporting error"
