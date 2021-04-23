@@ -18,7 +18,7 @@ class PingExtension(RemoteBasePlugin):
             self.config.get("api_url"), self.config.get("api_token"), log=log, proxies=self.build_proxy_url()
         )
         self.executions = 0
-        self.failureDetected = 0
+        self.failure_detected = 0
 
 
     def build_proxy_url(self):
@@ -44,7 +44,7 @@ class PingExtension(RemoteBasePlugin):
 
         target = self.config.get("test_target")
 
-        failureCount = self.config["failureCount"]
+        failure_count = self.config["failure_count"]
 
         step_title = f"{target}"
         test_title = self.config.get("test_name") if self.config.get("test_name") else step_title
@@ -59,12 +59,12 @@ class PingExtension(RemoteBasePlugin):
             success = ping_result.packet_loss_rate is not None and ping_result.packet_loss_rate == 0
 
             if not success:
-                self.failureDetected += 1
-                if self.failureDetected < failureCount and self.failureDetected < self.executions:
+                self.failure_detected += 1
+                if self.failure_detected < failure_count and self.failure_detected < self.executions:
                     log.info("Overriding state")
                     success = True
             else:
-                self.failureDetected = 0
+                self.failure_detected = 0
                          
             response_time = ping_result.rtt_avg or 0
 
