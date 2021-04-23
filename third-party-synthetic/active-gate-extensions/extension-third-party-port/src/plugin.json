@@ -1,6 +1,6 @@
 {
   "name": "custom.remote.python.thirdparty_port",
-  "version": "1.2",
+  "version": "1.010",
   "metricGroup": "tech.Port",
   "type": "python",
   "entity": "CUSTOM_DEVICE",
