@@ -4,7 +4,7 @@ import logging
 import socket
 
 from dynatrace import Dynatrace
-from dynatrace.synthetic_third_party import SYNTHETIC_EVENT_TYPE_OUTAGE
+from dynatrace.environment_v1.synthetic_third_party import SYNTHETIC_EVENT_TYPE_OUTAGE
 
 
 log = logging.getLogger(__name__)
