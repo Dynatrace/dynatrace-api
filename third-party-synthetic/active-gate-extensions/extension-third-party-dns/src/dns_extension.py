@@ -5,7 +5,7 @@ from dns import resolver
 
 from ruxit.api.base_plugin import RemoteBasePlugin
 from dynatrace import Dynatrace
-from dynatrace.synthetic_third_party import SYNTHETIC_EVENT_TYPE_OUTAGE
+from dynatrace.environment_v1.synthetic_third_party import SYNTHETIC_EVENT_TYPE_OUTAGE
 
 log = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class DNSExtension(RemoteBasePlugin):
             success, response_time = test_dns(dns_server, host)
             log.info(f"DNS test, DNS server: {dns_server}, host: {host}, success: {success}, time: {response_time} ")
 
-            self.dt_client.report_simple_thirdparty_synthetic_test(
+            self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test(
                 engine_name="DNS",
                 timestamp=datetime.now(),
                 location_id=location_id,
@@ -66,7 +66,7 @@ class DNSExtension(RemoteBasePlugin):
                 icon_url="https://raw.githubusercontent.com/Dynatrace/dynatrace-api/master/third-party-synthetic/active-gate-extensions/extension-third-party-dns/dns.png",
             )
 
-            self.dt_client.report_simple_thirdparty_synthetic_test_event(
+            self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test_event(
                 test_id=self.activation.entity_id,
                 name=f"DNS lookup failed for {step_title}",
                 location_id=location_id,
