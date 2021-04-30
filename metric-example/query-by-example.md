@@ -464,10 +464,6 @@ stock_price:last
 ```
 If there is at least one non-null data point, the result will use the latest value or otherwise be empty.
 
-You can customize the behavior of `:last` by specifying as a first parameter how many entries should be considered from the end of the series (default: all entries), and as a second parameter how many of the last data points should be aggregated together for the final result (default: one). E.g. if you want the average of the last three values:
-```
-stock_price:last(24,3)
-```
 # Other Functionality Related to Metric Selectors
 
 The parameters `from`, `to` and `resolution` are not part of the metric selector but apply to the whole query. Nonetheless, this section provides a high-level overview that will help you use them effectively.
