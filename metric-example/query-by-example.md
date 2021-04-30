@@ -8,7 +8,8 @@ A plain metric key is also the simplest form of a metric selector, which is used
 
 Before jumping into the usage scenarios, make sure that you have the following information at hand:
 
-*   the host and path of your Dynatrace instance you want to run metric queries against, below referred as `{base}` 
+*   the host and path of the Dynatrace instance you want to run metric queries against, below referred to as `{base}` 
+
 	- for Managed clusters: `{base}` is `https://{your-domain}/e/{your-environment-id}/api/v2`
 	- for SaaS: `{base}` is `https://{your-environment-id}.live.dynatrace.com/api/v2`
 *   a valid API-token with the `MetricsRead` permission ("Read metrics" in the UI) for the host.
