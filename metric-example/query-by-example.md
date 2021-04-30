@@ -8,7 +8,10 @@ A plain metric key is also the simplest form of a metric selector, which is used
 
 Before jumping into the usage scenarios, make sure that you have the following information at hand:
 
-*   the hostname you want to run metric queries against,
+*   the host and path of the Dynatrace instance you want to run metric queries against, below referred to as `{base}` 
+
+	- for Managed clusters: `{base}` is `https://{your-domain}/e/{your-environment-id}/api/v2`
+	- for SaaS: `{base}` is `https://{your-environment-id}.live.dynatrace.com/api/v2`
 *   a valid API-token with the `MetricsRead` permission ("Read metrics" in the UI) for the host.
 
 Some of the examples use `curl` to make the actual requests. If you are comfortable with testing an API using the terminal, make sure you have it installed.
@@ -32,7 +35,7 @@ Accept: text/csv
 
 As a curl command:
 ```
-curl -XGET -H "Authorization: Api-Token `<do not forget your token>`" -H 'Accept: text/csv' "https://dynatrace.example.com/api/v2/metrics
+curl -XGET -H "Authorization: Api-Token `<do not forget your token>`" -H 'Accept: text/csv' "{base}/metrics"
 ```
 
 The result is newline-separated and suitable for viewing in Spreadsheet applications like _Microsoft Excel_ or other machine-supported processing:
@@ -121,7 +124,7 @@ Not all CPU metrics are captured on host level, like `builtin:host.cpu.system`.
 Let's use the `text` parameter with `/metrics` and set it to "cpu" to search for other CPU-related metrics:
 
 ```
-GET /api/v2/metrics?text=cpu
+GET {base}/metrics?text=cpu
 ```
 
 Turns out there are a whole lot of other metrics related to CPU! Most of them include `cpu` in the metric key, but e.g. `builtin:cloud.kubernetes.cluster.cores` does not. Why does it show up in the result, then? It does because `text` also uses the display name and the description for this search. This is also what the Data Explorer uses to present available metrics when you start typing into the metric field.
@@ -189,7 +192,7 @@ Time aggregation methods are actually the simplest form of a more general concep
 
 If we want to observe the changed properties of a metric after transformation, we can access its _descriptor_, just like with a plain metric. See how the available aggregation types in the descriptor change, when the aggregation is already specified (line wrapping for better brevity, the actual response contains newlines only to break apart lines of the result CSV):
 ```
-GET {{base}}/metrics/builtin:apps.web.sessionDuration:avg
+GET {base}/metrics/builtin:apps.web.sessionDuration:avg
 Accept: text/csv
     
 metricId,displayName,description,unit,dduBillable,entityType,  
@@ -210,7 +213,7 @@ Observing the transformed descriptor is especially useful with more complex tran
 
 We just queried
 ```
-/api/v2/metrics/query?metricSelector=builtin:host.cpu.usage&from=now/d&resolution=Inf
+{base}/metrics/query?metricSelector=builtin:host.cpu.usage&from=now/d&resolution=Inf
 ```
 and get back results for some thousands of hosts. Looking at the data, most hosts in `builtin:host.cpu.usage` seem to behave normally, but some have extremely high CPU utilization. Hopefully, none of the high-CPU hosts were overlooked. We decide to query for the 3 hosts where the CPU utilization percentage was highest today (on average).
 
