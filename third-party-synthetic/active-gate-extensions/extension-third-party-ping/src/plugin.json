@@ -1,6 +1,6 @@
 {
   "name": "custom.remote.python.thirdparty_ping",
-  "version": "1.009",
+  "version": "1.011",
   "type": "python",
   "entity": "CUSTOM_DEVICE",
   "technologies": [ "ICMP" ],
@@ -55,7 +55,7 @@
     },
     {
       "key":  "failure_count",
-      "type":  "integer",
+      "type":  "Integer",
       "defaultValue":  1
     }
 
@@ -66,7 +66,7 @@
       {
         "key": "api_url",
         "displayName": "Tenant URL",
-        "displayHint": "https://<my.managed.host>/e/<tenant_id> or https://<tenant_id>.live.dynatrace.com",
+        "displayHint": "https://localhost:9999/e/<environment_id> or https://<my.managed.host>/e/<environment_id> or https://<environment_id>.live.dynatrace.com",
         "displayOrder": 1
       },
       {
