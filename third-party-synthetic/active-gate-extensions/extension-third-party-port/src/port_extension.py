@@ -1,3 +1,6 @@
+from collections import defaultdict
+from typing import Dict
+
 from ruxit.api.base_plugin import RemoteBasePlugin
 from datetime import datetime
 import logging
@@ -13,10 +16,9 @@ log = logging.getLogger(__name__)
 class PortExtension(RemoteBasePlugin):
     def initialize(self, **kwargs):
         # The Dynatrace API client
-        self.dt_client = Dynatrace(
-            self.config.get("api_url"), self.config.get("api_token"), log=log, proxies=self.build_proxy_url()
-        )
+        self.dt_client = Dynatrace(self.config.get("api_url"), self.config.get("api_token"), log=log, proxies=self.build_proxy_url())
         self.executions = 0
+        self.failures: Dict[str, int] = defaultdict(int)
 
     def build_proxy_url(self):
         proxy_address = self.config.get("proxy_address")
@@ -45,9 +47,10 @@ class PortExtension(RemoteBasePlugin):
         location = self.config.get("test_location", "") if self.config.get("test_location") else "ActiveGate"
         location_id = location.replace(" ", "_").lower()
         frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 15
+        failure_count = self.config.get("failure_count", 1)
 
         if self.executions % frequency == 0:
-            # This test has multiple steps, these variables will be modfied as the steps are created
+            # This test has multiple steps, these variables will be modified as the steps are created
             test_success = True
             test_response_time = 0
             test_steps = []
@@ -57,12 +60,20 @@ class PortExtension(RemoteBasePlugin):
             for i, port in enumerate(target_ports):
                 if port:
                     step_success, step_response_time = test_port(target_ip, int(port))
-                    if not step_success:
-                        test_success = False
                     test_response_time += step_response_time
 
                     log.info(f"{target_ip}:{port} = {step_success}, {step_response_time}")
                     step_title = f"{target_ip}:{port}"
+
+                    if not step_success:
+                        test_success = False
+                        self.failures[step_title] += 1
+
+                        if self.failures[step_title] < failure_count:
+                            log.info(f"The result for {step_title} was: {step_success}. Attempt {self.failures[step_title]}/{failure_count}, not reporting yet")
+                            step_success = True
+                    else:
+                        self.failures[step_title] = 0
 
                     test_steps.append(
                         {"step": self.dt_client.third_part_synthetic_tests.create_synthetic_test_step(i + 1, step_title), "success": step_success}

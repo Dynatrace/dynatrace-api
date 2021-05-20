@@ -1,6 +1,6 @@
 {
   "name": "custom.remote.python.thirdparty_port",
-  "version": "1.010",
+  "version": "1.011",
   "metricGroup": "tech.Port",
   "type": "python",
   "entity": "CUSTOM_DEVICE",
@@ -57,6 +57,11 @@
     {
       "key": "proxy_password",
       "type": "Password"
+    },
+    {
+      "key":  "failure_count",
+      "type":  "Integer",
+      "defaultValue":  1
     }
 
   ],
@@ -66,7 +71,7 @@
       {
         "key": "api_url",
         "displayName": "Tenant URL",
-        "displayHint": "https://<my.managed.host>/e/<tenant_id> or https://<tenant_id>.live.dynatrace.com",
+        "displayHint": "https://localhost:9999/e/<environment_id> or https://<my.managed.host>/e/<environment_id> or https://<environment_id>.live.dynatrace.com",
         "displayOrder": 1
       },
       {
@@ -127,6 +132,12 @@
         "displayName": "Log level",
         "displayOrder": 11
 
+      },
+      {
+          "key":  "failure_count",
+          "displayName":  "Failure count",
+          "displayOrder":  12,
+          "displayHint":  "Number of consecutive failures before reporting error"
       }
     ]
   },

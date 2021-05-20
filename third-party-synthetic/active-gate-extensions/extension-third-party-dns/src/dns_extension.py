@@ -13,10 +13,9 @@ log = logging.getLogger(__name__)
 class DNSExtension(RemoteBasePlugin):
     def initialize(self, **kwargs):
         # The Dynatrace API client
-        self.dt_client = Dynatrace(
-            self.config.get("api_url"), self.config.get("api_token"), log=log, proxies=self.build_proxy_url()
-        )
+        self.dt_client = Dynatrace(self.config.get("api_url"), self.config.get("api_token"), log=log, proxies=self.build_proxy_url())
         self.executions = 0
+        self.failures_detected = 0
 
     def build_proxy_url(self):
         proxy_address = self.config.get("proxy_address")
@@ -46,10 +45,19 @@ class DNSExtension(RemoteBasePlugin):
         location = self.config.get("test_location") if self.config.get("test_location") else "ActiveGate"
         location_id = location.replace(" ", "_").lower()
         frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 15
+        failure_count = self.config.get("failure_count", 1)
 
         if self.executions % frequency == 0:
             success, response_time = test_dns(dns_server, host)
             log.info(f"DNS test, DNS server: {dns_server}, host: {host}, success: {success}, time: {response_time} ")
+
+            if not success:
+                self.failures_detected += 1
+                if self.failures_detected < failure_count:
+                    log.info(f"The result was: {success}. Attempt {self.failures_detected}/{failure_count}, not reporting yet")
+                    success = True
+            else:
+                self.failures_detected = 0
 
             self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test(
                 engine_name="DNS",
