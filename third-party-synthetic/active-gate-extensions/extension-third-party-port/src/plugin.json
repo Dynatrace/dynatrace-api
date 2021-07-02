@@ -1,6 +1,6 @@
 {
   "name": "custom.remote.python.thirdparty_port",
-  "version": "1.012",
+  "version": "1.013",
   "metricGroup": "tech.Port",
   "type": "python",
   "entity": "CUSTOM_DEVICE",
@@ -32,6 +32,12 @@
     {
       "key": "test_target_ports",
       "type": "String"
+    },
+    {
+      "key": "test_protocol",
+      "type": "Dropdown",
+      "dropdownValues": ["TCP", "UDP"],
+      "defaultValue": "TCP"
     },
     {
       "key": "test_location",
@@ -96,6 +102,11 @@
         "displayName": "Test target Ports",
         "displayHint": "Ports, separated by comma",
         "displayOrder": 4
+      },
+      {
+        "key": "test_protocol",
+        "displayName": "Test protocol",
+        "displayOrder": 5
       },
       {
         "key": "frequency",

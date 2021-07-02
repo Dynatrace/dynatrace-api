@@ -59,7 +59,7 @@ class PortExtension(RemoteBasePlugin):
 
             for i, port in enumerate(target_ports):
                 if port:
-                    step_success, step_response_time = test_port(target_ip, int(port))
+                    step_success, step_response_time = test_port(target_ip, int(port), protocol=self.config.get("test_protocol", "TCP"))
                     test_response_time += step_response_time
 
                     log.info(f"{target_ip}:{port} = {step_success}, {step_response_time}")
@@ -114,15 +114,28 @@ class PortExtension(RemoteBasePlugin):
         self.executions += 1
 
 
-def test_port(ip: str, port: int) -> (bool, int):
+def test_port(ip: str, port: int, protocol: str = "TCP") -> (bool, int):
+    log.debug(f"Testing {ip}:{port} using protocol {protocol}")
     start = datetime.now()
-    result = 1
+    result = True
     try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        socket_type = socket.SOCK_STREAM if protocol == "TCP" else socket.SOCK_DGRAM
+        sock = socket.socket(socket.AF_INET, socket_type)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.settimeout(2)
-        result = sock.connect_ex((ip, port))
-        sock.close()
-    except Exception as ex:
-        log.error(f"Could not connect to {ip}:{port} - {ex}")
+        sock.connect((ip, port))
 
-    return result == 0, int((datetime.now() - start).total_seconds() * 1000)
+        if protocol == "UDP":
+            sock.sendall(b"")
+            data = sock.recv(1024)
+            log.debug(f"Received data: {data}")
+
+        sock.close()
+    except socket.timeout:
+        log.warning(f"The UDP test for {ip}:{port} timed out.")
+        result = True
+    except Exception as ex:
+        log.error(f"Could not connect to {ip}:{port} with protocol {protocol} - {ex}")
+        result = False
+
+    return result, int((datetime.now() - start).total_seconds() * 1000)
