@@ -44,6 +44,8 @@ class PortExtension(RemoteBasePlugin):
         target_ip = self.config.get("test_target_ip")
 
         target_ports = self.config.get("test_target_ports", "").split(",")
+
+        target_protocol = self.config.get("test_target_protocol", "TCP")
         location = self.config.get("test_location", "") if self.config.get("test_location") else "ActiveGate"
         location_id = location.replace(" ", "_").lower()
         frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 15
@@ -55,11 +57,11 @@ class PortExtension(RemoteBasePlugin):
             test_response_time = 0
             test_steps = []
             test_step_results = []
-            test_title = f"{self.config.get('test_name')}" if self.config.get("test_name") else f"Port checks for {target_ip}"
+            test_title = f"{self.config.get('test_name')}" if self.config.get("test_name") else f"{target_protocol} port checks for {target_ip}"
 
             for i, port in enumerate(target_ports):
                 if port:
-                    step_success, step_response_time = test_port(target_ip, int(port))
+                    step_success, step_response_time = test_port(target_ip, int(port), target_protocol == "TCP")
                     test_response_time += step_response_time
 
                     log.info(f"{target_ip}:{port} = {step_success}, {step_response_time}")
@@ -113,16 +115,26 @@ class PortExtension(RemoteBasePlugin):
 
         self.executions += 1
 
-
-def test_port(ip: str, port: int) -> (bool, int):
-    start = datetime.now()
+def test_port(ip: str, port: int, tcp: bool) -> (bool, int):
     result = 1
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(2)
-        result = sock.connect_ex((ip, port))
-        sock.close()
-    except Exception as ex:
-        log.error(f"Could not connect to {ip}:{port} - {ex}")
-
-    return result == 0, int((datetime.now() - start).total_seconds() * 1000)
+    duration = 0
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM if tcp else socket.SOCK_DGRAM)
+    sock.settimeout(2)
+    if tcp:
+        start = datetime.now()
+        try:
+            result = sock.connect_ex((ip, port))
+        except Exception as ex:
+            log.error(f"Could not connect to {ip}:{port} over TCP - {ex}")
+        duration = int((datetime.now() - start).total_seconds() * 1000)
+    else:
+        try:
+            sock.sendto(bytes(0), (ip, port))
+            sock.recvfrom(1024)
+        except socket.timeout:
+            result = 0
+        except Exception as ex:
+            log.error(f"Could not connect to {ip}:{port} over UDP - {ex}")
+    sock.close()
+    
+    return result == 0, duration

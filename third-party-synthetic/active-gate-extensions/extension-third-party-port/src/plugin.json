@@ -1,6 +1,6 @@
 {
   "name": "custom.remote.python.thirdparty_port",
-  "version": "1.012",
+  "version": "1.013",
   "metricGroup": "tech.Port",
   "type": "python",
   "entity": "CUSTOM_DEVICE",
@@ -32,6 +32,11 @@
     {
       "key": "test_target_ports",
       "type": "String"
+    },
+    {
+      "key": "test_target_protocol",
+      "type": "Dropdown",
+      "dropdownValues": [ "TCP", "UDP" ]
     },
     {
       "key": "test_location",
@@ -83,7 +88,7 @@
       {
         "key": "test_name",
         "displayName": "(Optional) Synthetic monitor name",
-        "displayOrder": 5
+        "displayOrder": 6
       },
       {
         "key": "test_target_ip",
@@ -98,45 +103,51 @@
         "displayOrder": 4
       },
       {
+        "key": "test_target_protocol",
+        "displayName": "Test target Protocol",
+        "displayHint": "TCP tries to open a socket, UDP tries to send a package",
+        "displayOrder": 5
+      },
+      {
         "key": "frequency",
         "displayName": "(Optional) Frequency",
         "displayHint": "Frequency in minutes, default: 15",
-        "displayOrder": 6
+        "displayOrder": 7
       },
       {
         "key": "test_location",
         "displayName": "(Optional) Location name",
         "displayHint": "Default: ActiveGate",
-        "displayOrder": 7
+        "displayOrder": 8
       },
       {
         "key": "proxy_address",
         "displayName": "(Optional) Proxy Address",
-        "displayOrder": 8
+        "displayOrder": 9
 
       },
       {
         "key": "proxy_username",
         "displayName": "(Optional) Proxy Username",
-        "displayOrder": 9
+        "displayOrder": 10
 
       },
       {
         "key": "proxy_password",
         "displayName": "(Optional) Proxy Password",
-        "displayOrder": 10
+        "displayOrder": 11
 
       },
       {
         "key": "log_level",
         "displayName": "Log level",
-        "displayOrder": 11
+        "displayOrder": 12
 
       },
       {
           "key":  "failure_count",
           "displayName":  "Failure count",
-          "displayOrder":  12,
+          "displayOrder":  13,
           "displayHint":  "Number of consecutive failures before reporting error"
       }
     ]
