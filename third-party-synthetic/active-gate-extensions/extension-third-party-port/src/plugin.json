@@ -1,6 +1,6 @@
 {
   "name": "custom.remote.python.thirdparty_port",
-  "version": "1.013",
+  "version": "1.014",
   "metricGroup": "tech.Port",
   "type": "python",
   "entity": "CUSTOM_DEVICE",
@@ -9,7 +9,7 @@
   "source": {
     "package": "port_extension",
     "className": "PortExtension",
-    "install_requires": [ "dtapi" ],
+    "install_requires": [ "dtapi", "pingparsing"],
     "activation": "Remote"
   },
   "properties": [
@@ -106,6 +106,7 @@
       {
         "key": "test_protocol",
         "displayName": "Test protocol",
+        "displayHint": "For UDP the response time is not accurate, only availability",
         "displayOrder": 5
       },
       {

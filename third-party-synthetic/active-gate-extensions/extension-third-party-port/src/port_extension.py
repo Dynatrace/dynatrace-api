@@ -1,10 +1,11 @@
 from collections import defaultdict
 from typing import Dict
-
-from ruxit.api.base_plugin import RemoteBasePlugin
-from datetime import datetime
 import logging
 import socket
+
+from pingparsing import PingStats, PingParsing, PingTransmitter
+from ruxit.api.base_plugin import RemoteBasePlugin
+from datetime import datetime
 
 from dynatrace import Dynatrace
 from dynatrace.environment_v1.synthetic_third_party import SYNTHETIC_EVENT_TYPE_OUTAGE
@@ -129,13 +130,39 @@ def test_port(ip: str, port: int, protocol: str = "TCP") -> (bool, int):
             sock.sendall(b"")
             data = sock.recv(1024)
             log.debug(f"Received data: {data}")
-
         sock.close()
+
     except socket.timeout:
-        log.warning(f"The UDP test for {ip}:{port} timed out.")
-        result = True
+        if protocol == "UDP":
+            log.warning(f"The UDP test for {ip}:{port} timed out, checking if the host can be pinged before reporting")
+            ping_result = ping(ip)
+            log.info(f"Ping result to double check UDP: {ping_result.as_dict()}")
+            result = ping_result.packet_loss_rate is not None and ping_result.packet_loss_rate == 0
+        else:
+            result = False
     except Exception as ex:
         log.error(f"Could not connect to {ip}:{port} with protocol {protocol} - {ex}")
         result = False
 
     return result, int((datetime.now() - start).total_seconds() * 1000)
+
+
+def ping(host: str) -> PingStats:
+    ping_parser = PingParsing()
+    transmitter = PingTransmitter()
+    transmitter.destination = host
+    transmitter.count = 1
+    transmitter.timeout = 2000
+    return ping_parser.parse(transmitter.ping())
+
+
+def main():
+    print(test_port("192.168.15.101", 123, "UDP"))
+    print(test_port("192.168.15.101", 124, "UDP"))
+    print(test_port("192.168.15.25", 333, "UDP"))
+    print(test_port("192.168.15.101", 1521, "TCP"))
+    print(test_port("192.168.15.101", 1522, "TCP"))
+
+
+if __name__ == "__main__":
+    main()
