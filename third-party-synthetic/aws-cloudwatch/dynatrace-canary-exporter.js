@@ -1,6 +1,6 @@
 /**
  * Dynatrace AWS CloudWatch Synthetics Canary exporter
- * v1.0.3
+ * v1.0.4
  */
 
 (function () {
@@ -51,6 +51,7 @@
             _stepResults$.length = originalFuncs.length = 0;
 
             // ----- Web page Canary instrumentation: START -----
+
             saveFunc(synthetics, 'getPage');
             // The original synthetics.getPage function that we override
             const originalGetPage = synthetics.getPage;
@@ -103,26 +104,27 @@
                         log.error('DT: A response was unexpectedly missing for the URL: ' + page.url());
                     }
                 } else {
-                    const metric = await page.evaluate(() => performance.getEntriesByType('navigation')[0].loadEventStart);
-                    const startTime = await page.evaluate(() => performance.timeOrigin);
-                    const status = response.status;
-                    const success = isSuccessfulStatusCode(status);
-                    const title = (await page.title()) || page.url();
+                    onStepResult(new Promise(async (resolve) => {
+                        const metric = await page.evaluate(() => performance.getEntriesByType('navigation')[0].loadEventStart);
+                        const startTime = await page.evaluate(() => performance.timeOrigin);
+                        const status = response.status;
+                        const success = isSuccessfulStatusCode(status);
+                        const title = (await page.title()) || page.url();
 
-                    const stepResult = {
-                        title: title,
-                        startTimestamp: startTime,
-                        responseTimeMillis: metric,
-                        errorWrapper: success ? {} : {
-                            error: {
-                                message: `Failed to load: '${title}' (${page.url()}).`,
-                                code: status,
+                        const stepResult = {
+                            title: title,
+                            startTimestamp: startTime,
+                            responseTimeMillis: metric,
+                            errorWrapper: success ? {} : {
+                                error: {
+                                    message: `Failed to load: '${title}' (${page.url()}).`,
+                                    code: status,
+                                }
                             }
-                        }
-                    };
-
-                    onStepResult(stepResult);
-                    log.info(`DT: Step result (web page): ${JSON.stringify(stepResult)}.`);
+                        };
+                        log.info(`DT: Step result (web page): ${JSON.stringify(stepResult)}.`);
+                        resolve(stepResult);
+                    }));
                 }
             });
         }
@@ -131,6 +133,8 @@
         // ----- Web api Canary step builder: START -----
         const ignoredApiUrlPatterns = [
             /^monitoring\..*\.amazonaws.com(\/.*)?$/, // Where synthetics posts canary results
+            /^cw-syn-results(.*)\.amazonaws\.com(.*)?$/, // where synthetics posts canary screenshots
+            /^s3\.amazonaws\.com\/$/, // 
         ];
 
         function handleCanaryRequest(request, urlOrOptions, onStepResult) {
