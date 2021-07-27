@@ -51,6 +51,7 @@
             _stepResults$.length = originalFuncs.length = 0;
 
             // ----- Web page Canary instrumentation: START -----
+
             saveFunc(synthetics, 'getPage');
             // The original synthetics.getPage function that we override
             const originalGetPage = synthetics.getPage;
@@ -133,6 +134,8 @@
         // ----- Web api Canary step builder: START -----
         const ignoredApiUrlPatterns = [
             /^monitoring\..*\.amazonaws.com(\/.*)?$/, // Where synthetics posts canary results
+	    /^cw-syn-results(.*)\.amazonaws\.com(.*)?$/, // where synthetics posts canary screenshots
+            /^s3\.amazonaws\.com\/$/, // 
         ];
 
         function handleCanaryRequest(request, urlOrOptions, onStepResult) {
