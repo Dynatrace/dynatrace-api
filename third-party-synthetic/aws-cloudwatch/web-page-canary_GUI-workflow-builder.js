@@ -13,18 +13,15 @@ const flowBuilderBlueprint = async function () {
     });
 
     // Execute customer steps
-    await synthetics.executeStep('customerActions', async function () {
-        await Promise.all([
-          page.waitForNavigation({ timeout: 30000 }),
-          await page.click("nav [href='/trial/']")
-        ]);
-        try {
-            await synthetics.takeScreenshot("redirection", 'result');
-        } catch(ex) {
-            synthetics.addExecutionError('Unable to capture screenshot.', ex);
+    await synthetics.executeStep('click free trial', async function (timeoutInMillis = 30000) {
+        const freeTrial = 'Free trial';
+        const links = await page.$x("//a[contains(., '" + freeTrial + "')]");
+
+        if (links.length == 0) {
+           log.info("'" + freeTrial + "' link not found");
         }
-
-
+        const link = links[0];
+        await page.evaluate(el => el.click(), link);
     });
 };
 
