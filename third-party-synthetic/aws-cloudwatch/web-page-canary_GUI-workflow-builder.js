@@ -18,10 +18,13 @@ const flowBuilderBlueprint = async function () {
         const links = await page.$x("//a[contains(., '" + freeTrial + "')]");
 
         if (links.length == 0) {
-           log.info("'" + freeTrial + "' link not found");
+           log.info(`'${freeTrial}' link not found`);
         }
         const link = links[0];
-        await page.evaluate(el => el.click(), link);
+        await Promise.all([
+           page.waitForNavigation({ timeout: 30000 }),
+           page.evaluate(el => el.click(), link)
+        ]);
     });
 };
 
