@@ -1,5 +1,4 @@
-# Introduction
-
+# Query by Example
 The REST API for metrics gives you access to timeseries data, such as CPU utilization of a host or service or the bounce rate of a web application. For instance, free disk space, per host, per disk is uniquely identified with `builtin:host.disk.avail`. This hierarchical identifier is referred to as a metric key.
 
 A plain metric key is also the simplest form of a metric selector, which is used to specify one or more metrics to the Metric REST API for query, with the option to have the API perform additional transformations on the metric data, such as taking the average, sorting the result, or keeping only data points for satisfied users.
