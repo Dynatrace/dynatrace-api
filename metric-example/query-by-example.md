@@ -3,7 +3,7 @@ The REST API for metrics gives you access to timeseries data, such as CPU utiliz
 
 A plain metric key is also the simplest form of a metric selector, which is used to specify one or more metrics to the Metric REST API for query, with the option to have the API perform additional transformations on the metric data, such as taking the average, sorting the result, or keeping only data points for satisfied users.
 
-# Prerequisites
+## Prerequisites
 
 Before jumping into the usage scenarios, make sure that you have the following information at hand:
 
@@ -17,7 +17,7 @@ Some of the examples use `curl` to make the actual requests. If you are comforta
 
 Alternatively, use a REST client like [Insomnia](https://insomnia.rest/) or [Postman](https://www.postman.com/), both of which support importing curl commands.
 
-# Scenario 1: Explore Metrics, Dimensions, Aggregation Techniques
+## Scenario 1: Explore Metrics, Dimensions, Aggregation Techniques
 
 > **Task**
 > We want to get a list of available metrics.
@@ -63,7 +63,7 @@ GET {base}/metrics?fields=+dduBillable,+created,+lastWritten,+entityType,+aggreg
 
 The display names and descriptions give us an idea about the contained data. Another critical piece of information is the list of available aggregation techniques. For instance, it is valid to request the average CPU utilization, but the API will reject any request for the median, since it does not make sense for that specific metric.
 
-# Scenario 2: Select One Metric With Full Metadata
+## Scenario 2: Select One Metric With Full Metadata
 
 > **Task**
 > We found an interesting metric and we would like to get more information about what data it provides and which queries we can actually do.
@@ -77,7 +77,7 @@ Accept: text/csv
 
 Note that a full descriptor with all optional fields included is returned when requesting a single metric as a path parameter. Any field name returned here can also be used for the `fields` parameter on `/metrics`.
 
-# Scenario 3: Select Multiple Metrics with Tuples
+## Scenario 3: Select Multiple Metrics with Tuples
 
 >**Task**
 >We want metadata of two related metrics to compare them.
@@ -100,7 +100,7 @@ GET {base}/metrics?metricSelector=builtin:host.cpu.(system,user)
 Accept: text/csv
 ```
 
-# Scenario 4: List Metric Sub-Trees with Wildcards
+## Scenario 4: List Metric Sub-Trees with Wildcards
 
 >**Task**
 >We would like to search for all metrics for a certain topic.
@@ -113,7 +113,7 @@ builtin:host.cpu.*
 
 Note that wildcard selectors are allowed for descriptor queries, but not for bulk metric data queries. Such bulk queries have an upper bound of twelve metrics at a time, and allowing wildcards in a query would make adding new metric keys a breaking change.
 
-# Scenario 5: Full-text Metric Search
+## Scenario 5: Full-text Metric Search
 
 >**Task**
 >We would like to search for all metrics that mention a specific concept in their ID, display name, or description.
@@ -128,7 +128,7 @@ GET {base}/metrics?text=cpu
 
 Turns out there are a whole lot of other metrics related to CPU! Most of them include `cpu` in the metric key, but e.g. `builtin:cloud.kubernetes.cluster.cores` does not. Why does it show up in the result, then? It does because `text` also uses the display name and the description for this search. This is also what the Data Explorer uses to present available metrics when you start typing into the metric field.
 
-# Scenario 6: Querying Time Series Data
+## Scenario 6: Querying Time Series Data
 
 >**Task**
 >We would like to query CPU usage on some hosts during the last 2 weeks.
@@ -156,7 +156,7 @@ builtin:host.cpu.usage,HOST-F1266E1D0AAC2C3C,2019-03-26 15:00:00,10.327820480510
 builtin:host.cpu.usage,HOST-F1266E1D0AAC2C3C,2019-03-26 18:00:00,9.816637022694524
 ```
 
-# Scenario 7: Aggregation with Basic Transformer Chains
+## Scenario 7: Aggregation with Basic Transformer Chains
 
 >**Task**
 >We want to look at the peak CPU usage
@@ -205,7 +205,7 @@ value,"[dt.entity.application:ENTITY, Users:STRING, User type:STRING]",161184828
 ```
 Observing the transformed descriptor is especially useful with more complex transformer chains.
 
-# Scenario 8: Find CPU hogs
+## Scenario 8: Find CPU hogs
 
 >**Task**
 >We just queried CPU data and found a host with abnormally high CPU utilization, but it might not be the only one. How do we query for the 10 hosts with the highest average CPU utilization right now?
@@ -244,7 +244,7 @@ metricId,dt.entity.host.name,dt.entity.host,time,value
 ```
 That's better. You can see that by combining transformations, we can design powerful queries and slice and dice the data as we need it.
 
-# Scenario 9: Average Session Duration of Non-robot First-time Users with Advanced Transformer Chains
+## Scenario 9: Average Session Duration of Non-robot First-time Users with Advanced Transformer Chains
 
 >**Task**
 >We need to provide data on average session duration, but filter out some unwanted types of visits which do not represent a real user.
@@ -284,7 +284,7 @@ Note how the semantics of the transformer chain change with the ordering of the 
 
 We get an error since we just merged the visitor type and then tried to filter on the dimension we just removed.
 
-# Scenario 10: All Service Methods of a Service
+## Scenario 10: All Service Methods of a Service
 
 >**Task**
 >We want to get information for our web service, but by default the data is reported on service method level.
@@ -316,7 +316,7 @@ metricId,dt.entity.service,dt.entity.service_method,time,value
 ```
 If we want to lose the service dimension again after filtering, we can use a `:merge(dt.entity.service)`. The order of transformations is again important. The filter cannot precede the `:parents`, since the dimension does not exist at that point.
 
-# Scenario 11: Apdex for Users of iOS 6.x
+## Scenario 11: Apdex for Users of iOS 6.x
 
 >**Task**
 >We want to filter a secondary dimension (Operating System) by name, rather than by ID.
@@ -340,7 +340,7 @@ metricId,dt.entity.device_application.name,dt.entity.device_application,dt.entit
 ...
 ```
 
-# Scenario 12: Using Space and Time Aggregation with Disk Usages
+## Scenario 12: Using Space and Time Aggregation with Disk Usages
 
 >**Task**
 >For a dashboard, we want a single number for the used disk capacity over all hosts.
@@ -351,7 +351,7 @@ This common transformation pattern looks like a mistake at first, because the ou
 
 Conceptually, you can think of the next aggregation after a `:merge` or `:splitBy` to operate on a list of merged values, supporting any of min, max, avg, sum, median or percentile on that list. Depending on the space aggregation in use, the API will use a suitable data structure to model this conceptual list of merged values (typically a statistical summary or percentile estimator).
 
-# Scenario 13: Combine Series and Point Queries with Folding
+## Scenario 13: Combine Series and Point Queries with Folding
 
 >**Task**
 >For a report, we want to query both per-month CPU usage, but also get an overall average.
@@ -362,7 +362,7 @@ Say we want to access `builtin:host.cpu.usage` over the complete last year from 
 ```
 GET {base}/metrics/query?metricId=builtin:host.cpu.usage:fold,builtin:host.cpu.usage&from=now-y/y&to=now/y&resolution=1M
 ```
-# Scenario 14: Maximum of Average CPU Usage Values Over Time
+## Scenario 14: Maximum of Average CPU Usage Values Over Time
 
 >**Task**
 >For a chart, we want to draw a line that exactly intersects the peak of the graph.
@@ -384,7 +384,7 @@ The result is exactly what we wanted: the maximum average values over time. We c
 
 If you query this selector together with `builtin:host.cpu.usage:avg` you see that the single value is always exactly equal to the maximum entry of the corresponding series.
 
-# Scenario 15: Filtering for Special Characters with Quoting
+## Scenario 15: Filtering for Special Characters with Quoting
 
 >**Task**
 >We have a filter text field, but the resulting metric selector is invalid if we type in special characters.
@@ -415,7 +415,7 @@ builtin:host.disk.avail
  )
 ```
 
-# Scenario 16: Two Metrics with Two Different Entity Selectors
+## Scenario 16: Two Metrics with Two Different Entity Selectors
 
 >**Task**
 >We want to query multiple metrics at once, and each metric should use a different entity selector.
@@ -443,7 +443,7 @@ builtin:host.cpu.usage
 )
 ```
 
-# Scenario 17: Does our Service use Less Memory after the Update
+## Scenario 17: Does our Service use Less Memory after the Update
 
 >**Task**
 >We want to see the CPU utilization graph of yesterday and the day before yesterday, displayed on top of each other in a chart, so that we can look out for differences.
@@ -455,7 +455,7 @@ builtin:tech.generic.cpu.usage:timeshift(-1d),
 ```
 The second time series is shifted one day into the past, showing data from the day before yesterday, but with the same timestamps as the first, un-shifted series. When charting these, they will be displayed on top of each other.
 
-# Scenario 18: Last Stock Price Yesterday
+## Scenario 18: Last Stock Price Yesterday
 
 >**Task**
 >We want the last reported value just before midnight yesterday, but if the last time slot contains a gap in the data, we want to go back and instead see the last non-null data.
@@ -466,11 +466,11 @@ stock_price:last
 ```
 If there is at least one non-null data point, the result will use the latest value or otherwise be empty.
 
-# Other Functionality Related to Metric Selectors
+## Other Functionality Related to Metric Selectors
 
 The parameters `from`, `to` and `resolution` are not part of the metric selector but apply to the whole query. Nonetheless, this section provides a high-level overview that will help you use them effectively.
 
-## Choosing Resolution and Time Frame
+### Choosing Resolution and Time Frame
 
 `from` and `to` accept multiple date formats, including milliseconds since 1970 and human-readable dates in year-month-day order that may include time-of-day, as well as GMT offset. Additionally, a simple format for relative dates is accepted.
 
@@ -489,7 +489,7 @@ Resolution accepts identical units, e.g. `M` or `1M` signifies one month of time
 
 It is important to note that the resolution is intended as a hint to the server about a preferred count or resolution. When the wish for a resolution cannot be fulfilled exactly, e.g. when requesting eleven minutes between data points, the API will try to find the most satisfying available resolution. Further, the query timeframe may not be aligned with how data points are stored internally, causing the API to extend the timeframe outwards. For these reasons, the API sometimes returns more data points than requested.
 
-## Entity Selector
+### Entity Selector
 
 Per default, metrics are requested for the universal scope, encompassing the complete Dynatrace environment that the authenticated user has access to. More often than not, only a subset of this data is required. A restricted query is facilitated by the specification of an entity selector expression, sometimes referred to as an entity scope.
 
@@ -507,6 +507,6 @@ entitySelector=type(HOST),tag(Europe),tag(Linux)
 ```
 You can see that compound scope expressions are built by AND-connecting predicate expressions with the comma character.
 
-# Further Reading
+## Further Reading
 
 **To learn more about entity selectors, see the [Official EntitySelector Documentation](https://www.dynatrace.com/support/help/dynatrace-api/environment-api/entity-v2/entity-selector/).**
