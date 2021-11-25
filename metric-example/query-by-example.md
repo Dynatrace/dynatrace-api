@@ -145,7 +145,7 @@ Note that while not strictly part of the metric selector, there are some closely
 |:---|---|---|---|
 | `from` | `1554798800839` | `now-2w` | Lower bound of query timeframe |
 | `to` | `2019-06-03` | `now` | Upper bound of query timeframe |
-| `resolution` | `Inf`, `5`, `15m` | `120` | Desired data point count (unit-less) or step between data points (with unit of time) |
+| `resolution` | `1m`, `12h`, `60` | `120` | Desired data point count (unit-less) or step between data points (with unit of time) |
 
 The above query yields a result in the following format when the output format is chosen to be CSV:
 
@@ -208,13 +208,13 @@ Observing the transformed descriptor is especially useful with more complex tran
 ## Scenario 8: Find CPU hogs
 
 >**Task**
->We just queried CPU data and found a host with abnormally high CPU utilization, but it might not be the only one. How do we query for the 10 hosts with the highest average CPU utilization right now?
+>We just queried CPU data and found a host with abnormally high CPU utilization, but it might not be the only one. How do we query for the 3 hosts with the highest average CPU utilization right now?
 
 We just queried
 ```
 {base}/metrics/query?metricSelector=builtin:host.cpu.usage&from=now/d&resolution=Inf
 ```
-and get back results for some thousands of hosts. Looking at the data, most hosts in `builtin:host.cpu.usage` seem to behave normally, but some have extremely high CPU utilization. Hopefully, none of the high-CPU hosts were overlooked. We decide to query for the 3 hosts where the CPU utilization percentage was highest today (on average).
+and get back results for some thousands of hosts. Looking at the data, most hosts in `builtin:host.cpu.usage` seem to behave normally, but some have extremely high CPU utilization. Hopefully, none of the high-CPU hosts were overlooked. We decide to query for the 3 hosts where the CPU utilization percentage was highest today (on average).
 
 Using `:sort` would work to have the high-utilization hosts on top, but then we would still have a lot of low-utilization hosts that we are not interested in right now.
 
@@ -222,25 +222,26 @@ The solution is to combine `:sort` with `:limit`, which keeps the first N resu
 ```
 builtin:host.cpu.usage  
 :sort(  
-value(avg, descending)  
+	value(avg, descending)  
 )
 :limit(3)
+:fold
 ```
 The order of transformations is important for the overall meaning of the query. Transformations are evaluated left to right. Since limit is evaluated after sort, it will only cut off the low-CPU hosts. Writing multi-line selectors like the one in the example can make complex metric selectors more readable.
 
 The result looks promising, but HOST-10000000000000 is not exactly human-readable:
 ```
 metricId,dt.entity.host,time,value  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-30000000000000,1610992260000,31.592474088881172  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-10000000000000,1610992260000,20.546555923312308  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-20000000000000,1610992260000,20.54574979701455
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):fold",HOST-30000000000000,1610992260000,71.592474088881172  
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):fold",HOST-10000000000000,1610992260000,68.546555923312308  
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):fold",HOST-20000000000000,1610992260000,60.54574979701455
 ```
 Add an additional transformation `:names` to also find out about the hostname:
 ```
 metricId,dt.entity.host.name,dt.entity.host,time,value  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",eu.example.com,HOST-5928C8E47F4BFE45,1610992380000,31.592501233253316  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",us.example.com,HOST-E35417DEC6EDCF40,1610992380000,20.54627779165626  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",staging.example.com,HOST-E398C6694A573CC2,1610992380000,20.545800811738996
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names:fold",eu.example.com,HOST-5928C8E47F4BFE45,1610992380000,71.592501233253316  
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names:fold",us.example.com,HOST-E35417DEC6EDCF40,1610992380000,68.54627779165626  
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names:fold",staging.example.com,HOST-E398C6694A573CC2,1610992380000,60.545800811738996
 ```
 That's better. You can see that by combining transformations, we can design powerful queries and slice and dice the data as we need it.
 
