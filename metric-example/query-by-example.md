@@ -212,36 +212,56 @@ Observing the transformed descriptor is especially useful with more complex tran
 
 We just queried
 ```
-{base}/metrics/query?metricSelector=builtin:host.cpu.usage&from=now/d&resolution=Inf
+{base}/metrics/query?metricSelector=builtin:host.cpu.usage&from=now/d
 ```
 and get back results for some thousands of hosts. Looking at the data, most hosts in `builtin:host.cpu.usage` seem to behave normally, but some have extremely high CPU utilization. Hopefully, none of the high-CPU hosts were overlooked. We decide to query for the 3 hosts where the CPU utilization percentage was highest today (on average).
 
-Using `:sort` would work to have the high-utilization hosts on top, but then we would still have a lot of low-utilization hosts that we are not interested in right now.
+Using `:sort(avg, descending)` would put the hosts on top that have the highest average over the whole series.
 
-The solution is to combine `:sort` with `:limit`, which keeps the first N results and drops the rest:
+What does this mean exactly? To compare one series to the other, it is necessary to reduce each series to a single number that can easily be compared to other series. `avg` does just that by extracting an average from the series for use by the sort operator. Note that the output of the `sort` operator will not be this average (which is only used for comparison), but the full series that the average was derived from.
+
+More generally, `avg` is called a _rollup_. Other examples of rollups are `max` for the peak value of each series or `sum` for the sum of all values in the series. Apart from sorting, rollups can also be used to filter a series based on whether or not they exceed a certain threshold, replace a series with the rolled-up value, or to calculate a seven day incidence.
+
+Back to our example with CPU utilizations: With just `:sort(avg, descending)`, we would still have a lot of low-utilization hosts further down that we are not interested in right now.
+
+The solution is to combine `:sort` with `:limit(N)`, which keeps the first N results and drops the rest:
 ```
 builtin:host.cpu.usage  
-:sort(  
+: sort(  
 	value(avg, descending)  
 )
-:limit(3)
-:fold
+: limit(3)
 ```
-The order of transformations is important for the overall meaning of the query. Transformations are evaluated left to right. Since limit is evaluated after sort, it will only cut off the low-CPU hosts. Writing multi-line selectors like the one in the example can make complex metric selectors more readable.
+The order of transformations is important for the overall meaning of the query. Transformations are evaluated left to right and line-wise top to bottom. Since limit is evaluated after sort, it will only cut off the low-CPU hosts. Writing multi-line selectors like the one in the example can make complex metric selectors more readable than the single-line version.
 
-The result looks promising, but HOST-10000000000000 is not exactly human-readable:
+The result looks promising, but `HOST-10000000000000` is not exactly human-readable:
 ```
 metricId,dt.entity.host,time,value  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):fold",HOST-30000000000000,1610992260000,71.592474088881172  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):fold",HOST-10000000000000,1610992260000,68.546555923312308  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):fold",HOST-20000000000000,1610992260000,60.54574979701455
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-30000000000000,1610992260000,71.592474088881172
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-30000000000000,1610995860000,71.97523692696515
+[...]
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-10000000000000,1610992260000,68.546555923312308
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-10000000000000,1610995860000,64.51643715911996
+[...]
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-20000000000000,1610992260000,60.54574979701455
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-20000000000000,1610995860000,64.8794602031501
+[...]
 ```
+
+Note: `[...]` indicates that data points have been left out for brevity.
+
 Add an additional transformation `:names` to also find out about the hostname:
 ```
 metricId,dt.entity.host.name,dt.entity.host,time,value  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names:fold",eu.example.com,HOST-5928C8E47F4BFE45,1610992380000,71.592501233253316  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names:fold",us.example.com,HOST-E35417DEC6EDCF40,1610992380000,68.54627779165626  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names:fold",staging.example.com,HOST-E398C6694A573CC2,1610992380000,60.545800811738996
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",eu.example.com,HOST-5928C8E47F4BFE45,1610992380000,71.592501233253316
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",eu.example.com,HOST-5928C8E47F4BFE45,1610995860000,71.97523692696515
+[...]
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",us.example.com,HOST-E35417DEC6EDCF40,1610992380000,68.54627779165626
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",us.example.com,HOST-E35417DEC6EDCF40,1610995860000,64.51643715911996
+[...]
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",staging.example.com,HOST-E398C6694A573CC2,1610992380000,60.545800811738996
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",staging.example.com,HOST-E398C6694A573CC2,1610995860000,64.8794602031501
+[...]
 ```
 That's better. You can see that by combining transformations, we can design powerful queries and slice and dice the data as we need it.
 
