@@ -334,7 +334,48 @@ Note how the semantics of the transformer chain change with the ordering of the 
 
 We get an error since we just merged the visitor type and then tried to filter on the dimension we just removed.
 
-## Scenario 11: All Service Methods of a Service
+## Scenario 11: Weighted and Unweighted Averages of Sales
+>**Task**
+> Given a gauge metric that tracks every sale, split by a product ID, what's the average daily price for product 42 in the last two weeks? What is the average daily revenue of product 42 in the last two weeks?
+
+The prime use case for gauge metrics is regular sampling, e.g. of a temperature, but in Dynatrace you can also use it to track statistical summaries of events that occur in irregular intervals. For instance, `builtin:tech.php.phpGc.durationMs` receives a duration in milliseconds after each run of the PHP garbage collector. If the garbage collector does not run, no value is reported.
+
+Such event-style gauge metrics can be used for other kinds of measurements too.
+Our own metric `sales` reports one data point for each sale of a product, namely the price we sold it for, with the product ID stored in the dimension `id`. The price varies over time due to a number of factors: some customers get a premium discount and we also offer a best-price guarantee so we are obligated to give an equivalent or better offer if a customer shows us that a competitor offers a cheaper price.
+
+First we want to get data for the last two weeks with days resolution so we set `from` to `now-2w` and we set `resolution` to `d`.
+
+Now we want to write the selector. All of the aggregation types kind of make sense for our event-based sales metric: the number of sales for a product/timeslot is `sales:count`, the total revenue for it is `sales:sum`, the average selling price in the time slot is `sales:avg` and the best/worst price are either `sales:min` or `sales:max`, depending on your perspective. Note that if no price is reported in a time slot of a query response, then the value will be `null`, regardless of the sample statistic in use. We will learn later on in this scenario how to deal with such data gaps.
+
+Since we are interested in the average daily price for product 42, a first attempt might be to roll up the result for the last two weeks using `avg`:
+```
+sales
+: filter(eq("id", "42"))
+: fold(avg)
+```
+
+At first sight, this seems fine, but we have made a subtle mistake: `fold(avg)` on a gauge metric will give us an average that is weighted by the sample count, so if we sold 100 items of product 42 on Monday, just one on Tuesday, and nothing on Wednesday, then the impact of the sales on Monday will be 100 times higher than that of Tuesday, and Wednesday has no impact at all. Data gaps like Wednesday should not influence the total average sales price, so we can keep the `null` values as-is, but using cardinality as weight clearly skews our average towards Monday's value.
+
+What we really want is the average of the per-timeslot averages, excluding time slots with no data, so that every time slot with non-null data has the same weight. We do that by first applying the time aggregation `avg` to get per-timeslot averages, and then we average those into a single value with `fold(avg)`:
+```
+sales
+: filter(eq("id", "42"))
+: avg
+: fold(avg)
+```
+
+Voilà.
+
+Next, we need the average daily revenue for product 42 in the query timeframe. To get the total revenue for the product on each day, we use `:sum` and we average the per-timeslot values using `:fold(avg)`, but this time we do not want to ignore data gaps. Instead, we want to include days where no sale was reported as 0 in the average calculation. `:default(0)` will do just that and replace data gaps (`null`) with the specified value. Putting it all together, we get the average revenue per time slot for product 42 in the query timeframe with:
+```
+sales
+: filter(eq("id", "42"))
+: sum
+: default(0)
+: fold(avg)
+```
+
+## Scenario 12: All Service Methods of a Service
 
 >**Task**
 >We want to get information for our web service, but by default the data is reported on service method level.
@@ -366,7 +407,7 @@ metricId,dt.entity.service,dt.entity.service_method,time,value
 ```
 If we want to lose the service dimension again after filtering, we can use a `:merge(dt.entity.service)`. The order of transformations is again important. The filter cannot precede the `:parents`, since the dimension does not exist at that point.
 
-## Scenario 12: Apdex for Users of iOS 6.x
+## Scenario 13: Apdex for Users of iOS 6.x
 
 >**Task**
 >We want to filter a secondary dimension (Operating System) by name, rather than by ID.
@@ -390,7 +431,7 @@ metricId,dt.entity.device_application.name,dt.entity.device_application,dt.entit
 ...
 ```
 
-## Scenario 13: Using Space and Time Aggregation with Disk Usages
+## Scenario 14: Using Space and Time Aggregation with Disk Usages
 
 >**Task**
 >For a dashboard, we want a single number for the used disk capacity over all hosts.
@@ -401,7 +442,7 @@ This common transformation pattern looks like a mistake at first, because the ou
 
 Conceptually, you can think of the next aggregation after a `:merge` or `:splitBy` to operate on a list of merged values, supporting any of min, max, avg, sum, median or percentile on that list. Depending on the space aggregation in use, the API will use a suitable data structure to model this conceptual list of merged values (typically a statistical summary or percentile estimator).
 
-## Scenario 14: Combine Series and Point Queries with Folding
+## Scenario 15: Combine Series and Point Queries with Folding
 
 >**Task**
 >For a report, we want to query both per-month CPU usage, but also get an overall average.
@@ -412,7 +453,7 @@ Say we want to access `builtin:host.cpu.usage` over the complete last year from 
 ```
 GET {base}/metrics/query?metricId=builtin:host.cpu.usage:fold,builtin:host.cpu.usage&from=now-y/y&to=now/y&resolution=1M
 ```
-## Scenario 15: Maximum of Average CPU Usage Values Over Time
+## Scenario 16: Maximum of Average CPU Usage Values Over Time
 
 >**Task**
 >For a chart, we want to draw a line that exactly intersects the peak of the graph.
@@ -434,7 +475,7 @@ The result is exactly what we wanted: the maximum average values over time. We c
 
 If you query this selector together with `builtin:host.cpu.usage:avg` you see that the single value is always exactly equal to the maximum entry of the corresponding series.
 
-## Scenario 16: Filtering for Special Characters with Quoting
+## Scenario 17: Filtering for Special Characters with Quoting
 
 >**Task**
 >We have a filter text field, but the resulting metric selector is invalid if we type in special characters.
@@ -465,7 +506,7 @@ builtin:host.disk.avail
  )
 ```
 
-## Scenario 17: Two Metrics with Two Different Entity Selectors
+## Scenario 18: Two Metrics with Two Different Entity Selectors
 
 >**Task**
 >We want to query multiple metrics at once, and each metric should use a different entity selector.
@@ -493,7 +534,7 @@ builtin:host.cpu.usage
 )
 ```
 
-## Scenario 18: Does our Service use Less Memory after the Update
+## Scenario 19: Does our Service use Less Memory after the Update
 
 >**Task**
 >We want to see the CPU utilization graph of yesterday and the day before yesterday, displayed on top of each other in a chart, so that we can look out for differences.
@@ -505,7 +546,7 @@ builtin:tech.generic.cpu.usage:timeshift(-1d),
 ```
 The second time series is shifted one day into the past, showing data from the day before yesterday, but with the same timestamps as the first, un-shifted series. When charting these, they will be displayed on top of each other.
 
-## Scenario 19: Last Stock Price Yesterday
+## Scenario 20: Last Stock Price Yesterday
 
 >**Task**
 >We want the last reported value just before midnight yesterday, but if the last time slot contains a gap in the data, we want to go back and instead see the last non-null data.
