@@ -265,7 +265,36 @@ metricId,dt.entity.host.name,dt.entity.host,time,value
 ```
 That's better. You can see that by combining transformations, we can design powerful queries and slice and dice the data as we need it.
 
-## Scenario 9: Average Session Duration of Non-robot First-time Users with Advanced Transformer Chains
+## Scenario 9: Peak CPU Usage
+>**Task**
+>Given measurements of CPU utilization percentages, how can we find the peak values of the top series?
+
+In the previous example we sorted a series based on a _rollup_ called `avg`. Now we want to check for outliers, so we use the `max` _rollup_, resulting in the series with the highest peaks appearing first:
+```
+builtin:host.cpu.usage
+: sort(  
+	value(max, descending)  
+)
+: limit(3)
+```
+
+This works, but how high was the peak, exactly, for the series shown? Just scanning through the three series in the result and getting the top value will give us a subtly wrong result for this example: since no time aggregation was specified, we rely on the default aggregation to aggregate the samples in the time slots to one value. For `builtin:host.cpu.usage`, the default aggregation is average, not maximum. Hence, we do not even see the exact value we used for sorting in the result.
+
+Adding `:max` at the end of our selector would change the time aggregation so that we see the maximum sample in each time slot, but we would still have to go through all of the values to find the peak, which seems tedious.
+
+Instead, let's add `:fold(max)` and let the metric API figure out the peak for us:
+```
+builtin:host.cpu.usage
+: sort(  
+	value(max, descending)  
+)
+: limit(3)
+: fold(max)
+```
+
+Now, each result holds exactly one value, and that value is the peak.
+
+## Scenario 10: Average Session Duration of Non-robot First-time Users with Advanced Transformer Chains
 
 >**Task**
 >We need to provide data on average session duration, but filter out some unwanted types of visits which do not represent a real user.
@@ -305,7 +334,7 @@ Note how the semantics of the transformer chain change with the ordering of the 
 
 We get an error since we just merged the visitor type and then tried to filter on the dimension we just removed.
 
-## Scenario 10: All Service Methods of a Service
+## Scenario 11: All Service Methods of a Service
 
 >**Task**
 >We want to get information for our web service, but by default the data is reported on service method level.
@@ -337,7 +366,7 @@ metricId,dt.entity.service,dt.entity.service_method,time,value
 ```
 If we want to lose the service dimension again after filtering, we can use a `:merge(dt.entity.service)`. The order of transformations is again important. The filter cannot precede the `:parents`, since the dimension does not exist at that point.
 
-## Scenario 11: Apdex for Users of iOS 6.x
+## Scenario 12: Apdex for Users of iOS 6.x
 
 >**Task**
 >We want to filter a secondary dimension (Operating System) by name, rather than by ID.
@@ -361,7 +390,7 @@ metricId,dt.entity.device_application.name,dt.entity.device_application,dt.entit
 ...
 ```
 
-## Scenario 12: Using Space and Time Aggregation with Disk Usages
+## Scenario 13: Using Space and Time Aggregation with Disk Usages
 
 >**Task**
 >For a dashboard, we want a single number for the used disk capacity over all hosts.
@@ -372,7 +401,7 @@ This common transformation pattern looks like a mistake at first, because the ou
 
 Conceptually, you can think of the next aggregation after a `:merge` or `:splitBy` to operate on a list of merged values, supporting any of min, max, avg, sum, median or percentile on that list. Depending on the space aggregation in use, the API will use a suitable data structure to model this conceptual list of merged values (typically a statistical summary or percentile estimator).
 
-## Scenario 13: Combine Series and Point Queries with Folding
+## Scenario 14: Combine Series and Point Queries with Folding
 
 >**Task**
 >For a report, we want to query both per-month CPU usage, but also get an overall average.
@@ -383,7 +412,7 @@ Say we want to access `builtin:host.cpu.usage` over the complete last year from 
 ```
 GET {base}/metrics/query?metricId=builtin:host.cpu.usage:fold,builtin:host.cpu.usage&from=now-y/y&to=now/y&resolution=1M
 ```
-## Scenario 14: Maximum of Average CPU Usage Values Over Time
+## Scenario 15: Maximum of Average CPU Usage Values Over Time
 
 >**Task**
 >For a chart, we want to draw a line that exactly intersects the peak of the graph.
@@ -405,7 +434,7 @@ The result is exactly what we wanted: the maximum average values over time. We c
 
 If you query this selector together with `builtin:host.cpu.usage:avg` you see that the single value is always exactly equal to the maximum entry of the corresponding series.
 
-## Scenario 15: Filtering for Special Characters with Quoting
+## Scenario 16: Filtering for Special Characters with Quoting
 
 >**Task**
 >We have a filter text field, but the resulting metric selector is invalid if we type in special characters.
@@ -436,7 +465,7 @@ builtin:host.disk.avail
  )
 ```
 
-## Scenario 16: Two Metrics with Two Different Entity Selectors
+## Scenario 17: Two Metrics with Two Different Entity Selectors
 
 >**Task**
 >We want to query multiple metrics at once, and each metric should use a different entity selector.
@@ -464,7 +493,7 @@ builtin:host.cpu.usage
 )
 ```
 
-## Scenario 17: Does our Service use Less Memory after the Update
+## Scenario 18: Does our Service use Less Memory after the Update
 
 >**Task**
 >We want to see the CPU utilization graph of yesterday and the day before yesterday, displayed on top of each other in a chart, so that we can look out for differences.
@@ -476,7 +505,7 @@ builtin:tech.generic.cpu.usage:timeshift(-1d),
 ```
 The second time series is shifted one day into the past, showing data from the day before yesterday, but with the same timestamps as the first, un-shifted series. When charting these, they will be displayed on top of each other.
 
-## Scenario 18: Last Stock Price Yesterday
+## Scenario 19: Last Stock Price Yesterday
 
 >**Task**
 >We want the last reported value just before midnight yesterday, but if the last time slot contains a gap in the data, we want to go back and instead see the last non-null data.
