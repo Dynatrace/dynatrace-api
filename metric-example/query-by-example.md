@@ -553,7 +553,7 @@ builtin:tech.generic.cpu.usage
     in(
       dt.entity.process_group_instance,  
       entitySelector("type(PROCESS_GROUP_INSTANCE),tag(business-critical)") 
-  	)  
+    )  
 ),
 
 builtin:host.cpu.usage  
