@@ -282,7 +282,7 @@ This works, but how high was the peak, exactly, for the series shown? Just scann
 
 Adding `:max` at the end of our selector would change the time aggregation so that we see the maximum sample in each time slot, but we would still have to go through all of the values to find the peak, which seems tedious.
 
-Instead, let's add `:fold(max)` and let the metric API figure out the peak for us:
+Instead, let's add `:fold(max)` and let the metric API figure out the peak for us. The purpose of `fold` is to reduce series to a single value. A rollup function (`max`) may be provided as an argument. For example:
 ```
 builtin:host.cpu.usage
 : sort(  
@@ -294,7 +294,24 @@ builtin:host.cpu.usage
 
 Now, each result holds exactly one value, and that value is the peak.
 
-## Scenario 10: Average Session Duration of Non-robot First-time Users with Advanced Transformer Chains
+## Scenario 10: Combine Series and Point Queries with Folding
+
+>**Task**
+>For a report, we want to query both per-month CPU usage, but also get an overall average.
+
+We have already seen `fold` in action to extract a peak value.
+In some situations, it is useful to have such a summary value together with the full series, that is, a mixed result with some series results and some related point results.
+
+Say we want to access `builtin:host.cpu.usage` over the complete last year from January to just before January this year (`now-y/y` to `now/y`). We want a resolution of `1M`, but we are also interested in the average value over the whole year. This can be done in a single bulk query, once using `:fold(avg)` and once omitting it:
+```
+GET {base}/metrics/query?metricId=builtin:host.cpu.usage:fold(avg),builtin:host.cpu.usage&from=now-y/y&to=now/y&resolution=1M
+```
+
+Any of `min`, `max`, `avg`, `median`, `percentile(N)`, `sum`, `count` or `auto` can be used here as an argument for the fold, regardless of which aggregation types are supported by the metric, e.g. `builtin:host.cpu.usage:fold(median)` is perfectly legal and will calculate an estimation for a median sample over time for each host.
+
+It is also legal to not specify any arguments for `:fold`. In this case measurements over time are merged, but no value is extracted yet. How exactly this merging works depends on the metric. Any time aggregation that was supported before the fold can be applied later, e.g. `builtin:host.cpu.usage:fold:min`. Leaving out the time aggregation will lead to the default aggregation being applied as the last step.
+
+## Scenario 11: Average Session Duration of Non-robot First-time Users with Advanced Transformer Chains
 
 >**Task**
 >We need to provide data on average session duration, but filter out some unwanted types of visits which do not represent a real user.
@@ -334,7 +351,7 @@ Note how the semantics of the transformer chain change with the ordering of the 
 
 We get an error since we just merged the visitor type and then tried to filter on the dimension we just removed.
 
-## Scenario 11: Service Response Time in the 99th Percentile
+## Scenario 12: Service Response Time in the 99th Percentile
 >**Task**
 >For our payment service, we query the maximum response time of the last day to visualize it as a KPI on a dashboard. Unfortunately the maximum is very sensitive to outliers. Can we make our KPI more robust?
 
@@ -364,7 +381,7 @@ Note that any rollup can be used in `fold` - It is not necessary for the metric 
 
 Also note that applying a time aggregation right before a fold with the same aggregation kind used as a rollup is optional. If `metric` supports `min`, then `metric:fold(min)` behaves the same as `metric:min:fold(min)`. If the metric in the first example does not support `min` but has not been in another way before folding, then `auto` will be used.
 
-## Scenario 12: Weighted and Unweighted Averages of Sales
+## Scenario 13: Weighted and Unweighted Averages of Sales
 >**Task**
 > Given a gauge metric that tracks every sale, split by a product ID, what's the average daily price for product 42 in the last two weeks? What is the average daily revenue of product 42 in the last two weeks?
 
@@ -405,7 +422,7 @@ sales
 : fold(avg)
 ```
 
-## Scenario 13: All Service Methods of a Service
+## Scenario 14: All Service Methods of a Service
 
 >**Task**
 >We want to get information for our web service, but by default the data is reported on service method level.
@@ -437,7 +454,7 @@ metricId,dt.entity.service,dt.entity.service_method,time,value
 ```
 If we want to lose the service dimension again after filtering, we can use a `:merge(dt.entity.service)`. The order of transformations is again important. The filter cannot precede the `:parents`, since the dimension does not exist at that point.
 
-## Scenario 14: Apdex for Users of iOS 6.x
+## Scenario 15: Apdex for Users of iOS 6.x
 
 >**Task**
 >We want to filter a secondary dimension (Operating System) by name, rather than by ID.
@@ -461,7 +478,7 @@ metricId,dt.entity.device_application.name,dt.entity.device_application,dt.entit
 ...
 ```
 
-## Scenario 15: Using Space and Time Aggregation with Disk Usages
+## Scenario 16: Using Space and Time Aggregation with Disk Usages
 
 >**Task**
 >For a dashboard, we want a single number for the used disk capacity over all hosts.
@@ -471,18 +488,6 @@ metricId,dt.entity.device_application.name,dt.entity.device_application,dt.entit
 This common transformation pattern looks like a mistake at first, because the output of `:max` is a plain number, which can not be aggregated with `:sum` (only `:value` is supported for plain numbers, which is a no-op) and `:splitBy` as we used it until now does not change the data type being passed through it. In our use case, `:splitBy` _does_ change the output data type, in order for `:sum` to become a supported aggregation type. This feature is often referred to as _bucket inference_, because `:splitBy` and `merge` intelligently decide which data structure (bucket) will be used to collect the merged values, by looking to the right for the next aggregation being applied to the merged values, changing the output data type of the merging.
 
 Conceptually, you can think of the next aggregation after a `:merge` or `:splitBy` to operate on a list of merged values, supporting any of min, max, avg, sum, median or percentile on that list. Depending on the space aggregation in use, the API will use a suitable data structure to model this conceptual list of merged values (typically a statistical summary or percentile estimator).
-
-## Scenario 16: Combine Series and Point Queries with Folding
-
->**Task**
->For a report, we want to query both per-month CPU usage, but also get an overall average.
-
-In some situations, it is useful to transmute a series result into a point result in any position of the transformer chain. One such example is when we want mixed series and point results.
-
-Say we want to access `builtin:host.cpu.usage` over the complete last year from January to just before January this year (`now-y/y` to `now/y`). We want a resolution of `1M`, but we are also interested in the average value over the whole year. This can be done in a single bulk query, once using `:fold` and once omitting it:
-```
-GET {base}/metrics/query?metricId=builtin:host.cpu.usage:fold,builtin:host.cpu.usage&from=now-y/y&to=now/y&resolution=1M
-```
 
 ## Scenario 17: Maximum of Average CPU Usage Values Over Time
 
