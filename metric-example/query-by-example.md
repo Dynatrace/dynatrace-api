@@ -334,7 +334,37 @@ Note how the semantics of the transformer chain change with the ordering of the 
 
 We get an error since we just merged the visitor type and then tried to filter on the dimension we just removed.
 
-## Scenario 11: Weighted and Unweighted Averages of Sales
+## Scenario 11: Service Response Time in the 99th Percentile
+>**Task**
+>For our payment service, we query the maximum response time of the last day to visualize it as a KPI on a dashboard. Unfortunately the maximum is very sensitive to outliers. Can we make our KPI more robust?
+
+We regularly query `builtin:service.response.time` for the peak response time of our payment service during the last day. We use `:filter` to get just the payment service, `:max` to get the maximum per time slot, and we use `:fold(max)` to get just the peak value:
+```
+builtin:service.response.time
+: filter(eq(dt.entity.service, "SERVICE-1234567890"))
+: max
+: fold(max)
+```
+
+This query worked well at first, but since a couple of days the pen testing crew of our company is running tests against our live payment service every 10 hours to verify that it is robust when hit by a nasty kind of DoS attack called [Slowloris](https://en.wikipedia.org/wiki/Slowloris_(computer_security)). The idea of this attack is to perform many parallel requests that only send headers but never finish the HTTP request. These requests are sent with the lowest possible bandwidth that does not time out the request. For a vulnerable system, this could block all threads that handle incoming requests since they are all waiting for a request to complete that will never be done.
+
+Luckily, we are not experiencing any operational issues from the tests, but we notice that the response times of the tests now completely dominate our KPI, rendering it unusable to check whether or not the response time for our customers is acceptable. The KPI shows response times of several hours, but when we query the series without fold, we see the maximum response time is well under 100ms for hours where no pen tests were run. Somehow, we still want to use one of thse maxima as an indicator of how fast our slowest requests complete, but instead of the real maximum, we decide that we want to query the time slot that has a reponse time that is higher than 90% of the response times but smaller than the remaining 10%. This way, our pen tests will not influence our KPI.
+
+Put differently, we want to extract an estimation for the 90th percentile of the response times in the query time frame:
+```
+builtin:service.response.time
+: filter(eq(dt.entity.service, "SERVICE-1234567890"))
+: max
+: fold(percentile(90))
+```
+
+Works like a charm, now our KPI is less sensitive to outliers.
+
+Note that any rollup can be used in `fold` - It is not necessary for the metric to support it as a time aggregation. For example, it is perfectly legal to get the median CPU utilization over time with `builtin:host.cpu.usage:fold(median)`, but getting the median per time slot with `:median` for that metric would be an error.
+
+Also note that applying a time aggregation right before a fold with the same aggregation kind used as a rollup is optional. If `metric` supports `min`, then `metric:fold(min)` behaves the same as `metric:min:fold(min)`. If the metric in the first example does not support `min` but has not been in another way before folding, then `auto` will be used.
+
+## Scenario 12: Weighted and Unweighted Averages of Sales
 >**Task**
 > Given a gauge metric that tracks every sale, split by a product ID, what's the average daily price for product 42 in the last two weeks? What is the average daily revenue of product 42 in the last two weeks?
 
@@ -375,7 +405,7 @@ sales
 : fold(avg)
 ```
 
-## Scenario 12: All Service Methods of a Service
+## Scenario 13: All Service Methods of a Service
 
 >**Task**
 >We want to get information for our web service, but by default the data is reported on service method level.
@@ -407,7 +437,7 @@ metricId,dt.entity.service,dt.entity.service_method,time,value
 ```
 If we want to lose the service dimension again after filtering, we can use a `:merge(dt.entity.service)`. The order of transformations is again important. The filter cannot precede the `:parents`, since the dimension does not exist at that point.
 
-## Scenario 13: Apdex for Users of iOS 6.x
+## Scenario 14: Apdex for Users of iOS 6.x
 
 >**Task**
 >We want to filter a secondary dimension (Operating System) by name, rather than by ID.
@@ -431,7 +461,7 @@ metricId,dt.entity.device_application.name,dt.entity.device_application,dt.entit
 ...
 ```
 
-## Scenario 14: Using Space and Time Aggregation with Disk Usages
+## Scenario 15: Using Space and Time Aggregation with Disk Usages
 
 >**Task**
 >For a dashboard, we want a single number for the used disk capacity over all hosts.
@@ -442,7 +472,7 @@ This common transformation pattern looks like a mistake at first, because the ou
 
 Conceptually, you can think of the next aggregation after a `:merge` or `:splitBy` to operate on a list of merged values, supporting any of min, max, avg, sum, median or percentile on that list. Depending on the space aggregation in use, the API will use a suitable data structure to model this conceptual list of merged values (typically a statistical summary or percentile estimator).
 
-## Scenario 15: Combine Series and Point Queries with Folding
+## Scenario 16: Combine Series and Point Queries with Folding
 
 >**Task**
 >For a report, we want to query both per-month CPU usage, but also get an overall average.
@@ -453,7 +483,8 @@ Say we want to access `builtin:host.cpu.usage` over the complete last year from 
 ```
 GET {base}/metrics/query?metricId=builtin:host.cpu.usage:fold,builtin:host.cpu.usage&from=now-y/y&to=now/y&resolution=1M
 ```
-## Scenario 16: Maximum of Average CPU Usage Values Over Time
+
+## Scenario 17: Maximum of Average CPU Usage Values Over Time
 
 >**Task**
 >For a chart, we want to draw a line that exactly intersects the peak of the graph.
@@ -475,7 +506,7 @@ The result is exactly what we wanted: the maximum average values over time. We c
 
 If you query this selector together with `builtin:host.cpu.usage:avg` you see that the single value is always exactly equal to the maximum entry of the corresponding series.
 
-## Scenario 17: Filtering for Special Characters with Quoting
+## Scenario 18: Filtering for Special Characters with Quoting
 
 >**Task**
 >We have a filter text field, but the resulting metric selector is invalid if we type in special characters.
@@ -506,7 +537,7 @@ builtin:host.disk.avail
  )
 ```
 
-## Scenario 18: Two Metrics with Two Different Entity Selectors
+## Scenario 19: Two Metrics with Two Different Entity Selectors
 
 >**Task**
 >We want to query multiple metrics at once, and each metric should use a different entity selector.
@@ -534,7 +565,7 @@ builtin:host.cpu.usage
 )
 ```
 
-## Scenario 19: Does our Service use Less Memory after the Update
+## Scenario 20: Does our Service use Less Memory after the Update
 
 >**Task**
 >We want to see the CPU utilization graph of yesterday and the day before yesterday, displayed on top of each other in a chart, so that we can look out for differences.
@@ -546,7 +577,7 @@ builtin:tech.generic.cpu.usage:timeshift(-1d),
 ```
 The second time series is shifted one day into the past, showing data from the day before yesterday, but with the same timestamps as the first, un-shifted series. When charting these, they will be displayed on top of each other.
 
-## Scenario 20: Last Stock Price Yesterday
+## Scenario 21: Last Stock Price Yesterday
 
 >**Task**
 >We want the last reported value just before midnight yesterday, but if the last time slot contains a gap in the data, we want to go back and instead see the last non-null data.
