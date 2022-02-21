@@ -1,6 +1,6 @@
 {
   "name": "custom.remote.python.thirdparty_port",
-  "version": "1.014",
+  "version": "1.015",
   "metricGroup": "tech.Port",
   "type": "python",
   "entity": "CUSTOM_DEVICE",
@@ -9,7 +9,7 @@
   "source": {
     "package": "port_extension",
     "className": "PortExtension",
-    "install_requires": [ "dtapi", "pingparsing"],
+    "install_requires": [ "dt", "pingparsing"],
     "activation": "Remote"
   },
   "properties": [
