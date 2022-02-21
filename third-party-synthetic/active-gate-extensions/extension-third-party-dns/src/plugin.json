@@ -1,6 +1,6 @@
 {
   "name": "custom.remote.python.thirdparty_dns",
-  "version": "1.012",
+  "version": "1.015",
   "type": "python",
   "entity": "CUSTOM_DEVICE",
   "technologies": [
@@ -12,7 +12,7 @@
     "className": "DNSExtension",
     "install_requires": [
       "dnspython3",
-      "dtapi"
+      "dt"
     ],
     "activation": "Remote"
   },
@@ -47,7 +47,8 @@
       "dropdownValues": [
         "INFO",
         "DEBUG"
-      ]
+      ],
+      "defaultValue": "INFO"
     },
     {
       "key": "frequency",
