@@ -18,12 +18,8 @@ Measure relative nodes utilization in terms of usage, requests and limits over t
 #### CPU
 *Usage*
 ```
-(
-  (builtin:cloud.kubernetes.node.cores:avg)
-  - (builtin:cloud.kubernetes.node.cpuAvailable:avg)
-)
-/(builtin:cloud.kubernetes.node.cores:avg)
-*(100)
+builtin:host.cpu.usage:avg
+:filter(in("dt.entity.host", entitySelector("type(HOST),toRelationships.IS_KUBERNETES_CLUSTER_OF_HOST(type(KUBERNETES_CLUSTER),entityName())")))
 ```
 *Requests*
 ```
@@ -33,49 +29,28 @@ Measure relative nodes utilization in terms of usage, requests and limits over t
 ```
 *Limits*
 ```
-(builtin:cloud.kubernetes.node.cpuRequested:avg)
+(builtin:cloud.kubernetes.node.cpuLimit:avg)
 /(builtin:cloud.kubernetes.node.cores:avg)
 *(100)
 ```
-Let us reduce the scope of this query to nodes of a given cluster. This is especially important if you want to set up an alert in the scope of a single cluster. The scope is narrowed down to a single cluster by attaching a *filter* for the cluster entity. E.g., for usage this would result in the following metric expresion. Note: Replace *KUBERNETES_CLUSTER-A943C5CF0A41A684* with the entitiy-id of your Kubernetes cluster.
+Let us reduce the scope of this query to nodes of a given cluster. This is especially important if you want to set up an alert in the scope of a single cluster. The scope is narrowed down to a single cluster by attaching a *filter* for the cluster entity. E.g., for usage this would result in the following metric expresion. Note: Replace *KUBERNETES_CLUSTER-44D2F1E49BE901AF* with the entitiy-id of your Kubernetes cluster.
 
 *Usage*
 ```
-(
-    (
-      (builtin:cloud.kubernetes.node.cores:avg)
-      - (builtin:cloud.kubernetes.node.cpuAvailable:avg)
-    )
-    /(builtin:cloud.kubernetes.node.cores:avg)
-    *(100)
-)
-:filter(in("dt.entity.kubernetes_node", entitySelector("type(KUBERNETES_NODE),toRelationships.IS_KUBERNETES_CLUSTER_OF_NODE(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-A943C5CF0A41A684))")))
+builtin:host.cpu.usage:avg
+:filter(in("dt.entity.host", entitySelector("type(HOST),toRelationships.IS_KUBERNETES_CLUSTER_OF_HOST(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))")))
 ```
 We can further expand this query and only count nodes of a cluster with a CPU usage above a certain threshold. In other words: "How many of my cluster's nodes have CPU usage over 80%".
-Note: Replace *KUBERNETES_CLUSTER-A943C5CF0A41A684* with the entitiy-id of your Kubernetes cluster and 80 with your desired CPU usage threshold.
+Note: Replace *KUBERNETES_CLUSTER-44D2F1E49BE901AF* with the entitiy-id of your Kubernetes cluster and 80 with your desired CPU usage threshold.
 ```
-(
-    (
-      (builtin:cloud.kubernetes.node.cores:avg)
-      - (builtin:cloud.kubernetes.node.cpuAvailable:avg)
-    )
-    /(builtin:cloud.kubernetes.node.cores:avg)
-    *(100)
-)
-:filter(in("dt.entity.kubernetes_node", entitySelector("type(KUBERNETES_NODE),toRelationships.IS_KUBERNETES_CLUSTER_OF_NODE(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-A943C5CF0A41A684))")))
+builtin:host.cpu.usage:avg
+:filter(in("dt.entity.host", entitySelector("type(HOST),toRelationships.IS_KUBERNETES_CLUSTER_OF_HOST(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))")))
 :filter(series(avg,gt,80)):splitby():count
 ```
 We can modify this query to also answer the reverse question: "How many of my cluster's nodes have CPU usage below 80%". Just replace *gt* with *lt*.
 ```
-(
-    (
-      (builtin:cloud.kubernetes.node.cores:avg)
-      - (builtin:cloud.kubernetes.node.cpuAvailable:avg)
-    )
-    /(builtin:cloud.kubernetes.node.cores:avg)
-    *(100)
-)
-:filter(in("dt.entity.kubernetes_node", entitySelector("type(KUBERNETES_NODE),toRelationships.IS_KUBERNETES_CLUSTER_OF_NODE(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-A943C5CF0A41A684))")))
+builtin:host.cpu.usage:avg
+:filter(in("dt.entity.host", entitySelector("type(HOST),toRelationships.IS_KUBERNETES_CLUSTER_OF_HOST(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))")))
 :filter(series(avg,lt,80)):splitby():count
 ```
 By replacing the *usage* part of this query, we can solve the same use-cases in terms of *requests* and *limits*. E.g., for *requests* the last metric expression above would result in the following query:
@@ -85,7 +60,7 @@ By replacing the *usage* part of this query, we can solve the same use-cases in 
   /(builtin:cloud.kubernetes.node.cores:avg)
   *(100)
 )
-:filter(in("dt.entity.kubernetes_node", entitySelector("type(KUBERNETES_NODE),toRelationships.IS_KUBERNETES_CLUSTER_OF_NODE(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-A943C5CF0A41A684))")))
+:filter(in("dt.entity.kubernetes_node", entitySelector("type(KUBERNETES_NODE),toRelationships.IS_KUBERNETES_CLUSTER_OF_NODE(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))")))
 :filter(series(avg,lt,80)):splitby():count
 ```
 #### Memory
@@ -103,7 +78,84 @@ filter(and(ne(node_condition,Ready),eq(condition_status,True))):splitBy("dt.enti
 ```
 
 ### Workloads
-Let's use some metric expressions to understand if we have proper requests and limits in place for our workloads. We start by looking into the relation between usage and requests. Usually, one tries to have usage just below reqeuest. So which workloads are requesting far more CPU or Memory, than they actually use - this is usually refered to as *slack*.
+Let's use metric expressions to monitor the health of our workloads. We strongly recommend, to scope such espressions to single workloads, by adding a *filter*. In the following examples, all expressions will be filtered to a sample workload by appending the following filter: 
+```:filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))```
+
+#### Not all pods running
+```
+( 
+  (builtin:cloud.kubernetes.workload.desiredPods):splitBy("dt.entity.cloud_application")
+  -(builtin:cloud.kubernetes.workload.pods):splitBy("dt.entity.cloud_application")
+)
+:filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
+```
+
+#### Not all containers running
+```
+( 
+  (builtin:cloud.kubernetes.pod.desiredContainers):parents:splitBy("dt.entity.cloud_application")
+  -(builtin:cloud.kubernetes.pod.containers):parents:splitBy("dt.entity.cloud_application")
+)
+:filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
+```
+
+Let's use some metric expressions to understand if we have proper requests and limits in place for our workloads. 
+We start by looking into the relation between usage and requests. Usually, one tries to have usage just below reqeuest. So which workloads are requesting far more CPU or Memory, than they actually use - this is usually refered to as *slack*.
+For CPU
+
+#### Slack
+```
+(
+    (builtin:cloud.kubernetes.pod.cpuRequests:parents:splitBy("dt.entity.cloud_application_instance","dt.entity.cloud_application"):avg)
+    -(builtin:containers.cpu.usageMilliCores:parents:parents:splitBy("dt.entity.cloud_application_instance","dt.entity.cloud_application"):avg)
+)
+:splitBy("dt.entity.cloud_application"):avg
+:filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
+```
+#### Usage above requests
+```
+(
+    (builtin:containers.cpu.usageMilliCores:parents:parents:splitBy("dt.entity.cloud_application_instance","dt.entity.cloud_application"):avg)
+    -(builtin:cloud.kubernetes.pod.cpuRequests:parents:splitBy("dt.entity.cloud_application_instance","dt.entity.cloud_application"):avg)
+)
+:splitBy("dt.entity.cloud_application"):avg
+:filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
+```
+#### Usage in terms of limits
+Users afraid of throttling, often want to alert on the percentage of limits being actually used. However, we suggest to alert on throttling relative to usage. Reason for this is, that the relative usage in terms of limits is not the only deciding factor for when Kubernetes starts to throttle containers - we'll cover this in the next example.
+```
+(
+    (builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy("dt.entity.cloud_application_instance","dt.entity.cloud_application"):sum)
+    /(builtin:cloud.kubernetes.pod.cpuLimits:avg:parents:splitBy("dt.entity.cloud_application_instance","dt.entity.cloud_application"):sum)
+    *(100)
+)
+:splitBy("dt.entity.cloud_application"):avg
+:filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
+```
+#### High trotthling
+```
+(
+    (builtin:containers.cpu.throttledMilliCores:avg:parents:parents:splitBy("dt.entity.cloud_application_instance","dt.entity.cloud_application"):sum)
+    /(builtin:containers.cpu.usageMilliCores:avg:parents:splitBy("dt.entity.cloud_application_instance","dt.entity.cloud_application"):sum)
+    *(100)
+)
+:splitBy("dt.entity.cloud_application"):avg
+:filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
+```
+#### Memory
+Most of the metric expressions shown above can be adapt for memory realted use-cases by simply replacing the CPU metrics with the proper memory metrics. However, while high CPU usage leads to throttling, high memory usage leads to out-of-memory kills, and thus container restarts. Consequently, it makes sense to keep track of container restarts using the following query. 
+
+#### High restart rate
+```
+(
+  (builtin:cloud.kubernetes.pod.containerRestarts:max:delta:parents)
+  :splitBy("dt.entity.cloud_application")
+  :sum
+)
+:splitBy("dt.entity.cloud_application"):sum
+:filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
+```
+Please be aware, that the restart metric for containers is only available if we observed at least one restart. Consequently, for pods with no container restarts, there won't be any data.
 
 
 ## Further Reading
