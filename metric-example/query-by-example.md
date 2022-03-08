@@ -212,40 +212,106 @@ Observing the transformed descriptor is especially useful with more complex tran
 
 We just queried
 ```
-{base}/metrics/query?metricSelector=builtin:host.cpu.usage&from=now/d&resolution=Inf
+{base}/metrics/query?metricSelector=builtin:host.cpu.usage&from=now/d
 ```
 and get back results for some thousands of hosts. Looking at the data, most hosts in `builtin:host.cpu.usage` seem to behave normally, but some have extremely high CPU utilization. Hopefully, none of the high-CPU hosts were overlooked. We decide to query for the 3 hosts where the CPU utilization percentage was highest today (on average).
 
-Using `:sort` would work to have the high-utilization hosts on top, but then we would still have a lot of low-utilization hosts that we are not interested in right now.
+Using `:sort(avg, descending)` would put the hosts on top that have the highest average over the whole series.
 
-The solution is to combine `:sort` with `:limit`, which keeps the first N results and drops the rest:
+What does this mean exactly? To compare one series to the other, it is necessary to reduce each series to a single number that can easily be compared to other series. `avg` does just that by extracting an average from the series for use by the sort operator. Note that the output of the `sort` operator will not be this average (which is only used for comparison), but the full series that the average was derived from.
+
+More generally, `avg` is called a _rollup_. Other examples of rollups are `max` for the peak value of each series or `sum` for the sum of all values in the series. Apart from sorting, rollups can also be used to filter a series based on whether or not they exceed a certain threshold, replace a series with the rolled-up value, or to calculate a seven day incidence.
+
+Back to our example with CPU utilizations: With just `:sort(avg, descending)`, we would still have a lot of low-utilization hosts further down that we are not interested in right now.
+
+The solution is to combine `:sort` with `:limit(N)`, which keeps the first N results and drops the rest:
 ```
 builtin:host.cpu.usage  
-:sort(  
+: sort(  
 	value(avg, descending)  
 )
-:limit(3)
-:fold
+: limit(3)
 ```
-The order of transformations is important for the overall meaning of the query. Transformations are evaluated left to right. Since limit is evaluated after sort, it will only cut off the low-CPU hosts. Writing multi-line selectors like the one in the example can make complex metric selectors more readable.
+The order of transformations is important for the overall meaning of the query. Transformations are evaluated left to right and line-wise top to bottom. Since limit is evaluated after sort, it will only cut off the low-CPU hosts. Writing multi-line selectors like the one in the example can make complex metric selectors more readable than the single-line version.
 
-The result looks promising, but HOST-10000000000000 is not exactly human-readable:
+The result looks promising, but `HOST-10000000000000` is not exactly human-readable:
 ```
 metricId,dt.entity.host,time,value  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):fold",HOST-30000000000000,1610992260000,71.592474088881172  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):fold",HOST-10000000000000,1610992260000,68.546555923312308  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):fold",HOST-20000000000000,1610992260000,60.54574979701455
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-30000000000000,1610992260000,71.592474088881172
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-30000000000000,1610995860000,71.97523692696515
+[...]
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-10000000000000,1610992260000,68.546555923312308
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-10000000000000,1610995860000,64.51643715911996
+[...]
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-20000000000000,1610992260000,60.54574979701455
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3)",HOST-20000000000000,1610995860000,64.8794602031501
+[...]
 ```
+
+Note: `[...]` indicates that data points have been left out for brevity.
+
 Add an additional transformation `:names` to also find out about the hostname:
 ```
 metricId,dt.entity.host.name,dt.entity.host,time,value  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names:fold",eu.example.com,HOST-5928C8E47F4BFE45,1610992380000,71.592501233253316  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names:fold",us.example.com,HOST-E35417DEC6EDCF40,1610992380000,68.54627779165626  
-"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names:fold",staging.example.com,HOST-E398C6694A573CC2,1610992380000,60.545800811738996
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",eu.example.com,HOST-5928C8E47F4BFE45,1610992380000,71.592501233253316
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",eu.example.com,HOST-5928C8E47F4BFE45,1610995860000,71.97523692696515
+[...]
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",us.example.com,HOST-E35417DEC6EDCF40,1610992380000,68.54627779165626
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",us.example.com,HOST-E35417DEC6EDCF40,1610995860000,64.51643715911996
+[...]
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",staging.example.com,HOST-E398C6694A573CC2,1610992380000,60.545800811738996
+"builtin:host.cpu.usage:sort(value(avg,descending)):limit(3):names",staging.example.com,HOST-E398C6694A573CC2,1610995860000,64.8794602031501
+[...]
 ```
 That's better. You can see that by combining transformations, we can design powerful queries and slice and dice the data as we need it.
 
-## Scenario 9: Average Session Duration of Non-robot First-time Users with Advanced Transformer Chains
+## Scenario 9: Peak CPU Usage
+>**Task**
+>Given measurements of CPU utilization percentages, how can we find the peak values of the top series?
+
+In the previous example we sorted a series based on a _rollup_ called `avg`. Now we want to check for outliers, so we use the `max` _rollup_, resulting in the series with the highest peaks appearing first:
+```
+builtin:host.cpu.usage
+: sort(  
+	value(max, descending)  
+)
+: limit(3)
+```
+
+This works, but how high was the peak, exactly, for the series shown? Just scanning through the three series in the result and getting the top value will give us a subtly wrong result for this example: since no time aggregation was specified, we rely on the default aggregation to aggregate the samples in the time slots to one value. For `builtin:host.cpu.usage`, the default aggregation is average, not maximum. Hence, we do not even see the exact value we used for sorting in the result.
+
+Adding `:max` at the end of our selector would change the time aggregation so that we see the maximum sample in each time slot, but we would still have to go through all of the values to find the peak, which seems tedious.
+
+Instead, let's add `:fold(max)` and let the metric API figure out the peak for us. The purpose of `fold` is to reduce series to a single value. A rollup function (`max`) may be provided as an argument. For example:
+```
+builtin:host.cpu.usage
+: sort(  
+	value(max, descending)  
+)
+: limit(3)
+: fold(max)
+```
+
+Now, each result holds exactly one value, and that value is the peak.
+
+## Scenario 10: Combine Series and Point Queries with Folding
+
+>**Task**
+>For a report, we want to query both per-month CPU usage, but also get an overall average.
+
+We have already seen `fold` in action to extract a peak value.
+In some situations, it is useful to have such a summary value together with the full series, that is, a mixed result with some series results and some related point results.
+
+Say we want to access `builtin:host.cpu.usage` over the complete last year from January to just before January this year (`now-y/y` to `now/y`). We want a resolution of `1M`, but we are also interested in the average value over the whole year. This can be done in a single bulk query, once using `:fold(avg)` and once omitting it:
+```
+GET {base}/metrics/query?metricId=builtin:host.cpu.usage:fold(avg),builtin:host.cpu.usage&from=now-y/y&to=now/y&resolution=1M
+```
+
+Any of `min`, `max`, `avg`, `median`, `percentile(N)`, `sum`, `count` or `auto` can be used here as an argument for the fold, regardless of which aggregation types are supported by the metric, e.g. `builtin:host.cpu.usage:fold(median)` is perfectly legal and will calculate an estimation for a median sample over time for each host.
+
+It is also legal to not specify any arguments for `:fold`. In this case measurements over time are merged, but no value is extracted yet. How exactly this merging works depends on the metric. Any time aggregation that was supported before the fold can be applied later, e.g. `builtin:host.cpu.usage:fold:min`. Leaving out the time aggregation will lead to the default aggregation being applied as the last step.
+
+## Scenario 11: Average Session Duration of Non-robot First-time Users with Advanced Transformer Chains
 
 >**Task**
 >We need to provide data on average session duration, but filter out some unwanted types of visits which do not represent a real user.
@@ -285,7 +351,78 @@ Note how the semantics of the transformer chain change with the ordering of the 
 
 We get an error since we just merged the visitor type and then tried to filter on the dimension we just removed.
 
-## Scenario 10: All Service Methods of a Service
+## Scenario 12: Service Response Time in the 99th Percentile
+>**Task**
+>For our payment service, we query the maximum response time of the last day to visualize it as a KPI on a dashboard. Unfortunately the maximum is very sensitive to outliers. Can we make our KPI more robust?
+
+We regularly query `builtin:service.response.time` for the peak response time of our payment service during the last day. We use `:filter` to get just the payment service, `:max` to get the maximum per time slot, and we use `:fold(max)` to get just the peak value:
+```
+builtin:service.response.time
+: filter(eq(dt.entity.service, "SERVICE-1234567890"))
+: max
+: fold(max)
+```
+
+This query worked well at first, but since a couple of days the pen testing crew of our company is running tests against our live payment service every 10 hours to verify that it is robust when hit by a nasty kind of DoS attack called [Slowloris](https://en.wikipedia.org/wiki/Slowloris_(computer_security)). The idea of this attack is to perform many parallel requests that only send headers but never finish the HTTP request. These requests are sent with the lowest possible bandwidth that does not time out the request. For a vulnerable system, this could block all threads that handle incoming requests since they are all waiting for a request to complete that will never be done.
+
+Luckily, we are not experiencing any operational issues from the tests, but we notice that the response times of the tests now completely dominate our KPI, rendering it unusable to check whether or not the response time for our customers is acceptable. The KPI shows response times of several hours, but when we query the series without fold, we see the maximum response time is well under 100ms for hours where no pen tests were run. Somehow, we still want to use one of thse maxima as an indicator of how fast our slowest requests complete, but instead of the real maximum, we decide that we want to query the time slot that has a reponse time that is higher than 90% of the response times but smaller than the remaining 10%. This way, our pen tests will not influence our KPI.
+
+Put differently, we want to extract an estimation for the 90th percentile of the response times in the query time frame:
+```
+builtin:service.response.time
+: filter(eq(dt.entity.service, "SERVICE-1234567890"))
+: max
+: fold(percentile(90))
+```
+
+Works like a charm, now our KPI is less sensitive to outliers.
+
+Note that any rollup can be used in `fold` - It is not necessary for the metric to support it as a time aggregation. For example, it is perfectly legal to get the median CPU utilization over time with `builtin:host.cpu.usage:fold(median)`, but getting the median per time slot with `:median` for that metric would be an error.
+
+Also note that applying a time aggregation right before a fold with the same aggregation kind used as a rollup is optional. If `metric` supports `min`, then `metric:fold(min)` behaves the same as `metric:min:fold(min)`. If the metric in the first example does not support `min` but has not been in another way before folding, then `auto` will be used.
+
+## Scenario 13: Weighted and Unweighted Averages of Sales
+>**Task**
+> Given a gauge metric that tracks every sale, split by a product ID, what's the average daily price for product 42 in the last two weeks? What is the average daily revenue of product 42 in the last two weeks?
+
+The prime use case for gauge metrics is regular sampling, e.g. of a temperature, but in Dynatrace you can also use it to track statistical summaries of events that occur in irregular intervals. For instance, `builtin:tech.php.phpGc.durationMs` receives a duration in milliseconds after each run of the PHP garbage collector. If the garbage collector does not run, no value is reported.
+
+Such event-style gauge metrics can be used for other kinds of measurements too.
+Our own metric `sales` reports one data point for each sale of a product, namely the price we sold it for, with the product ID stored in the dimension `id`. The price varies over time due to a number of factors: some customers get a premium discount and we also offer a best-price guarantee so we are obligated to give an equivalent or better offer if a customer shows us that a competitor offers a cheaper price.
+
+First we want to get data for the last two weeks with days resolution so we set `from` to `now-2w` and we set `resolution` to `d`.
+
+Now we want to write the selector. All of the aggregation types kind of make sense for our event-based sales metric: the number of sales for a product/timeslot is `sales:count`, the total revenue for it is `sales:sum`, the average selling price in the time slot is `sales:avg` and the best/worst price are either `sales:min` or `sales:max`, depending on your perspective. Note that if no price is reported in a time slot of a query response, then the value will be `null`, regardless of the sample statistic in use. We will learn later on in this scenario how to deal with such data gaps.
+
+Since we are interested in the average daily price for product 42, a first attempt might be to roll up the result for the last two weeks using `avg`:
+```
+sales
+: filter(eq("id", "42"))
+: fold(avg)
+```
+
+At first sight, this seems fine, but we have made a subtle mistake: `fold(avg)` on a gauge metric will give us an average that is weighted by the sample count, so if we sold 100 items of product 42 on Monday, just one on Tuesday, and nothing on Wednesday, then the impact of the sales on Monday will be 100 times higher than that of Tuesday, and Wednesday has no impact at all. Data gaps like Wednesday should not influence the total average sales price, so we can keep the `null` values as-is, but using cardinality as weight clearly skews our average towards Monday's value.
+
+What we really want is the average of the per-timeslot averages, excluding time slots with no data, so that every time slot with non-null data has the same weight. We do that by first applying the time aggregation `avg` to get per-timeslot averages, and then we average those into a single value with `fold(avg)`:
+```
+sales
+: filter(eq("id", "42"))
+: avg
+: fold(avg)
+```
+
+Voilà.
+
+Next, we need the average daily revenue for product 42 in the query timeframe. To get the total revenue for the product on each day, we use `:sum` and we average the per-timeslot values using `:fold(avg)`, but this time we do not want to ignore data gaps. Instead, we want to include days where no sale was reported as 0 in the average calculation. `:default(0)` will do just that and replace data gaps (`null`) with the specified value. Putting it all together, we get the average revenue per time slot for product 42 in the query timeframe with:
+```
+sales
+: filter(eq("id", "42"))
+: sum
+: default(0)
+: fold(avg)
+```
+
+## Scenario 14: All Service Methods of a Service
 
 >**Task**
 >We want to get information for our web service, but by default the data is reported on service method level.
@@ -317,7 +454,7 @@ metricId,dt.entity.service,dt.entity.service_method,time,value
 ```
 If we want to lose the service dimension again after filtering, we can use a `:merge(dt.entity.service)`. The order of transformations is again important. The filter cannot precede the `:parents`, since the dimension does not exist at that point.
 
-## Scenario 11: Apdex for Users of iOS 6.x
+## Scenario 15: Apdex for Users of iOS 6.x
 
 >**Task**
 >We want to filter a secondary dimension (Operating System) by name, rather than by ID.
@@ -341,7 +478,7 @@ metricId,dt.entity.device_application.name,dt.entity.device_application,dt.entit
 ...
 ```
 
-## Scenario 12: Using Space and Time Aggregation with Disk Usages
+## Scenario 16: Using Space and Time Aggregation with Disk Usages
 
 >**Task**
 >For a dashboard, we want a single number for the used disk capacity over all hosts.
@@ -352,18 +489,7 @@ This common transformation pattern looks like a mistake at first, because the ou
 
 Conceptually, you can think of the next aggregation after a `:merge` or `:splitBy` to operate on a list of merged values, supporting any of min, max, avg, sum, median or percentile on that list. Depending on the space aggregation in use, the API will use a suitable data structure to model this conceptual list of merged values (typically a statistical summary or percentile estimator).
 
-## Scenario 13: Combine Series and Point Queries with Folding
-
->**Task**
->For a report, we want to query both per-month CPU usage, but also get an overall average.
-
-In some situations, it is useful to transmute a series result into a point result in any position of the transformer chain. One such example is when we want mixed series and point results.
-
-Say we want to access `builtin:host.cpu.usage` over the complete last year from January to just before January this year (`now-y/y` to `now/y`). We want a resolution of `1M`, but we are also interested in the average value over the whole year. This can be done in a single bulk query, once using `:fold` and once omitting it:
-```
-GET {base}/metrics/query?metricId=builtin:host.cpu.usage:fold,builtin:host.cpu.usage&from=now-y/y&to=now/y&resolution=1M
-```
-## Scenario 14: Maximum of Average CPU Usage Values Over Time
+## Scenario 17: Maximum of Average CPU Usage Values Over Time
 
 >**Task**
 >For a chart, we want to draw a line that exactly intersects the peak of the graph.
@@ -385,7 +511,7 @@ The result is exactly what we wanted: the maximum average values over time. We c
 
 If you query this selector together with `builtin:host.cpu.usage:avg` you see that the single value is always exactly equal to the maximum entry of the corresponding series.
 
-## Scenario 15: Filtering for Special Characters with Quoting
+## Scenario 18: Filtering for Special Characters with Quoting
 
 >**Task**
 >We have a filter text field, but the resulting metric selector is invalid if we type in special characters.
@@ -416,7 +542,7 @@ builtin:host.disk.avail
  )
 ```
 
-## Scenario 16: Two Metrics with Two Different Entity Selectors
+## Scenario 19: Two Metrics with Two Different Entity Selectors
 
 >**Task**
 >We want to query multiple metrics at once, and each metric should use a different entity selector.
@@ -432,7 +558,7 @@ builtin:tech.generic.cpu.usage
     in(
       dt.entity.process_group_instance,  
       entitySelector("type(PROCESS_GROUP_INSTANCE),tag(business-critical)") 
-  	)  
+    )  
 ),
 
 builtin:host.cpu.usage  
@@ -444,7 +570,7 @@ builtin:host.cpu.usage
 )
 ```
 
-## Scenario 17: Does our Service use Less Memory after the Update
+## Scenario 20: Does our Service use Less Memory after the Update
 
 >**Task**
 >We want to see the CPU utilization graph of yesterday and the day before yesterday, displayed on top of each other in a chart, so that we can look out for differences.
@@ -456,7 +582,7 @@ builtin:tech.generic.cpu.usage:timeshift(-1d),
 ```
 The second time series is shifted one day into the past, showing data from the day before yesterday, but with the same timestamps as the first, un-shifted series. When charting these, they will be displayed on top of each other.
 
-## Scenario 18: Last Stock Price Yesterday
+## Scenario 21: Last Stock Price Yesterday
 
 >**Task**
 >We want the last reported value just before midnight yesterday, but if the last time slot contains a gap in the data, we want to go back and instead see the last non-null data.
