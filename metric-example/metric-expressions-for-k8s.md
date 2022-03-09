@@ -195,12 +195,6 @@ Most of the metric expressions shown above can be adapted for memory related use
 ```
 *Note: Be aware, that the restart metric for containers is only available if we observed at least one restart. Consequently, for pods with no container restarts, there won't be any data.*
 
-
 ## Further Reading
 Please refer to the documentation on metric expressions on [dyntrace.com](https://www.dynatrace.com/support/help/dynatrace-api/environment-api/metric-v2/metric-expressions/)
-for additional technical details such as:
-* precedence of operators,
-* semantics for combinations of point/series results and literals,
-* null handling,
-* time alignment,
-* many others.
+for additional technical details such as: precedence of operators, semantics for combinations of point/series results and literals, null handling, time alignment, many others.
