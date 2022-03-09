@@ -35,8 +35,6 @@ or you can send selectors to the `/v2/metrics/query` API for evaluation.
 ## Important note
 **Depending on the size of your environment, the following examples might put extreme load on your Dynatrace environment. Please use with care and try using filters whenever possible to narrow the scope of these queries.**
 
-[//]: # (For Dynatrace employees: A dashboard containing all these metric expressions can be found here: https://stratus.dev.dynatracelabs.com/#dashboard;gtf=-2h;gf=all;id=64bfca68-49ec-4628-92d2-ab38d0cf28f7)
-
 ## Node utilization
 Let's start of with some simple metric expressions to measure relative nodes utilization in terms of usage, requests and limits over time.
 
