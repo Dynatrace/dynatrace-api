@@ -1,12 +1,10 @@
 # Metric Expressions for K8s
 This document collects frequently asked metric expressions for typical K8s use-cases. Listed metric expressions can be used for [charting](https://www.dynatrace.com/support/help/how-to-use-dynatrace/dashboards-and-charts/explorer/explorer-advanced-query-editor/) or alerting using [custom metric events](https://www.dynatrace.com/support/help/how-to-use-dynatrace/problem-detection-and-analysis/problem-detection/metric-events-for-alerting/advanced-metric-queries/).
 
-<!-- TOC ignore:true -->
-## Table of contents
+**Table of contents**
 
 <!-- TOC -->
 
-- [Table of contents](#table-of-contents)
 - [Prerequisites](#prerequisites)
 - [Important note](#important-note)
 - [Nodes utilization](#nodes-utilization)
