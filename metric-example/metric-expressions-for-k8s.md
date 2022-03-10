@@ -3,26 +3,25 @@ This document collects frequently asked metric expressions for typical K8s use-c
 
 **Table of contents**
 
-<!-- TOC -->
+<!-- TOC depthfrom:2 -->
 
-- [Metric Expressions for K8s](#metric-expressions-for-k8s)
-    - [Prerequisites](#prerequisites)
-    - [Important note](#important-note)
-    - [Node utilization](#node-utilization)
-        - [CPU](#cpu)
-        - [Memory](#memory)
-    - [Node conditions](#node-conditions)
-    - [Workload health](#workload-health)
-        - [Not all pods running](#not-all-pods-running)
-        - [Not all containers running](#not-all-containers-running)
-    - [Workloads resource utilization and optimization](#workloads-resource-utilization-and-optimization)
-        - [Slack](#slack)
-        - [Usage above requests](#usage-above-requests)
-        - [Usage in terms of limits](#usage-in-terms-of-limits)
-        - [High throttling](#high-throttling)
-        - [Memory](#memory)
-        - [High container restart rate](#high-container-restart-rate)
-    - [Further Reading](#further-reading)
+- [Prerequisites](#prerequisites)
+- [Important note](#important-note)
+- [Node utilization](#node-utilization)
+    - [CPU](#cpu)
+    - [Memory](#memory)
+- [Node conditions](#node-conditions)
+- [Workload health](#workload-health)
+    - [Not all pods running](#not-all-pods-running)
+    - [Not all containers running](#not-all-containers-running)
+- [Workloads resource utilization and optimization](#workloads-resource-utilization-and-optimization)
+    - [Slack](#slack)
+    - [Usage above requests](#usage-above-requests)
+    - [Usage in terms of limits](#usage-in-terms-of-limits)
+    - [High throttling](#high-throttling)
+    - [Memory](#memory)
+    - [High container restart rate](#high-container-restart-rate)
+- [Further Reading](#further-reading)
 
 <!-- /TOC -->
 
