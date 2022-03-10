@@ -3,7 +3,7 @@ This document collects frequently asked metric expressions for typical K8s use-c
 
 **Table of contents**
 
-<!-- TOC -->
+<!-- TOC depthfrom:2 -->
 
 - [Prerequisites](#prerequisites)
 - [Important note](#important-note)
@@ -184,7 +184,7 @@ Most of the metric expressions shown above can be adapted for memory related use
 ### High container restart rate
 ```
 (
-  (builtin:cloud.kubernetes.pod.containerRestarts:max:delta:parents)
+  (builtin:cloud.kubernetes.pod.containerRestarts:max:default(0):delta:parents)
   :splitBy("dt.entity.cloud_application")
   :sum
 )
