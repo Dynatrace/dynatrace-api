@@ -5,23 +5,24 @@ This document collects frequently asked metric expressions for typical K8s use-c
 
 <!-- TOC -->
 
-- [Prerequisites](#prerequisites)
-- [Important note](#important-note)
-- [Node utilization](#node-utilization)
-    - [CPU](#cpu)
-    - [Memory](#memory)
-- [Node conditions](#node-conditions)
-- [Workload health](#workload-health)
-    - [Not all pods running](#not-all-pods-running)
-    - [Not all containers running](#not-all-containers-running)
-- [Workloads resource utilization and optimization](#workloads-resource-utilization-and-optimization)
-    - [Slack](#slack)
-    - [Usage above requests](#usage-above-requests)
-    - [Usage in terms of limits](#usage-in-terms-of-limits)
-    - [High throttling](#high-throttling)
-    - [Memory](#memory)
-    - [High container restart rate](#high-container-restart-rate)
-- [Further Reading](#further-reading)
+- [Metric Expressions for K8s](#metric-expressions-for-k8s)
+    - [Prerequisites](#prerequisites)
+    - [Important note](#important-note)
+    - [Node utilization](#node-utilization)
+        - [CPU](#cpu)
+        - [Memory](#memory)
+    - [Node conditions](#node-conditions)
+    - [Workload health](#workload-health)
+        - [Not all pods running](#not-all-pods-running)
+        - [Not all containers running](#not-all-containers-running)
+    - [Workloads resource utilization and optimization](#workloads-resource-utilization-and-optimization)
+        - [Slack](#slack)
+        - [Usage above requests](#usage-above-requests)
+        - [Usage in terms of limits](#usage-in-terms-of-limits)
+        - [High throttling](#high-throttling)
+        - [Memory](#memory)
+        - [High container restart rate](#high-container-restart-rate)
+    - [Further Reading](#further-reading)
 
 <!-- /TOC -->
 
@@ -184,7 +185,7 @@ Most of the metric expressions shown above can be adapted for memory related use
 ### High container restart rate
 ```
 (
-  (builtin:cloud.kubernetes.pod.containerRestarts:max:delta:parents)
+  (builtin:cloud.kubernetes.pod.containerRestarts:max:default(0):delta:parents)
   :splitBy("dt.entity.cloud_application")
   :sum
 )
