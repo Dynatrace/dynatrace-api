@@ -3,7 +3,7 @@ This document collects frequently asked metric expressions for typical K8s use-c
 
 **Table of contents**
 
-<!-- TOC -->
+<!-- TOC depthfrom:2 -->
 
 - [Prerequisites](#prerequisites)
 - [Important note](#important-note)
