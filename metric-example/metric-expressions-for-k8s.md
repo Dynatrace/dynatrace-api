@@ -184,9 +184,9 @@ Most of the metric expressions shown above can be adapted for memory related use
 ### High container restart rate
 ```
 (
-  (builtin:cloud.kubernetes.pod.containerRestarts:max:default(0):delta:parents)
-  :splitBy("dt.entity.cloud_application")
-  :sum
+  (builtin:cloud.kubernetes.pod.containerRestarts)
+  :splitBy("dt.entity.cloud_application","dt.entity.cloud_application_instance")
+  :max:delta
 )
 :splitBy("dt.entity.cloud_application"):sum
 :filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
