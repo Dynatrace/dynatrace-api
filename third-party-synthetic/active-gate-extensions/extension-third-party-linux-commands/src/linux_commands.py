@@ -8,7 +8,7 @@ from dynatrace.environment_v1.synthetic_third_party import SYNTHETIC_EVENT_TYPE_
 
 
 log = logging.getLogger(__name__)
-ENGINE_NAME = "Linux_Commands"
+ENGINE_NAME = "SSH"
 
 
 class LinuxCommandsExtension(RemoteBasePlugin):
