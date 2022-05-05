@@ -1,0 +1,233 @@
+{
+    "name": "custom.remote.python.thirdparty_sftp",
+    "version": "1.015",
+    "type": "python",
+    "entity": "CUSTOM_DEVICE",
+    "technologies": [
+        "SFTP"
+    ],
+    "metricGroup": "tech.SFTP",
+    "source": {
+        "package": "sftp_extension",
+        "className": "SFTPExtension",
+        "install_requires": [
+            "paramiko",
+            "dt"
+        ]
+    },
+    "activation": "Remote",
+    "properties": [
+        {
+            "key": "api_url",
+            "type": "String"
+        },
+        {
+            "key": "api_token",
+            "type": "Password"
+        },
+        {
+            "key": "test_name",
+            "type": "String"
+        },
+        {
+            "key": "hostname",
+            "type": "String"
+        },
+        {
+            "key": "username",
+            "type": "String"
+        },
+        {
+            "key": "password",
+            "type": "Password"
+        },
+        {
+            "key": "ssh_key_file",
+            "type": "String"
+        },
+        {
+            "key": "ssh_key_passphrase",
+            "type": "Password"
+        },
+        {
+            "key": "frequency",
+            "type": "String",
+            "defaultValue": "15"
+        },
+        {
+            "key": "port",
+            "type": "String",
+            "defaultValue": "22"
+        },
+        {
+            "key": "location",
+            "type": "String",
+            "defaultValue": "ActiveGate"
+        },
+        {
+            "key": "remote_dir",
+            "type": "String"
+        },
+        {
+            "key": "local_file",
+            "type": "String"
+        },
+        {
+            "key": "test_read",
+            "type": "Boolean"
+        },
+        {
+            "key": "test_put",
+            "type": "Boolean"
+        },
+        {
+            "key": "log_level",
+            "type": "Dropdown",
+            "dropdownValues": [
+                "INFO",
+                "DEBUG"
+            ],
+            "defaultValue": "INFO"
+        },
+        {
+            "key": "proxy_address",
+            "type": "String"
+        },
+        {
+            "key": "proxy_username",
+            "type": "String"
+        },
+        {
+            "key": "proxy_password",
+            "type": "Password"
+        },
+        {
+            "key": "failure_count",
+            "type": "Integer",
+            "defaultValue": 1
+        }
+    ],
+    "configUI": {
+        "displayName": "SFTP",
+        "properties": [
+            {
+                "key": "test_name",
+                "displayName": "(Optional) Synthetic test name",
+                "displayHint": "Custom test name. Defaults to \"<hostname>:<port>\"",
+                "displayOrder": 1
+            },
+            {
+                "key": "api_url",
+                "displayName": "Dynatrace tenant URL",
+                "displayHint": "https://localhost:9999/e/<environment_id> or https://<my.managed.host>/e/<environment_id> or https://<environment_id>.live.dynatrace.com",
+                "displayOrder": 2
+            },
+            {
+                "key": "api_token",
+                "displayName": "Dynatrace API Token",
+                "displayHint": "Requires \"Create and read synthetic monitors, locations, and nodes\" permission",
+                "displayOrder": 3
+            },
+            {
+                "key": "hostname",
+                "displayName": "Hostname",
+                "displayOrder": 4
+            },
+            {
+                "key": "port",
+                "displayName": "SSH Port",
+                "displayOrder": 5
+            },
+            {
+                "key": "username",
+                "displayName": "Username",
+                "displayOrder": 6
+            },
+            {
+                "key": "password",
+                "displayName": "Password",
+                "displayOrder": 7
+            },
+            {
+                "key": "ssh_key_file",
+                "displayName": "(Optional) Private key file",
+                "displayHint": "Path to a private key file to use for authentication",
+                "displayOrder": 8
+            },
+            {
+                "key": "ssh_key_passphrase",
+                "displayName": "(Optional) Private key passphrase",
+                "displayHint": "The private key passphrase if the key file uses one",
+                "displayOrder": 9
+            },
+            {
+                "key": "test_read",
+                "displayName": "Test read",
+                "displayHint": "Check if you want to test directory read",
+                "displayOrder": 10
+            },
+            {
+                "key": "test_put",
+                "displayName": "Test put",
+                "displayHint": "Check if you want to test uploading a file",
+                "displayOrder": 11
+            },
+            {
+                "key": "remote_dir",
+                "displayName": "Remote directory",
+                "displayHint": "Remote directory path used for reading and/or uploading a file to.",
+                "displayOrder": 12
+            },
+            {
+                "key": "local_file",
+                "displayName": "Local file for upload",
+                "displayHint": "A local file (under 100KBs) that can be uploaded remotely for testing.",
+                "displayOrder": 13
+            },
+            {
+                "key": "frequency",
+                "displayName": "Execution frequency",
+                "displayHint": "Command execution frequency (in minutes).",
+                "displayOrder": 14
+            },
+            {
+                "key": "location",
+                "displayName": "Synthetic test location",
+                "displayHint": "A custom name for the Synthetic Test location.",
+                "displayOrder": 15
+            },
+            {
+                "key": "failure_count",
+                "displayName": "Failure count",
+                "displayHint": "The number of consecutive failures required for an Outage to be reported",
+                "defaultValue": 1,
+                "displayOrder": 16
+            },
+            {
+                "key": "proxy_address",
+                "displayName": "(Optional) Proxy address",
+                "defaultValue": "Only needed if the Dynatrace tenant must be accessed through a proxy.",
+                "displayOrder": 17
+            },
+            {
+                "key": "proxy_username",
+                "displayName": "(Optional) Proxy username",
+                "defaultValue": "Only needed if the Dynatrace tenant must be accessed through a proxy.",
+                "displayOrder": 18
+            },
+            {
+                "key": "proxy_password",
+                "displayName": "(Optional) Proxy password",
+                "defaultValue": "Only needed if the Dynatrace tenant must be accessed through a proxy.",
+                "displayOrder": 19
+            },
+            {
+                "key": "log_level",
+                "displayName": "Log level",
+                "displayOrder": 20
+            }
+        ]
+    },
+    "metrics": [],
+    "ui": {}
+}
