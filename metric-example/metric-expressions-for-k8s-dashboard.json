@@ -3,14 +3,14 @@
     "configurationVersions": [
       6
     ],
-    "clusterVersion": "1.242.0.20220427-091327"
+    "clusterVersion": "1.248.0.20220718-225153"
   },
   "id": "64bfca68-49ec-4628-92d2-ab38d0cf28f7",
   "dashboardMetadata": {
     "name": "Metric expressions for K8s (Github samples)",
     "shared": false,
     "owner": "florian.geigl@dynatrace.com",
-    "popularity": 1
+    "hasConsistentColors": false
   },
   "tiles": [
     {
@@ -53,192 +53,6 @@
       "markdown": "## Node conditions"
     },
     {
-      "name": "Limits",
-      "tileType": "DATA_EXPLORER",
-      "configured": true,
-      "bounds": {
-        "top": 76,
-        "left": 798,
-        "width": 380,
-        "height": 228
-      },
-      "tileFilter": {},
-      "customName": "Data explorer results",
-      "queries": [
-        {
-          "id": "A",
-          "timeAggregation": "DEFAULT",
-          "metricSelector": "(builtin:cloud.kubernetes.node.cpuLimit:avg)\n/(builtin:cloud.kubernetes.node.cores:avg)\n*(100)",
-          "enabled": true
-        }
-      ],
-      "visualConfig": {
-        "type": "GRAPH_CHART",
-        "global": {
-          "hideLegend": false
-        },
-        "rules": [
-          {
-            "matcher": "A:",
-            "valueFormat": "auto",
-            "properties": {
-              "color": "DEFAULT",
-              "seriesType": "LINE",
-              "alias": "Node utilization"
-            },
-            "seriesOverrides": []
-          }
-        ],
-        "axes": {
-          "xAxis": {
-            "displayName": "",
-            "visible": true
-          },
-          "yAxes": [
-            {
-              "displayName": "",
-              "visible": true,
-              "min": "0",
-              "max": "AUTO",
-              "position": "LEFT",
-              "queryIds": [
-                "A"
-              ],
-              "defaultAxis": true
-            }
-          ]
-        },
-        "heatmapSettings": {
-          "yAxis": "VALUE"
-        },
-        "thresholds": [
-          {
-            "axisTarget": "LEFT",
-            "rules": [
-              {
-                "color": "#7dc540"
-              },
-              {
-                "color": "#f5d30f"
-              },
-              {
-                "color": "#dc172a"
-              }
-            ],
-            "queryId": "",
-            "visible": true
-          }
-        ],
-        "tableSettings": {
-          "isThresholdBackgroundAppliedToCell": false
-        },
-        "graphChartSettings": {
-          "connectNulls": false
-        },
-        "honeycombSettings": {
-          "showHive": true,
-          "showLegend": true,
-          "showLabels": false
-        }
-      },
-      "queriesSettings": {
-        "resolution": ""
-      }
-    },
-    {
-      "name": "Requests",
-      "tileType": "DATA_EXPLORER",
-      "configured": true,
-      "bounds": {
-        "top": 76,
-        "left": 418,
-        "width": 380,
-        "height": 228
-      },
-      "tileFilter": {},
-      "customName": "Data explorer results",
-      "queries": [
-        {
-          "id": "A",
-          "timeAggregation": "DEFAULT",
-          "metricSelector": "(builtin:cloud.kubernetes.node.cpuRequested:avg)\n/(builtin:cloud.kubernetes.node.cores:avg)\n*(100)",
-          "enabled": true
-        }
-      ],
-      "visualConfig": {
-        "type": "GRAPH_CHART",
-        "global": {
-          "hideLegend": false
-        },
-        "rules": [
-          {
-            "matcher": "A:",
-            "valueFormat": "auto",
-            "properties": {
-              "color": "DEFAULT",
-              "seriesType": "LINE",
-              "alias": "Node utilization"
-            },
-            "seriesOverrides": []
-          }
-        ],
-        "axes": {
-          "xAxis": {
-            "displayName": "",
-            "visible": true
-          },
-          "yAxes": [
-            {
-              "displayName": "",
-              "visible": true,
-              "min": "0",
-              "max": "100",
-              "position": "LEFT",
-              "queryIds": [
-                "A"
-              ],
-              "defaultAxis": true
-            }
-          ]
-        },
-        "heatmapSettings": {
-          "yAxis": "VALUE"
-        },
-        "thresholds": [
-          {
-            "axisTarget": "LEFT",
-            "rules": [
-              {
-                "color": "#7dc540"
-              },
-              {
-                "color": "#f5d30f"
-              },
-              {
-                "color": "#dc172a"
-              }
-            ],
-            "queryId": "",
-            "visible": true
-          }
-        ],
-        "tableSettings": {
-          "isThresholdBackgroundAppliedToCell": false
-        },
-        "graphChartSettings": {
-          "connectNulls": false
-        },
-        "honeycombSettings": {
-          "showHive": true,
-          "showLegend": true,
-          "showLabels": false
-        }
-      },
-      "queriesSettings": {
-        "resolution": ""
-      }
-    },
-    {
       "name": "Markdown",
       "tileType": "MARKDOWN",
       "configured": true,
@@ -250,99 +64,6 @@
       },
       "tileFilter": {},
       "markdown": "### Nodes CPU utilization filtered to a single K8s cluster"
-    },
-    {
-      "name": "Number of Nodes with requests < 80%",
-      "tileType": "DATA_EXPLORER",
-      "configured": true,
-      "bounds": {
-        "top": 342,
-        "left": 1178,
-        "width": 380,
-        "height": 228
-      },
-      "tileFilter": {},
-      "customName": "Data explorer results",
-      "queries": [
-        {
-          "id": "A",
-          "timeAggregation": "DEFAULT",
-          "metricSelector": "(\n  (builtin:cloud.kubernetes.node.cpuRequested:avg)\n  /(builtin:cloud.kubernetes.node.cores:avg)\n  *(100)\n)\n:filter(in(\"dt.entity.kubernetes_node\", entitySelector(\"type(KUBERNETES_NODE),toRelationships.IS_KUBERNETES_CLUSTER_OF_NODE(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\")))\n:filter(series(avg,lt,80)):splitby():count",
-          "enabled": true
-        }
-      ],
-      "visualConfig": {
-        "type": "GRAPH_CHART",
-        "global": {
-          "hideLegend": false
-        },
-        "rules": [
-          {
-            "matcher": "A:",
-            "valueFormat": "auto",
-            "properties": {
-              "color": "DEFAULT",
-              "seriesType": "LINE",
-              "alias": "Number of nodes"
-            },
-            "seriesOverrides": []
-          }
-        ],
-        "axes": {
-          "xAxis": {
-            "displayName": "",
-            "visible": true
-          },
-          "yAxes": [
-            {
-              "displayName": "",
-              "visible": true,
-              "min": "0",
-              "max": "AUTO",
-              "position": "LEFT",
-              "queryIds": [
-                "A"
-              ],
-              "defaultAxis": true
-            }
-          ]
-        },
-        "heatmapSettings": {
-          "yAxis": "VALUE"
-        },
-        "thresholds": [
-          {
-            "axisTarget": "LEFT",
-            "rules": [
-              {
-                "color": "#7dc540"
-              },
-              {
-                "color": "#f5d30f"
-              },
-              {
-                "color": "#dc172a"
-              }
-            ],
-            "queryId": "",
-            "visible": true
-          }
-        ],
-        "tableSettings": {
-          "isThresholdBackgroundAppliedToCell": false
-        },
-        "graphChartSettings": {
-          "connectNulls": false
-        },
-        "honeycombSettings": {
-          "showHive": true,
-          "showLegend": true,
-          "showLabels": false
-        }
-      },
-      "queriesSettings": {
-        "resolution": ""
-      }
     },
     {
       "name": "Node with any not-ready condition",
@@ -435,7 +156,10 @@
       },
       "queriesSettings": {
         "resolution": ""
-      }
+      },
+      "metricExpressions": [
+        "resolution=null&(builtin:cloud.kubernetes.node.conditions:filter(and(ne(node_condition,Ready),eq(condition_status,True))):splitBy(\"dt.entity.kubernetes_cluster\",\"dt.entity.kubernetes_node\",node_condition):count):limit(100):names"
+      ]
     },
     {
       "name": "Markdown",
@@ -449,186 +173,6 @@
       },
       "tileFilter": {},
       "markdown": "## Workload"
-    },
-    {
-      "name": "Pods not running",
-      "tileType": "DATA_EXPLORER",
-      "configured": true,
-      "bounds": {
-        "top": 912,
-        "left": 38,
-        "width": 304,
-        "height": 304
-      },
-      "tileFilter": {},
-      "customName": "Data explorer results",
-      "queries": [
-        {
-          "id": "A",
-          "timeAggregation": "DEFAULT",
-          "metricSelector": "( \n  (builtin:cloud.kubernetes.workload.desiredPods):splitBy(\"dt.entity.cloud_application\")\n  -(builtin:cloud.kubernetes.workload.pods):splitBy(\"dt.entity.cloud_application\")\n)\n:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))",
-          "enabled": true
-        }
-      ],
-      "visualConfig": {
-        "type": "GRAPH_CHART",
-        "global": {
-          "hideLegend": false
-        },
-        "rules": [
-          {
-            "matcher": "A:",
-            "properties": {
-              "color": "DEFAULT"
-            },
-            "seriesOverrides": []
-          }
-        ],
-        "axes": {
-          "xAxis": {
-            "displayName": "",
-            "visible": true
-          },
-          "yAxes": [
-            {
-              "displayName": "",
-              "visible": true,
-              "min": "AUTO",
-              "max": "AUTO",
-              "position": "LEFT",
-              "queryIds": [
-                "A"
-              ],
-              "defaultAxis": true
-            }
-          ]
-        },
-        "heatmapSettings": {
-          "yAxis": "VALUE"
-        },
-        "thresholds": [
-          {
-            "axisTarget": "LEFT",
-            "rules": [
-              {
-                "color": "#7dc540"
-              },
-              {
-                "color": "#f5d30f"
-              },
-              {
-                "color": "#dc172a"
-              }
-            ],
-            "queryId": "",
-            "visible": true
-          }
-        ],
-        "tableSettings": {
-          "isThresholdBackgroundAppliedToCell": false
-        },
-        "graphChartSettings": {
-          "connectNulls": false
-        },
-        "honeycombSettings": {
-          "showHive": true,
-          "showLegend": true,
-          "showLabels": false
-        }
-      },
-      "queriesSettings": {
-        "resolution": ""
-      }
-    },
-    {
-      "name": "Containers not running",
-      "tileType": "DATA_EXPLORER",
-      "configured": true,
-      "bounds": {
-        "top": 912,
-        "left": 342,
-        "width": 304,
-        "height": 304
-      },
-      "tileFilter": {},
-      "customName": "Data explorer results",
-      "queries": [
-        {
-          "id": "A",
-          "timeAggregation": "DEFAULT",
-          "metricSelector": "( \n  (builtin:cloud.kubernetes.pod.desiredContainers):parents:splitBy(\"dt.entity.cloud_application\")\n  -(builtin:cloud.kubernetes.pod.containers):parents:splitBy(\"dt.entity.cloud_application\")\n)\n:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))",
-          "enabled": true
-        }
-      ],
-      "visualConfig": {
-        "type": "GRAPH_CHART",
-        "global": {
-          "hideLegend": false
-        },
-        "rules": [
-          {
-            "matcher": "A:",
-            "properties": {
-              "color": "DEFAULT"
-            },
-            "seriesOverrides": []
-          }
-        ],
-        "axes": {
-          "xAxis": {
-            "displayName": "",
-            "visible": true
-          },
-          "yAxes": [
-            {
-              "displayName": "",
-              "visible": true,
-              "min": "AUTO",
-              "max": "AUTO",
-              "position": "LEFT",
-              "queryIds": [
-                "A"
-              ],
-              "defaultAxis": true
-            }
-          ]
-        },
-        "heatmapSettings": {
-          "yAxis": "VALUE"
-        },
-        "thresholds": [
-          {
-            "axisTarget": "LEFT",
-            "rules": [
-              {
-                "color": "#7dc540"
-              },
-              {
-                "color": "#f5d30f"
-              },
-              {
-                "color": "#dc172a"
-              }
-            ],
-            "queryId": "",
-            "visible": true
-          }
-        ],
-        "tableSettings": {
-          "isThresholdBackgroundAppliedToCell": false
-        },
-        "graphChartSettings": {
-          "connectNulls": false
-        },
-        "honeycombSettings": {
-          "showHive": true,
-          "showLegend": true,
-          "showLabels": false
-        }
-      },
-      "queriesSettings": {
-        "resolution": ""
-      }
     },
     {
       "name": "Markdown",
@@ -655,276 +199,6 @@
       },
       "tileFilter": {},
       "markdown": "## Resources utilization / optimization"
-    },
-    {
-      "name": "slack",
-      "tileType": "DATA_EXPLORER",
-      "configured": true,
-      "bounds": {
-        "top": 1254,
-        "left": 38,
-        "width": 304,
-        "height": 304
-      },
-      "tileFilter": {},
-      "customName": "Data explorer results",
-      "queries": [
-        {
-          "id": "A",
-          "timeAggregation": "DEFAULT",
-          "metricSelector": "(\n    (builtin:cloud.kubernetes.pod.cpuRequests:parents:splitBy(\"dt.entity.cloud_application_instance\",\"dt.entity.cloud_application\"):avg)\n    -(builtin:containers.cpu.usageMilliCores:parents:parents:splitBy(\"dt.entity.cloud_application_instance\",\"dt.entity.cloud_application\"):avg)\n)\n:splitBy(\"dt.entity.cloud_application\"):avg\n:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))",
-          "enabled": true
-        }
-      ],
-      "visualConfig": {
-        "type": "GRAPH_CHART",
-        "global": {
-          "hideLegend": false
-        },
-        "rules": [
-          {
-            "matcher": "A:",
-            "properties": {
-              "color": "DEFAULT"
-            },
-            "seriesOverrides": []
-          }
-        ],
-        "axes": {
-          "xAxis": {
-            "displayName": "",
-            "visible": true
-          },
-          "yAxes": [
-            {
-              "displayName": "",
-              "visible": true,
-              "min": "AUTO",
-              "max": "AUTO",
-              "position": "LEFT",
-              "queryIds": [
-                "A"
-              ],
-              "defaultAxis": true
-            }
-          ]
-        },
-        "heatmapSettings": {
-          "yAxis": "VALUE"
-        },
-        "thresholds": [
-          {
-            "axisTarget": "LEFT",
-            "rules": [
-              {
-                "color": "#7dc540"
-              },
-              {
-                "color": "#f5d30f"
-              },
-              {
-                "color": "#dc172a"
-              }
-            ],
-            "queryId": "",
-            "visible": true
-          }
-        ],
-        "tableSettings": {
-          "isThresholdBackgroundAppliedToCell": false
-        },
-        "graphChartSettings": {
-          "connectNulls": false
-        },
-        "honeycombSettings": {
-          "showHive": true,
-          "showLegend": true,
-          "showLabels": false
-        }
-      },
-      "queriesSettings": {
-        "resolution": ""
-      }
-    },
-    {
-      "name": "usage above requests",
-      "tileType": "DATA_EXPLORER",
-      "configured": true,
-      "bounds": {
-        "top": 1254,
-        "left": 342,
-        "width": 304,
-        "height": 304
-      },
-      "tileFilter": {},
-      "customName": "Data explorer results",
-      "queries": [
-        {
-          "id": "A",
-          "timeAggregation": "DEFAULT",
-          "metricSelector": "(\n    (builtin:containers.cpu.usageMilliCores:parents:parents:splitBy(\"dt.entity.cloud_application_instance\",\"dt.entity.cloud_application\"):avg)\n    -(builtin:cloud.kubernetes.pod.cpuRequests:parents:splitBy(\"dt.entity.cloud_application_instance\",\"dt.entity.cloud_application\"):avg)\n)\n:splitBy(\"dt.entity.cloud_application\"):avg\n:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))",
-          "enabled": true
-        }
-      ],
-      "visualConfig": {
-        "type": "GRAPH_CHART",
-        "global": {
-          "hideLegend": false
-        },
-        "rules": [
-          {
-            "matcher": "A:",
-            "properties": {
-              "color": "DEFAULT"
-            },
-            "seriesOverrides": []
-          }
-        ],
-        "axes": {
-          "xAxis": {
-            "displayName": "",
-            "visible": true
-          },
-          "yAxes": [
-            {
-              "displayName": "",
-              "visible": true,
-              "min": "AUTO",
-              "max": "AUTO",
-              "position": "LEFT",
-              "queryIds": [
-                "A"
-              ],
-              "defaultAxis": true
-            }
-          ]
-        },
-        "heatmapSettings": {
-          "yAxis": "VALUE"
-        },
-        "thresholds": [
-          {
-            "axisTarget": "LEFT",
-            "rules": [
-              {
-                "color": "#7dc540"
-              },
-              {
-                "color": "#f5d30f"
-              },
-              {
-                "color": "#dc172a"
-              }
-            ],
-            "queryId": "",
-            "visible": true
-          }
-        ],
-        "tableSettings": {
-          "isThresholdBackgroundAppliedToCell": false
-        },
-        "graphChartSettings": {
-          "connectNulls": false
-        },
-        "honeycombSettings": {
-          "showHive": true,
-          "showLegend": true,
-          "showLabels": false
-        }
-      },
-      "queriesSettings": {
-        "resolution": ""
-      }
-    },
-    {
-      "name": "usage in percent of limits",
-      "tileType": "DATA_EXPLORER",
-      "configured": true,
-      "bounds": {
-        "top": 1254,
-        "left": 646,
-        "width": 304,
-        "height": 304
-      },
-      "tileFilter": {},
-      "customName": "Data explorer results",
-      "queries": [
-        {
-          "id": "A",
-          "timeAggregation": "DEFAULT",
-          "metricSelector": "(\n    (builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy(\"dt.entity.cloud_application_instance\",\"dt.entity.cloud_application\"):sum)\n    /(builtin:cloud.kubernetes.pod.cpuLimits:avg:parents:splitBy(\"dt.entity.cloud_application_instance\",\"dt.entity.cloud_application\"):sum)\n    *(100)\n)\n:splitBy(\"dt.entity.cloud_application\"):avg\n:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))",
-          "enabled": true
-        }
-      ],
-      "visualConfig": {
-        "type": "GRAPH_CHART",
-        "global": {
-          "hideLegend": false
-        },
-        "rules": [
-          {
-            "matcher": "A:",
-            "properties": {
-              "color": "DEFAULT"
-            },
-            "seriesOverrides": []
-          }
-        ],
-        "axes": {
-          "xAxis": {
-            "displayName": "",
-            "visible": true
-          },
-          "yAxes": [
-            {
-              "displayName": "",
-              "visible": true,
-              "min": "AUTO",
-              "max": "AUTO",
-              "position": "LEFT",
-              "queryIds": [
-                "A"
-              ],
-              "defaultAxis": true
-            }
-          ]
-        },
-        "heatmapSettings": {
-          "yAxis": "VALUE"
-        },
-        "thresholds": [
-          {
-            "axisTarget": "LEFT",
-            "rules": [
-              {
-                "color": "#7dc540"
-              },
-              {
-                "color": "#f5d30f"
-              },
-              {
-                "color": "#dc172a"
-              }
-            ],
-            "queryId": "",
-            "visible": true
-          }
-        ],
-        "tableSettings": {
-          "isThresholdBackgroundAppliedToCell": false
-        },
-        "graphChartSettings": {
-          "connectNulls": false
-        },
-        "honeycombSettings": {
-          "showHive": true,
-          "showLegend": true,
-          "showLabels": false
-        }
-      },
-      "queriesSettings": {
-        "resolution": ""
-      }
     },
     {
       "name": "throttling in percent of usage",
@@ -1014,7 +288,404 @@
       },
       "queriesSettings": {
         "resolution": ""
-      }
+      },
+      "metricExpressions": [
+        "resolution=null&(((builtin:containers.cpu.throttledMilliCores:avg:parents:parents:splitBy(\"dt.entity.cloud_application_instance\",\"dt.entity.cloud_application\"):sum)/(builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy(\"dt.entity.cloud_application_instance\",\"dt.entity.cloud_application\"):sum)*(100)):splitBy(\"dt.entity.cloud_application\"):avg:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))):limit(100):names"
+      ]
+    },
+    {
+      "name": "Usage",
+      "tileType": "DATA_EXPLORER",
+      "configured": true,
+      "bounds": {
+        "top": 76,
+        "left": 38,
+        "width": 380,
+        "height": 228
+      },
+      "tileFilter": {},
+      "customName": "Data explorer results",
+      "queries": [
+        {
+          "id": "A",
+          "timeAggregation": "DEFAULT",
+          "splitBy": [
+            "dt.entity.host"
+          ],
+          "metricSelector": "builtin:host.cpu.usage\n:filter(and(in(\"dt.entity.host\",entitySelector(\"type(host),softwaretechnologies(~\"KUBERNETES~\")\"))))\n:splitBy(\"dt.entity.host\")",
+          "enabled": true
+        }
+      ],
+      "visualConfig": {
+        "type": "GRAPH_CHART",
+        "global": {
+          "hideLegend": false
+        },
+        "rules": [
+          {
+            "matcher": "A:",
+            "unitTransform": "Percent",
+            "valueFormat": "0",
+            "properties": {
+              "color": "DEFAULT",
+              "seriesType": "LINE",
+              "alias": "Node utilization"
+            },
+            "seriesOverrides": []
+          }
+        ],
+        "axes": {
+          "xAxis": {
+            "displayName": "",
+            "visible": true
+          },
+          "yAxes": [
+            {
+              "displayName": "",
+              "visible": true,
+              "min": "0",
+              "max": "100",
+              "position": "LEFT",
+              "queryIds": [
+                "A"
+              ],
+              "defaultAxis": true
+            }
+          ]
+        },
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
+        "thresholds": [
+          {
+            "axisTarget": "LEFT",
+            "rules": [
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
+            ],
+            "queryId": "",
+            "visible": true
+          }
+        ],
+        "tableSettings": {
+          "isThresholdBackgroundAppliedToCell": false
+        },
+        "graphChartSettings": {
+          "connectNulls": false
+        },
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "queriesSettings": {
+        "resolution": ""
+      },
+      "metricExpressions": [
+        "resolution=null&(builtin:host.cpu.usage:filter(and(in(\"dt.entity.host\",entitySelector(\"type(host),softwaretechnologies(~\"KUBERNETES~\")\")))):splitBy(\"dt.entity.host\")):limit(100):names"
+      ]
+    },
+    {
+      "name": "Requests",
+      "tileType": "DATA_EXPLORER",
+      "configured": true,
+      "bounds": {
+        "top": 76,
+        "left": 418,
+        "width": 380,
+        "height": 228
+      },
+      "tileFilter": {},
+      "customName": "Data explorer results",
+      "queries": [
+        {
+          "id": "A",
+          "timeAggregation": "DEFAULT",
+          "splitBy": [],
+          "metricSelector": "(\n  (builtin:kubernetes.node.requests_cpu:avg:splitBy(\"dt.entity.kubernetes_cluster\"):sum)\n  / (builtin:kubernetes.node.cpu_allocatable:avg:splitBy(\"dt.entity.kubernetes_cluster\"):sum)\n  * (100)\n)\n:setUnit(Percent)\n:sort(value(sum,descending))",
+          "enabled": true
+        }
+      ],
+      "visualConfig": {
+        "type": "GRAPH_CHART",
+        "global": {
+          "hideLegend": false
+        },
+        "rules": [
+          {
+            "matcher": "A:",
+            "unitTransform": "auto",
+            "valueFormat": "0",
+            "properties": {
+              "color": "DEFAULT",
+              "seriesType": "LINE",
+              "alias": "Node utilization"
+            },
+            "seriesOverrides": []
+          }
+        ],
+        "axes": {
+          "xAxis": {
+            "displayName": "",
+            "visible": true
+          },
+          "yAxes": [
+            {
+              "displayName": "",
+              "visible": true,
+              "min": "0",
+              "max": "100",
+              "position": "LEFT",
+              "queryIds": [
+                "A"
+              ],
+              "defaultAxis": true
+            }
+          ]
+        },
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
+        "thresholds": [
+          {
+            "axisTarget": "LEFT",
+            "rules": [
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
+            ],
+            "queryId": "",
+            "visible": true
+          }
+        ],
+        "tableSettings": {
+          "isThresholdBackgroundAppliedToCell": false
+        },
+        "graphChartSettings": {
+          "connectNulls": false
+        },
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "queriesSettings": {
+        "resolution": ""
+      },
+      "metricExpressions": [
+        "resolution=null&(((builtin:kubernetes.node.requests_cpu:avg:splitBy(\"dt.entity.kubernetes_cluster\"):sum)/(builtin:kubernetes.node.cpu_allocatable:avg:splitBy(\"dt.entity.kubernetes_cluster\"):sum)*(100)):setUnit(Percent):sort(value(sum,descending))):limit(100):names"
+      ]
+    },
+    {
+      "name": "Limits",
+      "tileType": "DATA_EXPLORER",
+      "configured": true,
+      "bounds": {
+        "top": 76,
+        "left": 798,
+        "width": 380,
+        "height": 228
+      },
+      "tileFilter": {},
+      "customName": "Data explorer results",
+      "queries": [
+        {
+          "id": "A",
+          "timeAggregation": "DEFAULT",
+          "splitBy": [],
+          "metricSelector": "(\n  (builtin:kubernetes.node.limits_cpu:avg:splitBy(\"dt.entity.kubernetes_cluster\"):sum)\n  / (builtin:kubernetes.node.cpu_allocatable:avg:splitBy(\"dt.entity.kubernetes_cluster\"):sum)\n  * (100)\n)\n:setUnit(Percent)\n:sort(value(sum,descending))",
+          "enabled": true
+        }
+      ],
+      "visualConfig": {
+        "type": "GRAPH_CHART",
+        "global": {
+          "hideLegend": false
+        },
+        "rules": [
+          {
+            "matcher": "A:",
+            "unitTransform": "Percent",
+            "valueFormat": "auto",
+            "properties": {
+              "color": "DEFAULT",
+              "seriesType": "LINE",
+              "alias": "Node utilization"
+            },
+            "seriesOverrides": []
+          }
+        ],
+        "axes": {
+          "xAxis": {
+            "displayName": "",
+            "visible": true
+          },
+          "yAxes": [
+            {
+              "displayName": "",
+              "visible": true,
+              "min": "0",
+              "max": "AUTO",
+              "position": "LEFT",
+              "queryIds": [
+                "A"
+              ],
+              "defaultAxis": true
+            }
+          ]
+        },
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
+        "thresholds": [
+          {
+            "axisTarget": "LEFT",
+            "rules": [
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
+            ],
+            "queryId": "",
+            "visible": true
+          }
+        ],
+        "tableSettings": {
+          "isThresholdBackgroundAppliedToCell": false
+        },
+        "graphChartSettings": {
+          "connectNulls": false
+        },
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "queriesSettings": {
+        "resolution": ""
+      },
+      "metricExpressions": [
+        "resolution=null&(((builtin:kubernetes.node.limits_cpu:avg:splitBy(\"dt.entity.kubernetes_cluster\"):sum)/(builtin:kubernetes.node.cpu_allocatable:avg:splitBy(\"dt.entity.kubernetes_cluster\"):sum)*(100)):setUnit(Percent):sort(value(sum,descending))):limit(100):names"
+      ]
+    },
+    {
+      "name": "Usage",
+      "tileType": "DATA_EXPLORER",
+      "configured": true,
+      "bounds": {
+        "top": 342,
+        "left": 38,
+        "width": 380,
+        "height": 228
+      },
+      "tileFilter": {},
+      "customName": "Data explorer results",
+      "queries": [
+        {
+          "id": "A",
+          "timeAggregation": "DEFAULT",
+          "splitBy": [],
+          "metricSelector": "builtin:host.cpu.usage:avg\n:filter(in(\"dt.entity.host\", entitySelector(\"type(HOST),toRelationships.IS_KUBERNETES_CLUSTER_OF_HOST(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\")))",
+          "enabled": true
+        }
+      ],
+      "visualConfig": {
+        "type": "GRAPH_CHART",
+        "global": {
+          "hideLegend": false
+        },
+        "rules": [
+          {
+            "matcher": "A:",
+            "unitTransform": "Percent",
+            "valueFormat": "0",
+            "properties": {
+              "color": "DEFAULT",
+              "seriesType": "LINE",
+              "alias": "Node utilization"
+            },
+            "seriesOverrides": []
+          }
+        ],
+        "axes": {
+          "xAxis": {
+            "displayName": "",
+            "visible": true
+          },
+          "yAxes": [
+            {
+              "displayName": "",
+              "visible": true,
+              "min": "0",
+              "max": "100",
+              "position": "LEFT",
+              "queryIds": [
+                "A"
+              ],
+              "defaultAxis": true
+            }
+          ]
+        },
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
+        "thresholds": [
+          {
+            "axisTarget": "LEFT",
+            "rules": [
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
+            ],
+            "queryId": "",
+            "visible": true
+          }
+        ],
+        "tableSettings": {
+          "isThresholdBackgroundAppliedToCell": false
+        },
+        "graphChartSettings": {
+          "connectNulls": false
+        },
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "queriesSettings": {
+        "resolution": ""
+      },
+      "metricExpressions": [
+        "resolution=null&(builtin:host.cpu.usage:avg:filter(in(\"dt.entity.host\",entitySelector(\"type(HOST),toRelationships.IS_KUBERNETES_CLUSTER_OF_HOST(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\")))):limit(100):names"
+      ]
     },
     {
       "name": "Number of Nodes with usage > 80%",
@@ -1032,6 +703,7 @@
         {
           "id": "A",
           "timeAggregation": "DEFAULT",
+          "splitBy": [],
           "metricSelector": "builtin:host.cpu.usage:avg\n:filter(in(\"dt.entity.host\", entitySelector(\"type(HOST),toRelationships.IS_KUBERNETES_CLUSTER_OF_HOST(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\")))\n:filter(series(avg,gt,80)):splitby():count",
           "enabled": true
         }
@@ -1044,7 +716,8 @@
         "rules": [
           {
             "matcher": "A:",
-            "valueFormat": "auto",
+            "unitTransform": "auto",
+            "valueFormat": "0",
             "properties": {
               "color": "DEFAULT",
               "seriesType": "LINE",
@@ -1107,7 +780,10 @@
       },
       "queriesSettings": {
         "resolution": ""
-      }
+      },
+      "metricExpressions": [
+        "resolution=null&(builtin:host.cpu.usage:avg:filter(in(\"dt.entity.host\",entitySelector(\"type(HOST),toRelationships.IS_KUBERNETES_CLUSTER_OF_HOST(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\"))):filter(series(avg,gt(80))):splitBy():count):limit(100):names"
+      ]
     },
     {
       "name": "Number of Nodes with usage < 80%",
@@ -1125,6 +801,7 @@
         {
           "id": "A",
           "timeAggregation": "DEFAULT",
+          "splitBy": [],
           "metricSelector": "builtin:host.cpu.usage:avg\n:filter(in(\"dt.entity.host\", entitySelector(\"type(HOST),toRelationships.IS_KUBERNETES_CLUSTER_OF_HOST(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\")))\n:filter(series(avg,lt,80)):splitby():count",
           "enabled": true
         }
@@ -1137,7 +814,8 @@
         "rules": [
           {
             "matcher": "A:",
-            "valueFormat": "auto",
+            "unitTransform": "auto",
+            "valueFormat": "0",
             "properties": {
               "color": "DEFAULT",
               "seriesType": "LINE",
@@ -1200,15 +878,18 @@
       },
       "queriesSettings": {
         "resolution": ""
-      }
+      },
+      "metricExpressions": [
+        "resolution=null&(builtin:host.cpu.usage:avg:filter(in(\"dt.entity.host\",entitySelector(\"type(HOST),toRelationships.IS_KUBERNETES_CLUSTER_OF_HOST(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\"))):filter(series(avg,lt(80))):splitBy():count):limit(100):names"
+      ]
     },
     {
-      "name": "Usage",
+      "name": "Number of Nodes with requests < 80%",
       "tileType": "DATA_EXPLORER",
       "configured": true,
       "bounds": {
         "top": 342,
-        "left": 38,
+        "left": 1178,
         "width": 380,
         "height": 228
       },
@@ -1218,7 +899,8 @@
         {
           "id": "A",
           "timeAggregation": "DEFAULT",
-          "metricSelector": "builtin:host.cpu.usage:avg\n:filter(in(\"dt.entity.host\", entitySelector(\"type(HOST),toRelationships.IS_KUBERNETES_CLUSTER_OF_HOST(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\")))",
+          "splitBy": [],
+          "metricSelector": "(\n  (builtin:cloud.kubernetes.node.cpuRequested:avg)\n  /(builtin:cloud.kubernetes.node.cores:avg)\n  *(100)\n)\n:filter(in(\"dt.entity.kubernetes_node\", entitySelector(\"type(KUBERNETES_NODE),toRelationships.IS_KUBERNETES_CLUSTER_OF_NODE(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\")))\n:filter(series(avg,lt,80)):splitby():count",
           "enabled": true
         }
       ],
@@ -1230,11 +912,12 @@
         "rules": [
           {
             "matcher": "A:",
-            "valueFormat": "auto",
+            "unitTransform": "auto",
+            "valueFormat": "0",
             "properties": {
               "color": "DEFAULT",
               "seriesType": "LINE",
-              "alias": "Node utilization"
+              "alias": "Number of nodes"
             },
             "seriesOverrides": []
           }
@@ -1249,7 +932,7 @@
               "displayName": "",
               "visible": true,
               "min": "0",
-              "max": "100",
+              "max": "AUTO",
               "position": "LEFT",
               "queryIds": [
                 "A"
@@ -1293,107 +976,17 @@
       },
       "queriesSettings": {
         "resolution": ""
-      }
+      },
+      "metricExpressions": [
+        "resolution=null&(((builtin:cloud.kubernetes.node.cpuRequested:avg)/(builtin:cloud.kubernetes.node.cores:avg)*(100)):filter(in(\"dt.entity.kubernetes_node\",entitySelector(\"type(KUBERNETES_NODE),toRelationships.IS_KUBERNETES_CLUSTER_OF_NODE(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\"))):filter(series(avg,lt(80))):splitBy():count):limit(100):names"
+      ]
     },
     {
-      "name": "Usage",
+      "name": "Pods not running",
       "tileType": "DATA_EXPLORER",
       "configured": true,
       "bounds": {
-        "top": 76,
-        "left": 38,
-        "width": 380,
-        "height": 228
-      },
-      "tileFilter": {},
-      "customName": "Data explorer results",
-      "queries": [
-        {
-          "id": "A",
-          "timeAggregation": "DEFAULT",
-          "metricSelector": "builtin:host.cpu.usage:avg\n:filter(in(\"dt.entity.host\", entitySelector(\"type(HOST),toRelationships.IS_KUBERNETES_CLUSTER_OF_HOST(type(KUBERNETES_CLUSTER),entityName())\")))",
-          "enabled": true
-        }
-      ],
-      "visualConfig": {
-        "type": "GRAPH_CHART",
-        "global": {
-          "hideLegend": false
-        },
-        "rules": [
-          {
-            "matcher": "A:",
-            "valueFormat": "auto",
-            "properties": {
-              "color": "DEFAULT",
-              "seriesType": "LINE",
-              "alias": "Node utilization"
-            },
-            "seriesOverrides": []
-          }
-        ],
-        "axes": {
-          "xAxis": {
-            "displayName": "",
-            "visible": true
-          },
-          "yAxes": [
-            {
-              "displayName": "",
-              "visible": true,
-              "min": "0",
-              "max": "100",
-              "position": "LEFT",
-              "queryIds": [
-                "A"
-              ],
-              "defaultAxis": true
-            }
-          ]
-        },
-        "heatmapSettings": {
-          "yAxis": "VALUE"
-        },
-        "thresholds": [
-          {
-            "axisTarget": "LEFT",
-            "rules": [
-              {
-                "color": "#7dc540"
-              },
-              {
-                "color": "#f5d30f"
-              },
-              {
-                "color": "#dc172a"
-              }
-            ],
-            "queryId": "",
-            "visible": true
-          }
-        ],
-        "tableSettings": {
-          "isThresholdBackgroundAppliedToCell": false
-        },
-        "graphChartSettings": {
-          "connectNulls": false
-        },
-        "honeycombSettings": {
-          "showHive": true,
-          "showLegend": true,
-          "showLabels": false
-        }
-      },
-      "queriesSettings": {
-        "resolution": ""
-      }
-    },
-    {
-      "name": "Container restarts",
-      "tileType": "DATA_EXPLORER",
-      "configured": true,
-      "bounds": {
-        "top": 1558,
+        "top": 912,
         "left": 38,
         "width": 304,
         "height": 304
@@ -1404,10 +997,8 @@
         {
           "id": "A",
           "timeAggregation": "DEFAULT",
-          "splitBy": [
-            "dt.entity.cloud_application"
-          ],
-          "metricSelector": "(\n  (builtin:cloud.kubernetes.pod.containerRestarts)\n  :splitBy(\"dt.entity.cloud_application\",\"dt.entity.cloud_application_instance\")\n  :max:delta\n)\n:splitBy(\"dt.entity.cloud_application\"):sum\n:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))",
+          "splitBy": [],
+          "metricSelector": "( \n  (builtin:kubernetes.workload.pods_desired:avg:splitBy(\"dt.entity.cloud_application\"):sum)\n  - (builtin:kubernetes.pods:avg:filter(eq(\"pod_phase\",\"Running\")):splitBy(\"dt.entity.cloud_application\"):sum)\n)\n:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))",
           "enabled": true
         }
       ],
@@ -1419,8 +1010,8 @@
         "rules": [
           {
             "matcher": "A:",
-            "unitTransform": "",
-            "valueFormat": "auto",
+            "unitTransform": "auto",
+            "valueFormat": "0",
             "properties": {
               "color": "DEFAULT",
               "seriesType": "LINE"
@@ -1482,7 +1073,596 @@
       },
       "queriesSettings": {
         "resolution": ""
-      }
+      },
+      "metricExpressions": [
+        "resolution=null&(((builtin:kubernetes.workload.pods_desired:avg:splitBy(\"dt.entity.cloud_application\"):sum)-(builtin:kubernetes.pods:avg:filter(eq(pod_phase,Running)):splitBy(\"dt.entity.cloud_application\"):sum)):filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))):limit(100):names"
+      ]
+    },
+    {
+      "name": "Containers not running",
+      "tileType": "DATA_EXPLORER",
+      "configured": true,
+      "bounds": {
+        "top": 912,
+        "left": 646,
+        "width": 304,
+        "height": 304
+      },
+      "tileFilter": {},
+      "customName": "Data explorer results",
+      "queries": [
+        {
+          "id": "A",
+          "timeAggregation": "DEFAULT",
+          "splitBy": [],
+          "metricSelector": "( \n  (builtin:kubernetes.workload.containers_desired:avg:splitBy(\"dt.entity.cloud_application\"):sum)\n  - (\tbuiltin:kubernetes.containers:avg:filter(eq(\"container_state\",\"running\")):splitBy(\"dt.entity.cloud_application\"):sum)\n)\n:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))",
+          "enabled": true
+        }
+      ],
+      "visualConfig": {
+        "type": "GRAPH_CHART",
+        "global": {
+          "hideLegend": false
+        },
+        "rules": [
+          {
+            "matcher": "A:",
+            "unitTransform": "auto",
+            "valueFormat": "0",
+            "properties": {
+              "color": "DEFAULT",
+              "seriesType": "LINE"
+            },
+            "seriesOverrides": []
+          }
+        ],
+        "axes": {
+          "xAxis": {
+            "displayName": "",
+            "visible": true
+          },
+          "yAxes": [
+            {
+              "displayName": "",
+              "visible": true,
+              "min": "AUTO",
+              "max": "AUTO",
+              "position": "LEFT",
+              "queryIds": [
+                "A"
+              ],
+              "defaultAxis": true
+            }
+          ]
+        },
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
+        "thresholds": [
+          {
+            "axisTarget": "LEFT",
+            "rules": [
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
+            ],
+            "queryId": "",
+            "visible": true
+          }
+        ],
+        "tableSettings": {
+          "isThresholdBackgroundAppliedToCell": false
+        },
+        "graphChartSettings": {
+          "connectNulls": false
+        },
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "queriesSettings": {
+        "resolution": ""
+      },
+      "metricExpressions": [
+        "resolution=null&(((builtin:kubernetes.workload.containers_desired:avg:splitBy(\"dt.entity.cloud_application\"):sum)-(builtin:kubernetes.containers:avg:filter(eq(container_state,running)):splitBy(\"dt.entity.cloud_application\"):sum)):filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))):limit(100):names"
+      ]
+    },
+    {
+      "name": "Pods not ready",
+      "tileType": "DATA_EXPLORER",
+      "configured": true,
+      "bounds": {
+        "top": 912,
+        "left": 342,
+        "width": 304,
+        "height": 304
+      },
+      "tileFilter": {},
+      "customName": "Data explorer results",
+      "queries": [
+        {
+          "id": "A",
+          "timeAggregation": "DEFAULT",
+          "splitBy": [],
+          "metricSelector": "( \n  (builtin:kubernetes.workload.pods_desired:avg:splitBy(\"dt.entity.cloud_application\"):sum)\n  - (builtin:kubernetes.pods:avg:filter(eq(\"current_pod_condition\",\"Ready\")):splitBy(\"dt.entity.cloud_application\"):sum)\n)\n:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))",
+          "enabled": true
+        }
+      ],
+      "visualConfig": {
+        "type": "GRAPH_CHART",
+        "global": {
+          "hideLegend": false
+        },
+        "rules": [
+          {
+            "matcher": "A:",
+            "unitTransform": "auto",
+            "valueFormat": "0",
+            "properties": {
+              "color": "DEFAULT",
+              "seriesType": "LINE"
+            },
+            "seriesOverrides": []
+          }
+        ],
+        "axes": {
+          "xAxis": {
+            "displayName": "",
+            "visible": true
+          },
+          "yAxes": [
+            {
+              "displayName": "",
+              "visible": true,
+              "min": "AUTO",
+              "max": "AUTO",
+              "position": "LEFT",
+              "queryIds": [
+                "A"
+              ],
+              "defaultAxis": true
+            }
+          ]
+        },
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
+        "thresholds": [
+          {
+            "axisTarget": "LEFT",
+            "rules": [
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
+            ],
+            "queryId": "",
+            "visible": true
+          }
+        ],
+        "tableSettings": {
+          "isThresholdBackgroundAppliedToCell": false
+        },
+        "graphChartSettings": {
+          "connectNulls": false
+        },
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "queriesSettings": {
+        "resolution": ""
+      },
+      "metricExpressions": [
+        "resolution=null&(((builtin:kubernetes.workload.pods_desired:avg:splitBy(\"dt.entity.cloud_application\"):sum)-(builtin:kubernetes.pods:avg:filter(eq(current_pod_condition,Ready)):splitBy(\"dt.entity.cloud_application\"):sum)):filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))):limit(100):names"
+      ]
+    },
+    {
+      "name": "slack",
+      "tileType": "DATA_EXPLORER",
+      "configured": true,
+      "bounds": {
+        "top": 1254,
+        "left": 38,
+        "width": 304,
+        "height": 304
+      },
+      "tileFilter": {},
+      "customName": "Data explorer results",
+      "queries": [
+        {
+          "id": "A",
+          "timeAggregation": "DEFAULT",
+          "splitBy": [
+            "dt.entity.cloud_application"
+          ],
+          "metricSelector": "(\n    (builtin:kubernetes.workload.requests_cpu:avg:splitBy(\"dt.entity.cloud_application\"):sum)\n    - (builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy(\"dt.entity.cloud_application\"):sum)\n)\n:splitBy(\"dt.entity.cloud_application\"):avg\n:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))",
+          "enabled": true
+        }
+      ],
+      "visualConfig": {
+        "type": "GRAPH_CHART",
+        "global": {
+          "hideLegend": false
+        },
+        "rules": [
+          {
+            "matcher": "A:",
+            "unitTransform": "auto",
+            "valueFormat": "0",
+            "properties": {
+              "color": "DEFAULT",
+              "seriesType": "LINE"
+            },
+            "seriesOverrides": []
+          }
+        ],
+        "axes": {
+          "xAxis": {
+            "displayName": "",
+            "visible": true
+          },
+          "yAxes": [
+            {
+              "displayName": "",
+              "visible": true,
+              "min": "AUTO",
+              "max": "AUTO",
+              "position": "LEFT",
+              "queryIds": [
+                "A",
+                "B"
+              ],
+              "defaultAxis": true
+            }
+          ]
+        },
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
+        "thresholds": [
+          {
+            "axisTarget": "LEFT",
+            "rules": [
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
+            ],
+            "queryId": "",
+            "visible": true
+          }
+        ],
+        "tableSettings": {
+          "isThresholdBackgroundAppliedToCell": false
+        },
+        "graphChartSettings": {
+          "connectNulls": false
+        },
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "queriesSettings": {
+        "resolution": ""
+      },
+      "metricExpressions": [
+        "resolution=null&(((builtin:kubernetes.workload.requests_cpu:avg:splitBy(\"dt.entity.cloud_application\"):sum)-(builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy(\"dt.entity.cloud_application\"):sum)):splitBy(\"dt.entity.cloud_application\"):avg:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))):limit(100):names"
+      ]
+    },
+    {
+      "name": "usage above requests",
+      "tileType": "DATA_EXPLORER",
+      "configured": true,
+      "bounds": {
+        "top": 1254,
+        "left": 342,
+        "width": 304,
+        "height": 304
+      },
+      "tileFilter": {},
+      "customName": "Data explorer results",
+      "queries": [
+        {
+          "id": "A",
+          "timeAggregation": "DEFAULT",
+          "splitBy": [
+            "dt.entity.cloud_application"
+          ],
+          "metricSelector": "(\n  (builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy(\"dt.entity.cloud_application\"):sum)\n  - (builtin:kubernetes.workload.requests_cpu:avg:splitBy(\"dt.entity.cloud_application\"):sum)\n)\n:splitBy(\"dt.entity.cloud_application\"):avg\n:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))",
+          "enabled": true
+        }
+      ],
+      "visualConfig": {
+        "type": "GRAPH_CHART",
+        "global": {
+          "hideLegend": false
+        },
+        "rules": [
+          {
+            "matcher": "A:",
+            "properties": {
+              "color": "DEFAULT"
+            },
+            "seriesOverrides": []
+          }
+        ],
+        "axes": {
+          "xAxis": {
+            "displayName": "",
+            "visible": true
+          },
+          "yAxes": [
+            {
+              "displayName": "",
+              "visible": true,
+              "min": "AUTO",
+              "max": "AUTO",
+              "position": "LEFT",
+              "queryIds": [
+                "A",
+                "B"
+              ],
+              "defaultAxis": true
+            }
+          ]
+        },
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
+        "thresholds": [
+          {
+            "axisTarget": "LEFT",
+            "rules": [
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
+            ],
+            "queryId": "",
+            "visible": true
+          }
+        ],
+        "tableSettings": {
+          "isThresholdBackgroundAppliedToCell": false
+        },
+        "graphChartSettings": {
+          "connectNulls": false
+        },
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "queriesSettings": {
+        "resolution": ""
+      },
+      "metricExpressions": [
+        "resolution=null&(((builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy(\"dt.entity.cloud_application\"):sum)-(builtin:kubernetes.workload.requests_cpu:avg:splitBy(\"dt.entity.cloud_application\"):sum)):splitBy(\"dt.entity.cloud_application\"):avg:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))):limit(100):names"
+      ]
+    },
+    {
+      "name": "usage in percent of limits",
+      "tileType": "DATA_EXPLORER",
+      "configured": true,
+      "bounds": {
+        "top": 1254,
+        "left": 646,
+        "width": 304,
+        "height": 304
+      },
+      "tileFilter": {},
+      "customName": "Data explorer results",
+      "queries": [
+        {
+          "id": "A",
+          "timeAggregation": "DEFAULT",
+          "splitBy": [
+            "dt.entity.cloud_application"
+          ],
+          "metricSelector": "(\n  (builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy(\"dt.entity.cloud_application\"):sum)\n  / (builtin:kubernetes.workload.limits_cpu:avg:splitBy(\"dt.entity.cloud_application\"):sum)\n  * (100)\n)\n:splitBy(\"dt.entity.cloud_application\"):avg\n:setUnit(Percent)\n:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))",
+          "enabled": true
+        }
+      ],
+      "visualConfig": {
+        "type": "GRAPH_CHART",
+        "global": {
+          "hideLegend": false
+        },
+        "rules": [
+          {
+            "matcher": "A:",
+            "unitTransform": "Percent",
+            "valueFormat": "0",
+            "properties": {
+              "color": "DEFAULT",
+              "seriesType": "LINE"
+            },
+            "seriesOverrides": []
+          }
+        ],
+        "axes": {
+          "xAxis": {
+            "displayName": "",
+            "visible": true
+          },
+          "yAxes": [
+            {
+              "displayName": "",
+              "visible": true,
+              "min": "AUTO",
+              "max": "AUTO",
+              "position": "LEFT",
+              "queryIds": [
+                "A"
+              ],
+              "defaultAxis": true
+            }
+          ]
+        },
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
+        "thresholds": [
+          {
+            "axisTarget": "LEFT",
+            "rules": [
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
+            ],
+            "queryId": "",
+            "visible": true
+          }
+        ],
+        "tableSettings": {
+          "isThresholdBackgroundAppliedToCell": false
+        },
+        "graphChartSettings": {
+          "connectNulls": false
+        },
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "queriesSettings": {
+        "resolution": ""
+      },
+      "metricExpressions": [
+        "resolution=null&(((builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy(\"dt.entity.cloud_application\"):sum)/(builtin:kubernetes.workload.limits_cpu:avg:splitBy(\"dt.entity.cloud_application\"):sum)*(100)):splitBy(\"dt.entity.cloud_application\"):avg:setUnit(Percent):filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))):limit(100):names"
+      ]
+    },
+    {
+      "name": "Container restarts",
+      "tileType": "DATA_EXPLORER",
+      "configured": true,
+      "bounds": {
+        "top": 1558,
+        "left": 38,
+        "width": 304,
+        "height": 304
+      },
+      "tileFilter": {},
+      "customName": "Data explorer results",
+      "queries": [
+        {
+          "id": "A",
+          "timeAggregation": "DEFAULT",
+          "splitBy": [
+            "dt.entity.cloud_application"
+          ],
+          "metricSelector": "(\n  (builtin:cloud.kubernetes.pod.containerRestarts)\n  :splitBy(\"dt.entity.cloud_application\",\"dt.entity.cloud_application_instance\")\n  :max:delta\n)\n:splitBy(\"dt.entity.cloud_application\"):sum\n:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))",
+          "enabled": true
+        }
+      ],
+      "visualConfig": {
+        "type": "GRAPH_CHART",
+        "global": {
+          "hideLegend": false
+        },
+        "rules": [
+          {
+            "matcher": "A:",
+            "properties": {
+              "color": "DEFAULT"
+            },
+            "seriesOverrides": []
+          }
+        ],
+        "axes": {
+          "xAxis": {
+            "displayName": "",
+            "visible": true
+          },
+          "yAxes": [
+            {
+              "displayName": "",
+              "visible": true,
+              "min": "AUTO",
+              "max": "AUTO",
+              "position": "LEFT",
+              "queryIds": [
+                "A"
+              ],
+              "defaultAxis": true
+            }
+          ]
+        },
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
+        "thresholds": [
+          {
+            "axisTarget": "LEFT",
+            "rules": [
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
+            ],
+            "queryId": "",
+            "visible": true
+          }
+        ],
+        "tableSettings": {
+          "isThresholdBackgroundAppliedToCell": false
+        },
+        "graphChartSettings": {
+          "connectNulls": false
+        },
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "queriesSettings": {
+        "resolution": ""
+      },
+      "metricExpressions": [
+        "resolution=null&(((builtin:cloud.kubernetes.pod.containerRestarts):splitBy(\"dt.entity.cloud_application\",\"dt.entity.cloud_application_instance\"):max:delta):splitBy(\"dt.entity.cloud_application\"):sum:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))):limit(100):names"
+      ]
     }
   ]
 }
