@@ -593,6 +593,67 @@ stock_price:last
 ```
 If there is at least one non-null data point, the result will use the latest value or otherwise be empty.
 
+## Scenario 22: Response Time Categories
+> **Task** Given a maximum acceptable response time of t = 1.5s in the 99th percentile, we want to
+> classify response times of our services as "satisfactory" (&le; t), "tolerable" (&le; 4t)
+> or "frustrating" (&gt; 4t). We want to see how the service count in each category changes
+> over time.
+
+First, we obtain a response time in the 99th percentile for each timeslot and every service,
+and we scale from microseconds to full seconds:
+```
+builtin:service.response.time:percentile(99):toUnit(MicroSecond,Second)
+```
+
+Next up, we want to categorize each data point into one of the three categories. This is done
+by splitting up each series into three new ones, and then assigning each data point to at
+most one of the three new series, depending on their value. When a data point has been assigned
+to one category, the same timeslot will be `null` for the other categories. Let's use the
+`partition` operator to achieve just that:
+```
+: partition(
+    apdexCategory,
+    value("satisfactory", range(0, 1.5)),
+    value("tolerable",    range(1.5, 6)),
+    value("frustrating",  otherwise) 
+  )
+```
+
+Now, the response time series for each series belongs to a new series with "dt.entity.service"
+and "apdexCategory" as their dimensions. Now we want to merge all data with the same category. By specifying
+`:count` after the merge operation, instead of the values, we query just the data point count that
+made it into the merge of each timeslot:
+```
+: splitBy("apdexCategory")
+: count
+```
+
+That's almost what we want, but if no data point was available for a timeslot of a
+category, the value will be a data gap, which is represented with `null`. `0` would be more
+correct for our use case, so let's replace nulls with zero:
+```
+: default(0)
+```
+
+Putting it all together we get:
+```
+builtin:service.response.time:percentile(99):toUnit(MicroSecond,Second)
+: partition(
+    apdexCategory,
+    value("satisfactory", range(0, 1.5)),
+    value("tolerable",    range(1.5, 6)),
+    value("frustrating",  otherwise) 
+  )
+: splitBy("apdexCategory")
+: count
+: default(0)
+```
+
+With the tools from this scenario at our disposal we can:
+* split up data points of series into categories,
+* count merged data points,
+* assign a default value for gaps in the data.
+
 ## Other Functionality Related to Metric Selectors
 
 The parameters `from`, `to` and `resolution` are not part of the metric selector but apply to the whole query. Nonetheless, this section provides a high-level overview that will help you use them effectively.

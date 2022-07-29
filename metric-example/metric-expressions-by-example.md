@@ -27,11 +27,11 @@ nominal temperature range:
 ```
 (
   (
-    (temperature) + (459.67)
+    temperature + 459.67
   )
   /
   (
-    (5) / (9)
+    5 / 9
   )
 )
 : filter(
@@ -41,13 +41,24 @@ nominal temperature range:
 
 We can see that:
 * `+`, `/` are arithmetic operators in infix notation, with `*` and `-` also available,
-* operands of arithmetic are written in parentheses,
 * `/` and `*` bind more closely than `-` and `+`, but just like in math, we can define a different order of operations by enclosing sub-expressions in parentheses,
 * operators like `:filter` can be applied to a bracketed sub-expression with a calculation in it.
 
 Keep in mind that many metric keys have dashes in them. Those dashes are interpreted literally (as part of the metric key)
 and only become a calculation once the operands are enclosed in parentheses. For example, `request-duration` is a single
-metric key, while `(request)-(duration)` subtracts `duration` from `request`.
+metric key, while `request - duration` subtracts `duration` from `request`.
+
+> **⚠ For all units that Dynatrace supports out of the box, we recommend that you use the [toUnit transformation](https://www.dynatrace.com/support/help/dynatrace-api/environment-api/metric-v2/metric-selector#to-unit) instead of an expression!**
+
+For the example above, the congruent selector using `toUnit` is:
+```
+temprerature
+: auto
+: toUnit(Fahrenheit,Kelvin)
+: filter(
+    series(max, gt(1.9))
+  )
+```
 
 ## Scenario 2: Percentage of Client Errors
 > **Task** We recently made a breaking change to our API and want to see which percentage
@@ -60,11 +71,11 @@ REST service has the entity ID `SERVICE-1234567890`, then we can get the percent
 in the 4xx range with:
 ```
 (
-  (100)
+  100
   *
-  (builtin:service.errors.fourxx.count)
+  builtin:service.errors.fourxx.count
   /
-  (builtin:service.errors.total.count)
+  builtin:service.errors.total.count
 ):filter(eq("dt.entity.service","SERVICE-1234567890"))
 ```
 
@@ -97,20 +108,20 @@ for the full revenue.
 Putting it all together, we set our resolution to months, set `from` to `now-1y to now`
 and finally our metric selector:
 ```
-(100) * (revenue) / (revenue:splitBy():fold)
+100 * revenue / revenue:splitBy():fold
 ```
 
 What would happen if we omitted the `fold`? In that case the percentage in any given timeslot
 will be relative to the full revenue over all regions just in that timeslot, instead of
 being relative to the revenue of the whole timeframe:
 ```
-(100) * (revenue) / (revenue:splitBy())
+100 * revenue / revenue:splitBy()
 ```
 
 If we omit the `splitBy()`, but keep the `fold`, then the percentages will
 only apply to the current series and each series will sum up to 100 percent:
 ```
-(100) * (revenue) / (revenue:fold)
+100 * revenue / revenue:fold
 ```
 
 In general, any dimension-less series result or dimension-less point result can be used in
@@ -120,70 +131,9 @@ to pair equal tuples for the calculation, or if you instead want all tuples of o
 to be paired with a single, empty tuple on the other side (`:splitBy()`). Each combination
 has its own use cases.
 
-## Scenario 4: Response Time Categories
-> **Task** Given a maximum acceptable response time of t = 1.5s in the 99th percentile, we want to
-> classify response times of our services as "satisfactory" (&le; t), "tolerable" (&le; 4t)
-> or "frustrating" (&gt; 4t). We want to see how the service count in each category changes
-> over time.
+## Scenario 4: Available Memory of Hosts with Top 10 PGIs
+> **⚠ WARNING: This example depends on implementation details and the ordering trick below may stop to work in a future release.** 
 
-_Note: This scenario uses the partition operator, which is available in Dynatrace versions 227 and later._
-
-First, we obtain a response time in the 99th percentile for each timeslot and every service,
-and we scale from microseconds to full seconds:
-```
-(builtin:service.response.time:percentile(99)) / (1000) / (1000)
-```
-
-Next up, we want to categorize each data point into one of the three categories. This is done
-by splitting up each series into three new ones, and then assigning each data point to at
-most one of the three new series, depending on their value. When a data point has been assigned
-to one category, the same timeslot will be `null` for the other categories. Let's use the
-`partition` operator to achieve just that:
-```
-: partition(
-    apdexCategory,
-    value("satisfactory", range(0, 1.5)),
-    value("tolerable",    range(1.5, 6)),
-    value("frustrating",  otherwise) 
-  )
-```
-
-Now, the response time series for each series belongs to a new series with "dt.entity.service"
-and "apdexCategory" as their dimensions. Now we want to merge all data with the same category. By specifying
-`:count` after the merge operation, instead of the values, we query just the data point count that
-made it into the merge of each timeslot:
-```
-: splitBy("apdexCategory")
-: count
-```
-
-That's almost what we want, but if no data point was available for a timeslot of a
-category, the value will be a data gap, which is represented with `null`. `0` would be more
-correct for our use case, so let's replace nulls with zero:
-```
-: default(0)
-```
-
-Putting it all together we get:
-```
-((builtin:service.response.time:percentile(99)) / (1000) / (1000))
-: partition(
-    apdexCategory,
-    value("satisfactory", range(0, 1.5)),
-    value("tolerable",    range(1.5, 6)),
-    value("frustrating",  otherwise) 
-  )
-: splitBy("apdexCategory")
-: count
-: default(0)
-```
-
-With the tools from this scenario at our disposal we can:
-* split up data points of series into categories,
-* count merged data points,
-* assign a default value for gaps in the data.
-
-## Scenario 5: Available Memory of Hosts with Top 10 PGIs
 > **Task** We recently increased the maximum heap space for all our Java processes to achieve
 > better utilization of available RAM. We want to verify that there's enough free memory on the hosts where
 > the Top 10 most memory consuming processes run.
@@ -205,22 +155,20 @@ Now we have host-based dimension tuples for the top PGIs and want to fill in the
 another metric `builtin:host.mem.avail.bytes`. A general pattern to apply topping with `metricA`
 but show the values from `metricB` for the topped dimensions is:
 ```
-(<metricA>:sort(...):limit(...))*(0)+(<metricB>)
+<metricA>:sort(...):limit(...) * 0 + <metricB>
 ```
 
 Let's put it all together:
 ```
-(
-  builtin:tech.generic.mem.usage
-  : sort(value(max,descending))
-  : limit(10)
-  : parents
-  : splitBy("dt.entity.host")
-)
+builtin:tech.generic.mem.usage
+: sort(value(max,descending))
+: limit(10)
+: parents
+: splitBy("dt.entity.host")
 *
-(0)
+0
 +
-(builtin:host.mem.avail.bytes)
+builtin:host.mem.avail.bytes
 ```
 
 It worked, we successfully used the PGIs from `builtin:tech.generic.mem.usage` for sorting,
@@ -237,7 +185,7 @@ If you encounter such a warning, check the `dimensionDefinitions` of the operand
 endpoint, and consider adding `splitBy` as needed.
 
 ## Further Reading
-Please refer to the documentation on metric expressions on [dyntrace.com](https://www.dynatrace.com/support/help/dynatrace-api/environment-api/metric-v2/metric-expressions/)
+Please refer to the documentation on [metric expressions on dyntrace.com](https://www.dynatrace.com/support/help/dynatrace-api/environment-api/metric-v2/metric-expressions/)
 for additional technical details such as:
 * precedence of operators,
 * semantics for combinations of point/series results and literals,
