@@ -3,14 +3,14 @@
     "configurationVersions": [
       6
     ],
-    "clusterVersion": "1.248.0.20220728-191724"
+    "clusterVersion": "1.248.2.20220729-040628"
   },
   "id": "64bfca68-49ec-4628-92d2-ab38d0cf28f7",
   "dashboardMetadata": {
     "name": "Metric expressions for K8s (Github samples)",
     "shared": false,
     "owner": "florian.geigl@dynatrace.com",
-    "popularity": 2,
+    "popularity": 4,
     "hasConsistentColors": false
   },
   "tiles": [
@@ -693,104 +693,6 @@
       },
       "metricExpressions": [
         "resolution=null&(builtin:host.cpu.usage:avg:filter(in(\"dt.entity.host\",entitySelector(\"type(HOST),toRelationships.IS_KUBERNETES_CLUSTER_OF_HOST(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\")))):limit(100):names"
-      ]
-    },
-    {
-      "name": "Number of Nodes with requests < 80%",
-      "tileType": "DATA_EXPLORER",
-      "configured": true,
-      "bounds": {
-        "top": 380,
-        "left": 1178,
-        "width": 380,
-        "height": 228
-      },
-      "tileFilter": {},
-      "customName": "Data explorer results",
-      "queries": [
-        {
-          "id": "A",
-          "timeAggregation": "DEFAULT",
-          "splitBy": [],
-          "metricSelector": "(\n  builtin:cloud.kubernetes.node.cpuRequested:avg\n  /builtin:cloud.kubernetes.node.cores:avg\n  *100\n)\n:filter(in(\"dt.entity.kubernetes_node\", entitySelector(\"type(KUBERNETES_NODE),toRelationships.IS_KUBERNETES_CLUSTER_OF_NODE(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\")))\n:filter(series(avg,lt,80)):splitby():count",
-          "enabled": true
-        }
-      ],
-      "visualConfig": {
-        "type": "GRAPH_CHART",
-        "global": {
-          "hideLegend": false
-        },
-        "rules": [
-          {
-            "matcher": "A:",
-            "unitTransform": "auto",
-            "valueFormat": "0",
-            "properties": {
-              "color": "DEFAULT",
-              "seriesType": "LINE",
-              "alias": "Number of nodes"
-            },
-            "seriesOverrides": []
-          }
-        ],
-        "axes": {
-          "xAxis": {
-            "displayName": "",
-            "visible": true
-          },
-          "yAxes": [
-            {
-              "displayName": "",
-              "visible": true,
-              "min": "0",
-              "max": "AUTO",
-              "position": "LEFT",
-              "queryIds": [
-                "A"
-              ],
-              "defaultAxis": true
-            }
-          ]
-        },
-        "heatmapSettings": {
-          "yAxis": "VALUE"
-        },
-        "thresholds": [
-          {
-            "axisTarget": "LEFT",
-            "rules": [
-              {
-                "color": "#7dc540"
-              },
-              {
-                "color": "#f5d30f"
-              },
-              {
-                "color": "#dc172a"
-              }
-            ],
-            "queryId": "",
-            "visible": true
-          }
-        ],
-        "tableSettings": {
-          "isThresholdBackgroundAppliedToCell": false
-        },
-        "graphChartSettings": {
-          "connectNulls": false
-        },
-        "honeycombSettings": {
-          "showHive": true,
-          "showLegend": true,
-          "showLabels": false
-        }
-      },
-      "queriesSettings": {
-        "resolution": ""
-      },
-      "metricExpressions": [
-        "resolution=null&((builtin:cloud.kubernetes.node.cpuRequested:avg/builtin:cloud.kubernetes.node.cores:avg*100):filter(in(\"dt.entity.kubernetes_node\",entitySelector(\"type(KUBERNETES_NODE),toRelationships.IS_KUBERNETES_CLUSTER_OF_NODE(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\"))):filter(series(avg,lt(80))):splitBy():count):limit(100):names"
       ]
     },
     {
@@ -1669,6 +1571,104 @@
       },
       "metricExpressions": [
         "resolution=null&(builtin:kubernetes.container.restarts:splitBy(\"dt.entity.cloud_application\"):sum:filter(and(in(\"dt.entity.cloud_application\",entitySelector(\"type(cloud_application),entityId(~\"CLOUD_APPLICATION-A26E32FC302257AB~\")\"))))):limit(100):names"
+      ]
+    },
+    {
+      "name": "Number of Nodes with requests < 80%",
+      "tileType": "DATA_EXPLORER",
+      "configured": true,
+      "bounds": {
+        "top": 380,
+        "left": 1178,
+        "width": 380,
+        "height": 228
+      },
+      "tileFilter": {},
+      "customName": "Data explorer results",
+      "queries": [
+        {
+          "id": "A",
+          "timeAggregation": "DEFAULT",
+          "splitBy": [],
+          "metricSelector": "(\n  builtin:cloud.kubernetes.node.cpuRequested:avg\n  / builtin:cloud.kubernetes.node.cores:avg\n  * 100\n)\n:filter(in(\"dt.entity.kubernetes_node\", entitySelector(\"type(KUBERNETES_NODE),toRelationships.IS_KUBERNETES_CLUSTER_OF_NODE(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\")))\n:filter(series(avg,lt,80)):splitby():count",
+          "enabled": true
+        }
+      ],
+      "visualConfig": {
+        "type": "GRAPH_CHART",
+        "global": {
+          "hideLegend": false
+        },
+        "rules": [
+          {
+            "matcher": "A:",
+            "unitTransform": "auto",
+            "valueFormat": "0",
+            "properties": {
+              "color": "DEFAULT",
+              "seriesType": "LINE",
+              "alias": "Number of nodes"
+            },
+            "seriesOverrides": []
+          }
+        ],
+        "axes": {
+          "xAxis": {
+            "displayName": "",
+            "visible": true
+          },
+          "yAxes": [
+            {
+              "displayName": "",
+              "visible": true,
+              "min": "0",
+              "max": "AUTO",
+              "position": "LEFT",
+              "queryIds": [
+                "A"
+              ],
+              "defaultAxis": true
+            }
+          ]
+        },
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
+        "thresholds": [
+          {
+            "axisTarget": "LEFT",
+            "rules": [
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
+            ],
+            "queryId": "",
+            "visible": true
+          }
+        ],
+        "tableSettings": {
+          "isThresholdBackgroundAppliedToCell": false
+        },
+        "graphChartSettings": {
+          "connectNulls": false
+        },
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "queriesSettings": {
+        "resolution": ""
+      },
+      "metricExpressions": [
+        "resolution=null&((builtin:cloud.kubernetes.node.cpuRequested:avg/builtin:cloud.kubernetes.node.cores:avg*100):filter(in(\"dt.entity.kubernetes_node\",entitySelector(\"type(KUBERNETES_NODE),toRelationships.IS_KUBERNETES_CLUSTER_OF_NODE(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))\"))):filter(series(avg,lt(80))):splitBy():count):limit(100):names"
       ]
     }
   ]
