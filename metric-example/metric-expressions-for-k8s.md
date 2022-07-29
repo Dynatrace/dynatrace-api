@@ -82,8 +82,8 @@ By replacing the *usage* part of this query, we can solve the same use cases for
 ```
 (
   builtin:cloud.kubernetes.node.cpuRequested:avg
-  /builtin:cloud.kubernetes.node.cores:avg
-  *100
+  / builtin:cloud.kubernetes.node.cores:avg
+  * 100
 )
 :filter(in("dt.entity.kubernetes_node", entitySelector("type(KUBERNETES_NODE),toRelationships.IS_KUBERNETES_CLUSTER_OF_NODE(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))")))
 :filter(series(avg,lt,80)):splitby():count
