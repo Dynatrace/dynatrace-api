@@ -12,8 +12,9 @@ This document collects frequently asked metric expressions for typical K8s use-c
     - [Memory](#memory)
 - [Node conditions](#node-conditions)
 - [Workload health](#workload-health)
-    - [Not all pods running](#not-all-pods-running)
-    - [Not all containers running](#not-all-containers-running)
+    - [Number of pods not running](#number-of-pods-not-running)
+    - [Number of pods beeing not ready](#number-of-pods-beeing-not-ready)
+    - [Number of containers not running](#number-of-containers-not-running)
 - [Workloads resource utilization and optimization](#workloads-resource-utilization-and-optimization)
     - [Slack](#slack)
     - [Usage above requests](#usage-above-requests)
@@ -47,15 +48,15 @@ builtin:host.cpu.usage
 ```
 For **requests** we can divide the requested CPU by the total number of cores available on each node.
 ```
-(builtin:kubernetes.node.requests_cpu:avg:splitBy("dt.entity.kubernetes_cluster"):sum)
-/ (builtin:kubernetes.node.cpu_allocatable:avg:splitBy("dt.entity.kubernetes_cluster"):sum)
-* (100)
+builtin:kubernetes.node.requests_cpu:avg:splitBy("dt.entity.kubernetes_cluster"):sum
+/ builtin:kubernetes.node.cpu_allocatable:avg:splitBy("dt.entity.kubernetes_cluster"):sum
+* 100
 ```
 The same can be done for **limits** as follows:
 ```
-(builtin:kubernetes.node.limits_cpu:avg:splitBy("dt.entity.kubernetes_cluster"):sum)
-/ (builtin:kubernetes.node.cpu_allocatable:avg:splitBy("dt.entity.kubernetes_cluster"):sum)
-* (100)
+builtin:kubernetes.node.limits_cpu:avg:splitBy("dt.entity.kubernetes_cluster"):sum
+/ builtin:kubernetes.node.cpu_allocatable:avg:splitBy("dt.entity.kubernetes_cluster"):sum
+* 100
 ```
 Let's reduce the scope of these queries to only nodes of a given cluster. This is especially important if you want to set up an alert in the scope of a single cluster. The scope is narrowed down to a single cluster by attaching a **filter** for the cluster entity. For **usage** this results in the following metric expression. Note: Replace *KUBERNETES_CLUSTER-44D2F1E49BE901AF* with the entity-ID of your Kubernetes cluster. The easiest way to get the entity-ID of your cluster, is to navigate to the cluster within the Dynatrace Web UI - you'll see the ID in the URL in your browser's address bar.
 
@@ -80,9 +81,9 @@ builtin:host.cpu.usage:avg
 By replacing the *usage* part of this query, we can solve the same use cases for **requests** and **limits**. For example, for **requests** the last metric expression above would result in the following query:
 ```
 (
-  (builtin:cloud.kubernetes.node.cpuRequested:avg)
-  /(builtin:cloud.kubernetes.node.cores:avg)
-  *(100)
+  builtin:cloud.kubernetes.node.cpuRequested:avg
+  /builtin:cloud.kubernetes.node.cores:avg
+  *100
 )
 :filter(in("dt.entity.kubernetes_node", entitySelector("type(KUBERNETES_NODE),toRelationships.IS_KUBERNETES_CLUSTER_OF_NODE(type(KUBERNETES_CLUSTER),entityId(KUBERNETES_CLUSTER-44D2F1E49BE901AF))")))
 :filter(series(avg,lt,80)):splitby():count
@@ -96,10 +97,12 @@ The metric expressions used for *CPU* can easily be adapted to *Memory* by just 
 * builtin:cloud.kubernetes.node.cpuLimit -> builtin:cloud.kubernetes.node.memoryLimit
 
 ## Node conditions
-For node conditions, it's important to understand, that a single node can have multiple conditions at the same time, such as, *DiskPressure* and *MemoryPressure*. Consequently, the used metric offers a dimension for each condition (node_condition), that can either be true or false (condition_status) at any given point in time. Hence, we can chart which nodes have any not-ready conditions. Of course, we can also use this metric expression for setting up a [custom event for alerting](https://www.dynatrace.com/support/help/how-to-use-dynatrace/problem-detection-and-analysis/problem-detection/metric-events-for-alerting#create-a-metric-event). Again, you could reduce the scope of this query to a single cluster by adding a proper filter.
+For node conditions, it's important to understand, that a single node can have multiple conditions at the same time, such as, *DiskPressure* and *MemoryPressure*. Consequently, the used metric offers a dimension for each condition (node_condition), that can either be true or false (condition_status) at any given point in time. Hence, we can chart which nodes have any not-ready conditions. Of course, we can also use this metric expression for setting up [metric events for alerting](https://www.dynatrace.com/support/help/how-to-use-dynatrace/problem-detection-and-analysis/problem-detection/metric-events-for-alerting#metric-events-for-alerting). Again, you could reduce the scope of this query to a single cluster by adding a proper filter.
 ```
-builtin:cloud.kubernetes.node.conditions:
-filter(and(ne(node_condition,Ready),eq(condition_status,True))):splitBy("dt.entity.kubernetes_cluster","dt.entity.kubernetes_node","node_condition"):count
+builtin:cloud.kubernetes.node.conditions
+:filter(and(ne(node_condition,Ready),eq(condition_status,True)))
+:splitBy("dt.entity.kubernetes_cluster","dt.entity.kubernetes_node","node_condition")
+:count
 ```
 
 ## Workload health
@@ -112,8 +115,8 @@ To adapt this to your scenario, simply replace "CLOUD_APPLICATION-A26E32FC302257
 Using the following query, you can find how many pods are not running compared to the number of desired pods of this workload.
 ```
 ( 
-  (builtin:kubernetes.workload.pods_desired:avg:splitBy("dt.entity.cloud_application"):sum)
-  - (builtin:kubernetes.pods:avg:filter(eq("pod_phase","Running")):splitBy("dt.entity.cloud_application"):sum)
+  builtin:kubernetes.workload.pods_desired:avg:splitBy("dt.entity.cloud_application"):sum
+  - builtin:kubernetes.pods:avg:filter(eq("pod_phase","Running")):splitBy("dt.entity.cloud_application"):sum
 )
 :filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
 ```
@@ -121,8 +124,8 @@ Using the following query, you can find how many pods are not running compared t
 Using the following query, you can find how many pods are not ready compared to the number of desired pods of this workload.
 ```
 ( 
-  (builtin:kubernetes.workload.pods_desired:avg:splitBy("dt.entity.cloud_application"):sum)
-  - (builtin:kubernetes.pods:avg:filter(eq("current_pod_condition","Ready")):splitBy("dt.entity.cloud_application"):sum)
+  builtin:kubernetes.workload.pods_desired:avg:splitBy("dt.entity.cloud_application"):sum
+  - builtin:kubernetes.pods:avg:filter(eq("current_pod_condition","Ready")):splitBy("dt.entity.cloud_application"):sum
 )
 :filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
 ```
@@ -131,8 +134,8 @@ Using the following query, you can find how many pods are not ready compared to 
 Using the following query, you can find how many containers are not running compared to the number of desired containers of this workload.
 ```
 ( 
-  (builtin:kubernetes.workload.containers_desired:avg:splitBy("dt.entity.cloud_application"):sum)
-  - (	builtin:kubernetes.containers:avg:filter(eq("container_state","running")):splitBy("dt.entity.cloud_application"):sum)
+  builtin:kubernetes.workload.containers_desired:avg:splitBy("dt.entity.cloud_application"):sum
+  - builtin:kubernetes.containers:avg:filter(eq("container_state","running")):splitBy("dt.entity.cloud_application"):sum
 )
 :filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
 ```
@@ -144,8 +147,8 @@ We start by looking into the relation between usage and requests. Usually, one t
 ### Slack
 ```
 (
-    (builtin:kubernetes.workload.requests_cpu:avg:splitBy("dt.entity.cloud_application"):sum)
-    - (builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy("dt.entity.cloud_application"):sum)
+  builtin:kubernetes.workload.requests_cpu:avg:splitBy("dt.entity.cloud_application"):sum
+  - builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy("dt.entity.cloud_application"):sum
 )
 :splitBy("dt.entity.cloud_application"):avg
 :filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
@@ -154,23 +157,23 @@ We start by looking into the relation between usage and requests. Usually, one t
 You can also increase the scope of this query to multiple workloads by expanding the scope of the filter or just removing it. Just be aware, that in very large environments this can put a lot of stress on your Dynatrace environment.
 
 ### Usage above requests
-Using the following query, we can see which workloads have a higher CPU usage than requested. Meaning, for such workloads one should consider increasing the set requests to increase the stability of the workload as well as the stability of the Kubernetes cluster it is running on.
+We can see the difference between a workload's CPU usage and CPU requests using the following query. This means that for workloads with a result higher than zero, one should consider increasing its requests to increase the stability of the workload and the stability of the Kubernetes cluster it runs on.
 ```
 (
-  (builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy("dt.entity.cloud_application"):sum)
-  - (builtin:kubernetes.workload.requests_cpu:avg:splitBy("dt.entity.cloud_application"):sum)
+  builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy("dt.entity.cloud_application"):sum
+  - builtin:kubernetes.workload.requests_cpu:avg:splitBy("dt.entity.cloud_application"):sum
 )
 :splitBy("dt.entity.cloud_application"):avg
 :filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
 ```
 
 ### Usage in terms of limits
-Users afraid of throttling, often want to alert on the percentage of limits being used. However, we suggest to alert on throttling relative to usage. The reason for this is, that the relative usage in terms of limits is not the only deciding factor for when Kubernetes starts to throttle containers - we'll cover that in the next example.
+Users afraid of throttling, often want to alert on the percentage of limits being used. However, we suggest to alert on throttling relative to usage. The reason for this is, that the relative usage in terms of limits is not the only deciding factor for when Kubernetes starts to throttle containers - we'll cover that in the next example. Note, also the usage of the 'setUnit(Percent)' operation in this example. This provides us with a nicer formating of values in charts and alerts.
 ```
 (
-  (builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy("dt.entity.cloud_application"):sum)
-  / (builtin:kubernetes.workload.limits_cpu:avg:splitBy("dt.entity.cloud_application"):sum)
-  * (100)
+  builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy("dt.entity.cloud_application"):sum
+  / builtin:kubernetes.workload.limits_cpu:avg:splitBy("dt.entity.cloud_application"):sum
+  * 100
 )
 :splitBy("dt.entity.cloud_application"):avg
 :setUnit(Percent)
@@ -181,9 +184,9 @@ Users afraid of throttling, often want to alert on the percentage of limits bein
 As mentioned, it makes more sense to alert on the outcome rather than only on one of multiple potential triggers for throttling. In other words, track throttling relative to usage instead of usage in terms of limits.
 ```
 (
-    (builtin:containers.cpu.throttledMilliCores:avg:parents:parents:splitBy("dt.entity.cloud_application_instance","dt.entity.cloud_application"):sum)
-    /(builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy("dt.entity.cloud_application_instance","dt.entity.cloud_application"):sum)
-    *(100)
+    builtin:containers.cpu.throttledMilliCores:avg:parents:parents:splitBy("dt.entity.cloud_application_instance","dt.entity.cloud_application"):sum
+    / builtin:containers.cpu.usageMilliCores:avg:parents:parents:splitBy("dt.entity.cloud_application_instance","dt.entity.cloud_application"):sum
+    * 100
 )
 :splitBy("dt.entity.cloud_application"):avg
 :filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
@@ -194,11 +197,7 @@ Most of the metric expressions shown above can be adapted for memory related use
 
 ### High container restart rate
 ```
-(
-  (builtin:cloud.kubernetes.pod.containerRestarts)
-  :splitBy("dt.entity.cloud_application","dt.entity.cloud_application_instance")
-  :max:delta
-)
+builtin:kubernetes.container.restarts
 :splitBy("dt.entity.cloud_application"):sum
 :filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
 ```
