@@ -1,6 +1,6 @@
 {
     "name": "custom.remote.python.thirdparty_linux_commands",
-    "version": "1.015",
+    "version": "1.018",
     "type": "python",
     "entity": "CUSTOM_DEVICE",
     "technologies": [

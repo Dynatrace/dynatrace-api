@@ -96,7 +96,8 @@ class RemoteClient:
         value: Optional[int] = None,
         pattern: Optional[str] = None
     ) -> Union[bool, str]:
-        for line in output:
+        output_len= len(output)
+        for index, line in enumerate(output):
             if line != "Password:":
                 if evaluation == "NUMERIC_VALUE_COMPARISON":
                     output_number = float(line)
@@ -106,10 +107,11 @@ class RemoteClient:
                         return True, ""
                     return False, f"Numeric evaluation of expression {expression} failed"
                 elif evaluation == "TEXT_PATTERN_MATCH":
-                    self.log.debug(f"Evaluating pattern: {pattern}")
+                    self.log.debug(f"Evaluating pattern: {pattern} on line '{line}'")
                     if re.search(pattern, line):
                         return True, ""
-                    return False, f"Pattern {pattern} did not match the output"
+                    elif index == output_len - 1:
+                        return False, f"Pattern {pattern} did not match the output"
 
     def test_command(
         self,
