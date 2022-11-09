@@ -7,13 +7,13 @@ from dynatrace.environment_v1.synthetic_third_party import SYNTHETIC_EVENT_TYPE_
 
 import pingparsing
 
-log = logging.getLogger(__name__)
-
+from ping_imports.environment import get_api_url
 
 class PingExtension(RemoteBasePlugin):
     def initialize(self, **kwargs):
-        # The Dynatrace API client
-        self.dt_client = Dynatrace(self.config.get("api_url"), self.config.get("api_token"), log=log, proxies=self.build_proxy_url())
+
+        api_url = get_api_url()
+        self.dt_client = Dynatrace(api_url, self.config.get("api_token"), log=self.logger, proxies=self.build_proxy_url())
         self.executions = 0
         self.failures_detected = 0
 
@@ -36,7 +36,7 @@ class PingExtension(RemoteBasePlugin):
 
     def query(self, **kwargs) -> None:
 
-        log.setLevel(self.config.get("log_level"))
+        self.logger.setLevel(self.config.get("log_level"))
 
         target = self.config.get("test_target")
 
@@ -49,15 +49,16 @@ class PingExtension(RemoteBasePlugin):
         frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 15
 
         if self.executions % frequency == 0:
-            ping_result = ping(target)
-            log.info(ping_result.as_dict())
+            timeout = self.config.get("test_timeout", 2)
+            ping_result = ping(target, timeout)
+            self.logger.info(ping_result.as_dict())
 
             success = ping_result.packet_loss_rate is not None and ping_result.packet_loss_rate == 0
 
             if not success:
                 self.failures_detected += 1
                 if self.failures_detected < failure_count:
-                    log.info(f"The result was: {success}. Attempt {self.failures_detected}/{failure_count}, not reporting yet")
+                    self.logger.info(f"The result was: {success}. Attempt {self.failures_detected}/{failure_count}, not reporting yet")
                     success = True
             else:
                 self.failures_detected = 0
@@ -93,10 +94,10 @@ class PingExtension(RemoteBasePlugin):
         self.executions += 1
 
 
-def ping(host: str) -> pingparsing.PingStats:
+def ping(host: str, timeout: int) -> pingparsing.PingStats:
     ping_parser = pingparsing.PingParsing()
     transmitter = pingparsing.PingTransmitter()
     transmitter.destination = host
     transmitter.count = 2
-    transmitter.timeout = 2000
+    transmitter.timeout = timeout * 1000
     return ping_parser.parse(transmitter.ping())
