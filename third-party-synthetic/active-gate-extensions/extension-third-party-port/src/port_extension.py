@@ -10,14 +10,19 @@ from datetime import datetime
 from dynatrace import Dynatrace
 from dynatrace.environment_v1.synthetic_third_party import SYNTHETIC_EVENT_TYPE_OUTAGE
 
+from port_imports.environment import get_api_url
+
 
 log = logging.getLogger(__name__)
 
 
 class PortExtension(RemoteBasePlugin):
     def initialize(self, **kwargs):
-        # The Dynatrace API client
-        self.dt_client = Dynatrace(self.config.get("api_url"), self.config.get("api_token"), log=log, proxies=self.build_proxy_url())
+        api_url = get_api_url()
+        self.dt_client = Dynatrace(api_url,
+                                   self.config.get("api_token"),
+                                   log=self.logger,
+                                   proxies=self.build_proxy_url())
         self.executions = 0
         self.failures: Dict[str, int] = defaultdict(int)
 
@@ -60,7 +65,11 @@ class PortExtension(RemoteBasePlugin):
 
             for i, port in enumerate(target_ports):
                 if port:
-                    step_success, step_response_time = test_port(target_ip, int(port), protocol=self.config.get("test_protocol", "TCP"))
+                    timeout = self.config.get("test_timeout", 2)
+                    step_success, step_response_time = test_port(target_ip,
+                                                                 int(port),
+                                                                 protocol=self.config.get("test_protocol", "TCP"),
+                                                                 timeout=timeout)
                     test_response_time += step_response_time
 
                     log.info(f"{target_ip}:{port} = {step_success}, {step_response_time}")
@@ -115,7 +124,7 @@ class PortExtension(RemoteBasePlugin):
         self.executions += 1
 
 
-def test_port(ip: str, port: int, protocol: str = "TCP") -> (bool, int):
+def test_port(ip: str, port: int, protocol: str = "TCP", timeout: int = 2) -> (bool, int):
     log.debug(f"Testing {ip}:{port} using protocol {protocol}")
     start = datetime.now()
     result = True
@@ -123,7 +132,7 @@ def test_port(ip: str, port: int, protocol: str = "TCP") -> (bool, int):
         socket_type = socket.SOCK_STREAM if protocol == "TCP" else socket.SOCK_DGRAM
         sock = socket.socket(socket.AF_INET, socket_type)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.settimeout(2)
+        sock.settimeout(timeout)
         sock.connect((ip, port))
 
         if protocol == "UDP":
@@ -135,7 +144,7 @@ def test_port(ip: str, port: int, protocol: str = "TCP") -> (bool, int):
     except socket.timeout:
         if protocol == "UDP":
             log.warning(f"The UDP test for {ip}:{port} timed out, checking if the host can be pinged before reporting")
-            ping_result = ping(ip)
+            ping_result = ping(ip, timeout)
             log.info(f"Ping result to double check UDP: {ping_result.as_dict()}")
             result = ping_result.packet_loss_rate is not None and ping_result.packet_loss_rate == 0
         else:
@@ -147,12 +156,12 @@ def test_port(ip: str, port: int, protocol: str = "TCP") -> (bool, int):
     return result, int((datetime.now() - start).total_seconds() * 1000)
 
 
-def ping(host: str) -> PingStats:
+def ping(host: str, timeout: int) -> PingStats:
     ping_parser = PingParsing()
     transmitter = PingTransmitter()
     transmitter.destination = host
     transmitter.count = 1
-    transmitter.timeout = 2000
+    transmitter.timeout = timeout * 1000
     return ping_parser.parse(transmitter.ping())
 
 
