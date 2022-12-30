@@ -123,7 +123,7 @@ Using the following query, you can find how many pods are not running compared t
 )
 :filter(and(in("dt.entity.cloud_application",entitySelector("type(cloud_application),entityId(~"CLOUD_APPLICATION-A26E32FC302257AB~")"))))
 ```
-### Number of pods beeing not ready
+### Number of pods being not ready
 Using the following query, you can find how many pods are not ready compared to the number of desired pods of this workload.
 ```
 ( 
