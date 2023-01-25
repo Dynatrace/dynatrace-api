@@ -1,7 +1,8 @@
 from datetime import datetime
-import logging
+import re
 
 from ruxit.api.base_plugin import RemoteBasePlugin
+from ruxit.api.exceptions import ConfigException
 from dynatrace import Dynatrace
 from dynatrace.environment_v1.synthetic_third_party import SYNTHETIC_EVENT_TYPE_OUTAGE
 
@@ -16,6 +17,15 @@ class PingExtension(RemoteBasePlugin):
         self.dt_client = Dynatrace(api_url, self.config.get("api_token"), log=self.logger, proxies=self.build_proxy_url())
         self.executions = 0
         self.failures_detected = 0
+
+        valid_ip = r"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+        valid_hostname = r"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$"
+
+        target = self.config.get("test_target")
+        if not re.match(valid_ip, target) and not re.match(valid_hostname, target):
+            raise ConfigException(f"Invalid test_target: {target}, must be a valid IP or hostname")
+
+
 
     def build_proxy_url(self):
         proxy_address = self.config.get("proxy_address")
