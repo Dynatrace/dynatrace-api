@@ -1,6 +1,6 @@
 {
   "name": "custom.remote.python.thirdparty_ping",
-  "version": "1.017",
+  "version": "1.018",
   "type": "python",
   "entity": "CUSTOM_DEVICE",
   "technologies": [ "ICMP" ],
@@ -8,7 +8,7 @@
   "source": {
     "package": "ping_extension",
     "className": "PingExtension",
-    "install_requires": [ "pingparsing", "dt" ],
+    "install_requires": [ "pingparsing", "dt", "charset-normalizer<3.0.0" ],
     "activation": "Remote"
   },
   "properties": [
