@@ -8,7 +8,7 @@
   "source": {
     "package": "ping_extension",
     "className": "PingExtension",
-    "install_requires": [ "pingparsing", "dt>=1.1.58" ],
+    "install_requires": [ "pingparsing", "dt>=1.1.58", "charset-normalizer<3" ],
     "activation": "Remote"
   },
   "properties": [
