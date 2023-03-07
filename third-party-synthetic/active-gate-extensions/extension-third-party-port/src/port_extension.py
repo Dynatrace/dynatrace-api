@@ -12,17 +12,19 @@ from dynatrace.environment_v1.synthetic_third_party import SYNTHETIC_EVENT_TYPE_
 
 from port_imports.environment import get_api_url
 
+DT_TIMEOUT_SECONDS = 10
 
 log = logging.getLogger(__name__)
 
 
 class PortExtension(RemoteBasePlugin):
     def initialize(self, **kwargs):
-        api_url = get_api_url()
-        self.dt_client = Dynatrace(api_url,
+        self.api_url = get_api_url()
+        self.dt_client = Dynatrace(self.api_url,
                                    self.config.get("api_token"),
                                    log=self.logger,
-                                   proxies=self.build_proxy_url())
+                                   proxies=self.build_proxy_url(), 
+                                   timeout=DT_TIMEOUT_SECONDS)
         self.executions = 0
         self.failures: Dict[str, int] = defaultdict(int)
 
@@ -92,34 +94,37 @@ class PortExtension(RemoteBasePlugin):
                         self.dt_client.third_part_synthetic_tests.create_synthetic_test_step_result(i + 1, datetime.now(), step_response_time)
                     )
 
-            self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test(
-                engine_name="Port",
-                timestamp=datetime.now(),
-                location_id=location_id,
-                location_name=location,
-                test_id=f"{self.activation.entity_id}",
-                test_title=test_title,
-                schedule_interval=frequency * 60,
-                success=test_success,
-                response_time=test_response_time,
-                edit_link=f"#settings/customextension;id={self.plugin_info.name}",
-                detailed_steps=[test_step["step"] for test_step in test_steps],
-                detailed_step_results=test_step_results,
-                icon_url="https://raw.githubusercontent.com/Dynatrace/dynatrace-api/master/third-party-synthetic/active-gate-extensions/extension-third-party-port/port.png",
-            )
-
-            for step in test_steps:
-                event_name = f"Port check failed for {test_title} ({step['step'].title})"
-                self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test_event(
-                    test_id=f"{self.activation.entity_id}",
-                    name=event_name,
-                    location_id=location_id,
-                    timestamp=datetime.now(),
-                    state="open" if not step["success"] else "resolved",
-                    event_type=SYNTHETIC_EVENT_TYPE_OUTAGE,
-                    reason=event_name,
+            try:
+                self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test(
                     engine_name="Port",
+                    timestamp=datetime.now(),
+                    location_id=location_id,
+                    location_name=location,
+                    test_id=f"{self.activation.entity_id}",
+                    test_title=test_title,
+                    schedule_interval=frequency * 60,
+                    success=test_success,
+                    response_time=test_response_time,
+                    edit_link=f"#settings/customextension;id={self.plugin_info.name}",
+                    detailed_steps=[test_step["step"] for test_step in test_steps],
+                    detailed_step_results=test_step_results,
+                    icon_url="https://raw.githubusercontent.com/Dynatrace/dynatrace-api/master/third-party-synthetic/active-gate-extensions/extension-third-party-port/port.png",
                 )
+
+                for step in test_steps:
+                    event_name = f"Port check failed for {test_title} ({step['step'].title})"
+                    self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test_event(
+                        test_id=f"{self.activation.entity_id}",
+                        name=event_name,
+                        location_id=location_id,
+                        timestamp=datetime.now(),
+                        state="open" if not step["success"] else "resolved",
+                        event_type=SYNTHETIC_EVENT_TYPE_OUTAGE,
+                        reason=event_name,
+                        engine_name="Port",
+                    )
+            except Exception as e:
+                self.logger.error(f"Error reporting third party test results to {self.api_url}: '{e}'")
 
         self.executions += 1
 
