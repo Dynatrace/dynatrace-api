@@ -6,14 +6,17 @@ from ruxit.api.base_plugin import RemoteBasePlugin
 from dynatrace import Dynatrace
 from dynatrace.environment_v1.synthetic_third_party import SYNTHETIC_EVENT_TYPE_OUTAGE
 
+from commands_imports.environment import get_api_url
 
-log = logging.getLogger(__name__)
+DT_TIMEOUT_SECONDS = 10
 ENGINE_NAME = "SSH"
 
+log = logging.getLogger(__name__)
 
 class LinuxCommandsExtension(RemoteBasePlugin):
     def initialize(self, **kwargs):
-        self.dt_client = Dynatrace(self.config.get("api_url"), self.config.get("api_token"), log=log, proxies=self.build_proxy_url())
+        self.api_url = get_api_url()
+        self.dt_client = Dynatrace(self.api_url, self.config.get("api_token"), log=log, proxies=self.build_proxy_url(), timeout=DT_TIMEOUT_SECONDS)
         self.executions = 0
         self.failures_detected = 0
 
@@ -89,30 +92,33 @@ class LinuxCommandsExtension(RemoteBasePlugin):
             else:
                 self.failures_detected = 0
 
-            self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test(
-                engine_name=ENGINE_NAME,
-                timestamp=datetime.now(),
-                location_id=location_id,
-                location_name=location,
-                test_id=self.activation.entity_id,
-                test_title=test_title,
-                step_title=step_title,
-                schedule_interval=frequency * 60,
-                success=success,
-                response_time=response_time,
-                edit_link=f"#settings/customextension;id={self.plugin_info.name}",
-                icon_url="https://raw.githubusercontent.com/Dynatrace/dynatrace-api/master/third-party-synthetic/active-gate-extensions/extension-third-party-linux-commands/linux_commands.png"
-            )
+            try:
+                self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test(
+                    engine_name=ENGINE_NAME,
+                    timestamp=datetime.now(),
+                    location_id=location_id,
+                    location_name=location,
+                    test_id=self.activation.entity_id,
+                    test_title=test_title,
+                    step_title=step_title,
+                    schedule_interval=frequency * 60,
+                    success=success,
+                    response_time=response_time,
+                    edit_link=f"#settings/customextension;id={self.plugin_info.name}",
+                    icon_url="https://raw.githubusercontent.com/Dynatrace/dynatrace-api/master/third-party-synthetic/active-gate-extensions/extension-third-party-linux-commands/linux_commands.png"
+                )
 
-            self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test_event(
-                test_id=self.activation.entity_id,
-                name=f"Command execution failed for {step_title}",
-                location_id=location_id,
-                timestamp=datetime.now(),
-                state="open" if not success else "resolved",
-                event_type=SYNTHETIC_EVENT_TYPE_OUTAGE,
-                reason=reason,
-                engine_name=ENGINE_NAME,
-            )
+                self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test_event(
+                    test_id=self.activation.entity_id,
+                    name=f"Command execution failed for {step_title}",
+                    location_id=location_id,
+                    timestamp=datetime.now(),
+                    state="open" if not success else "resolved",
+                    event_type=SYNTHETIC_EVENT_TYPE_OUTAGE,
+                    reason=reason,
+                    engine_name=ENGINE_NAME,
+                )
+            except Exception as e:
+                self.logger.error(f"Error reporting third party test results to {self.api_url}: '{e}'")
 
         self.executions += 1
