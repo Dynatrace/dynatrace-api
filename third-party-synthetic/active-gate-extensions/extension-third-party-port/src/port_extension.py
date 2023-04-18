@@ -14,9 +14,6 @@ from port_imports.environment import get_api_url
 
 DT_TIMEOUT_SECONDS = 10
 
-log = logging.getLogger(__name__)
-
-
 class PortExtension(RemoteBasePlugin):
     def initialize(self, **kwargs):
         self.api_url = get_api_url()
@@ -47,7 +44,7 @@ class PortExtension(RemoteBasePlugin):
 
     def query(self, **kwargs) -> None:
 
-        log.setLevel(self.config.get("log_level"))
+        self.logger.setLevel(self.config.get("log_level"))
 
         target_ip = self.config.get("test_target_ip")
 
