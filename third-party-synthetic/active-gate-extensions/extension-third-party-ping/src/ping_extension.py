@@ -59,7 +59,7 @@ class PingExtension(RemoteBasePlugin):
         frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 15
 
         if self.executions % frequency == 0:
-            timeout = self.config.get("test_timeout", 2)
+            timeout = int(self.config.get("test_timeout", 2)) or 2
             ping_result = ping(target, timeout)
             self.logger.info(ping_result.as_dict())
 

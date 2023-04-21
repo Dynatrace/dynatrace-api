@@ -1,6 +1,6 @@
 {
   "name": "custom.remote.python.thirdparty_dns",
-  "version": "1.015",
+  "version": "1.020",
   "type": "python",
   "entity": "CUSTOM_DEVICE",
   "technologies": [
@@ -40,6 +40,11 @@
     {
       "key": "test_location",
       "type": "String"
+    },
+    {
+      "key": "test_timeout",
+      "type": "Integer",
+      "defaultValue": 2
     },
     {
       "key": "log_level",
@@ -110,35 +115,41 @@
         "displayOrder": 6
       },
       {
+        "key": "test_timeout",
+        "displayName": "(Optional) Check Timeout",
+        "displayHint": "Check timeout in seconds, if empty default value is 2 seconds",
+        "displayOrder": 7
+      },
+      {
         "key": "test_location",
         "displayName": "(Optional) Location name",
         "displayHint": "Default: ActiveGate",
-        "displayOrder": 7
+        "displayOrder": 8
       },
       {
         "key": "proxy_address",
         "displayName": "(Optional) Proxy Address",
-        "displayOrder": 8
+        "displayOrder": 9
       },
       {
         "key": "proxy_username",
         "displayName": "(Optional) Proxy Username",
-        "displayOrder": 9
+        "displayOrder": 10
       },
       {
         "key": "proxy_password",
         "displayName": "(Optional) Proxy Password",
-        "displayOrder": 10
+        "displayOrder": 11
       },
       {
         "key": "log_level",
         "displayName": "Log level",
-        "displayOrder": 11
+        "displayOrder": 12
       },
       {
           "key":  "failure_count",
           "displayName":  "Failure count",
-          "displayOrder":  12,
+          "displayOrder":  13,
           "displayHint":  "Number of consecutive failures before reporting error"
       }
     ]

@@ -4,7 +4,6 @@ import logging
 import socket
 import re
 
-from pingparsing import PingStats, PingParsing, PingTransmitter
 from ruxit.api.base_plugin import RemoteBasePlugin
 from datetime import datetime
 
@@ -74,7 +73,7 @@ class PortExtension(RemoteBasePlugin):
 
             for i, port in enumerate(target_ports):
                 if port:
-                    timeout = self.config.get("test_timeout", 2)
+                    timeout = int(self.config.get("test_timeout", 2)) or 2
                     step_success, step_response_time = test_port(target_ip,
                                                                  int(port),
                                                                  protocol=self.config.get("test_protocol", "TCP"),
@@ -133,45 +132,58 @@ class PortExtension(RemoteBasePlugin):
         self.executions += 1
 
 
-def test_port(ip: str, port: int, protocol: str = "TCP", timeout: int = 2) -> (bool, int):
-    log.debug(f"Testing {ip}:{port} using protocol {protocol}")
-    start = datetime.now()
-    result = True
+def udp_check(ip: str, port: int, timeout: int) -> bool:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_recv_bufsize = 8192
+    udp_send_payload = b""
+
     try:
-        socket_type = socket.SOCK_STREAM if protocol == "TCP" else socket.SOCK_DGRAM
-        sock = socket.socket(socket.AF_INET, socket_type)
+        sock.connect((ip, port))
+        sock.send(udp_send_payload)
+        sock.settimeout(timeout)
+
+        try:
+            sock.recv(udp_recv_bufsize)
+        except socket.timeout:
+            pass
+        finally:
+            sock.settimeout(0)
+        local = sock.getsockname()
+        log.info(f"Connected to {ip}:{port} from {local[0]}:{local[1]}")
+        return True
+    except (OSError, socket.error) as error:
+        log.warning(f"Could not connect to {ip}:{port} - {error}")
+        return False
+    finally:
+        sock.close()
+
+
+def tcp_check(ip: str, port: int, timeout: int) -> bool:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.settimeout(timeout)
         sock.connect((ip, port))
 
-        if protocol == "UDP":
-            sock.sendall(b"")
-            data = sock.recv(1024)
-            log.debug(f"Received data: {data}")
-        sock.close()
-
     except socket.timeout:
-        if protocol == "UDP":
-            log.warning(f"The UDP test for {ip}:{port} timed out, checking if the host can be pinged before reporting")
-            ping_result = ping(ip, timeout)
-            log.info(f"Ping result to double check UDP: {ping_result.as_dict()}")
-            result = ping_result.packet_loss_rate is not None and ping_result.packet_loss_rate == 0
-        else:
-            result = False
+        return False
     except Exception as ex:
-        log.error(f"Could not connect to {ip}:{port} with protocol {protocol} - {ex}")
-        result = False
+        log.error(f"Could not connect to {ip}:{port} - {ex}")
+        return False
+    finally:
+        sock.close()
+    return True
+
+
+def test_port(ip: str, port: int, protocol: str = "TCP", timeout: int = 2) -> (bool, int):
+    log.debug(f"Testing {ip}:{port} using protocol {protocol}")
+    start = datetime.now()
+    if protocol == "UDP":
+        result = udp_check(ip, port, timeout)
+    else:
+        result = tcp_check(ip, port, timeout)
 
     return result, int((datetime.now() - start).total_seconds() * 1000)
-
-
-def ping(host: str, timeout: int) -> PingStats:
-    ping_parser = PingParsing()
-    transmitter = PingTransmitter()
-    transmitter.destination = host
-    transmitter.count = 1
-    transmitter.timeout = timeout * 1000
-    return ping_parser.parse(transmitter.ping())
 
 
 def main():
