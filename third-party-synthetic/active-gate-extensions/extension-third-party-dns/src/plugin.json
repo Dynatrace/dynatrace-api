@@ -1,6 +1,6 @@
 {
   "name": "custom.remote.python.thirdparty_dns",
-  "version": "1.020",
+  "version": "1.021",
   "type": "python",
   "entity": "CUSTOM_DEVICE",
   "technologies": [
@@ -81,29 +81,29 @@
         "key": "api_token",
         "displayName": "API Token",
         "displayHint": "Requires \"Create and read synthetic monitors, locations, and nodes\" permission",
-        "displayOrder": 20
+        "displayOrder": 1
       },
       {
         "key": "test_name",
         "displayName": "(Optional) Synthetic monitor name",
-        "displayOrder": 30
+        "displayOrder": 2
       },
       {
         "key": "dns_server",
         "displayName": "DNS server",
         "displayHint": "IP address or hostname",
-        "displayOrder": 40
+        "displayOrder": 3
       },
       {
         "key": "host",
         "displayName": "Test target host",
-        "displayOrder": 50
+        "displayOrder": 4
       },
       {
         "key": "frequency",
         "displayName": "(Optional) Frequency",
         "displayHint": "Frequency in minutes, default: 15",
-        "displayOrder": 60
+        "displayOrder": 5
       },
       {
         "key": "test_timeout",
