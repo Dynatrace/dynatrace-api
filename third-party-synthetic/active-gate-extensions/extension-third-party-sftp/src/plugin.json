@@ -1,5 +1,5 @@
 {
-    "name": "custom.remote.python.thirdparty_sftp",
+    "name": "custom.remote.python.sftp",
     "version": "1.021",
     "type": "python",
     "entity": "CUSTOM_DEVICE",
