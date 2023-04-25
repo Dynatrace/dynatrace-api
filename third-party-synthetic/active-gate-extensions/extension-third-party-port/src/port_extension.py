@@ -15,6 +15,8 @@ from port_imports.environment import get_api_url
 
 DT_TIMEOUT_SECONDS = 10
 
+log = logging.getLogger(__name__)
+
 class PortExtension(RemoteBasePlugin):
     def initialize(self, **kwargs):
         self.api_url = get_api_url()
@@ -79,7 +81,7 @@ class PortExtension(RemoteBasePlugin):
                                                                  timeout=timeout)
                     test_response_time += step_response_time
 
-                    log.info(f"{target_ip}:{port} = {step_success}, {step_response_time}")
+                    self.logger.info(f"{target_ip}:{port} = {step_success}, {step_response_time}")
                     step_title = f"{target_ip}:{port}"
 
                     if not step_success:
@@ -87,7 +89,7 @@ class PortExtension(RemoteBasePlugin):
                         self.failures[step_title] += 1
 
                         if self.failures[step_title] < failure_count:
-                            log.info(f"The result for {step_title} was: {step_success}. Attempt {self.failures[step_title]}/{failure_count}, not reporting yet")
+                            self.logger.info(f"The result for {step_title} was: {step_success}. Attempt {self.failures[step_title]}/{failure_count}, not reporting yet")
                             step_success = True
                     else:
                         self.failures[step_title] = 0
