@@ -321,7 +321,7 @@ builtin:apps.web.sessionDuration,APPLICATION-DFD07AE5A6077853,RECURRING_VISITOR,
 builtin:apps.web.sessionDuration,APPLICATION-923D6049CBA84FBD,NEW_VISITOR,ROBOT,2019-04-09 13:31:00,4.61475E7
 ...
 ```
-Chaining multiple transformers together, we can derive a new metric from `builtin:apps.web.sessionDuration` that does exactly what we need. For this, we need `:filter` and `:merge` in our tool box.
+Chaining multiple transformers together, we can derive a new metric from `builtin:apps.web.sessionDuration` that does exactly what we need. For this, we need `:filter` and `:splitBy` in our tool box.
 
 Examining the result data we see that additional dimensions tell us whether the numbers were recorded for new visitors or recurring ones and whether the visit was from a robot, a synthetic user or a real user. We are only interested in new visitors that are not robots. Whether they are synthetic or real is irrelevant for our use case.
 
@@ -329,21 +329,17 @@ Dropping robots is easy with :`filter`, which drops results based on a condition
 ```
 :filter(and(eq(VisitorType,NEW_VISITOR),ne(VisitType,ROBOT)))
 ```
-We observe that the payload has changed to only contain the result data we are interested in. For each application, two data points remain per timeslot, one for `SYNTHETIC`, and one for `REAL_USER`, while the visitor type is constant at `NEW_VISITOR`. We actually want the average of synthetic and real, so that we have one data point per application. We can easily view them as a combined data point by using a `merge` transformer. It takes the names or indexes of dimensions to remove as arguments, merging data points that become equal when the dimensions are removed:
-```
-:merge(VisitType,VisitorType)
-```
-Alternatively, we can select only the dimensions to show up in the result and merge the other dimensions. `:splitBy` can be used for an equivalent merge operation:
+We observe that the payload has changed to only contain the result data we are interested in. For each application, two data points remain per timeslot, one for `SYNTHETIC`, and one for `REAL_USER`, while the visitor type is constant at `NEW_VISITOR`. We actually want the average of synthetic and real, so that we have one data point per application. We can easily view them as a combined data point by using a `splitBy` transformer. The transformer merges all dimensions that are not passed as arguments to it:
 ```
 :splitBy(dt.entity.application)
 ```
-Combining our `:filter` and `:merge` transformations, we see that we have solved our problem and get the data in the exact format that we need it in:
+Combining our `:filter` and `:splitBy` transformations, we see that we have solved our problem and get the data in the exact format that we need it in:
 ```
 metricId,dt.entity.application,time,value
-"builtin:apps.web.sessionDuration:filter(and(eq(VisitorType,NEW_VISITOR),ne(VisitType,ROBOT))):merge(VisitType,VisitorType)",APPLICATION-1AF167A3A7B45A8A,2019-04-09 00:00:00,20.51584226122635
+"builtin:apps.web.sessionDuration:filter(and(eq(VisitorType,NEW_VISITOR),ne(VisitType,ROBOT))):splitBy(dt.entity.application)",APPLICATION-1AF167A3A7B45A8A,2019-04-09 00:00:00,20.51584226122635
 ...
 ```
-Note how the semantics of the transformer chain change with the ordering of the transformers. The filter does not make sense after the merge.
+Note how the semantics of the transformer chain change with the ordering of the transformers. The filter does not make sense after the splitBy.
 
 We get an error since we just merged the visitor type and then tried to filter on the dimension we just removed.
 
@@ -448,7 +444,7 @@ metricId,dt.entity.service,dt.entity.service_method,time,value
 "builtin:service.keyRequest.errors.fourxx.rate:parents:filter(eq(dt.entity.service,SERVICE-0123456789ABCDEF))",SERVICE-0123456789ABCDEF,SERVICE_METHOD-13A5BE527CDA803D,2019-04-08 00:00:00,0.0
 "builtin:service.keyRequest.errors.fourxx.rate:parents:filter(eq(dt.entity.service,SERVICE-0123456789ABCDEF))",SERVICE-0123456789ABCDEF,SERVICE_METHOD-13A5BE527CDA803D,2019-04-15 00:00:00,0.0
 ```
-If we want to lose the service dimension again after filtering, we can use a `:merge(dt.entity.service)`. The order of transformations is again important. The filter cannot precede the `:parents`, since the dimension does not exist at that point.
+If we want to lose the service dimension again after filtering, we can use a `:splitBy(dt.entity.service_method)`. The order of transformations is again important. The filter cannot precede the `:parents`, since the dimension does not exist at that point.
 
 ## Scenario 15: Apdex for Users of iOS 6.x
 
@@ -483,7 +479,7 @@ metricId,dt.entity.device_application.name,dt.entity.device_application,dt.entit
 
 This common transformation pattern looks like a mistake at first, because the output of `:max` is a plain number, which can not be aggregated with `:sum` (only `:value` is supported for plain numbers, which is a no-op) and `:splitBy` as we used it until now does not change the data type being passed through it. In our use case, `:splitBy` _does_ change the output data type, in order for `:sum` to become a supported aggregation type. This feature is often referred to as _bucket inference_, because `:splitBy` and `merge` intelligently decide which data structure (bucket) will be used to collect the merged values, by looking to the right for the next aggregation being applied to the merged values, changing the output data type of the merging.
 
-Conceptually, you can think of the next aggregation after a `:merge` or `:splitBy` to operate on a list of merged values, supporting any of min, max, avg, sum, median or percentile on that list. Depending on the space aggregation in use, the API will use a suitable data structure to model this conceptual list of merged values (typically a statistical summary or percentile estimator).
+Conceptually, you can think of the next aggregation after a `:splitBy` to operate on a list of merged values, supporting any of min, max, avg, sum, median or percentile on that list. Depending on the space aggregation in use, the API will use a suitable data structure to model this conceptual list of merged values (typically a statistical summary or percentile estimator).
 
 ## Scenario 17: Maximum of Average CPU Usage Values Over Time
 
