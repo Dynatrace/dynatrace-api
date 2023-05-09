@@ -423,15 +423,7 @@ Transformers allow us to shape a metric to our needs. Until now, we have done th
 
 Consider the following problem: The metric `builtin:service.keyRequest.errors.fourxx` is recorded per service method. We are interested in the service methods, but we want to filter the result payload by the ID of the service, namely `SERVICE-0123456789ABCDEF`. We cannot use a scope, since the primary entity is `SERVICE_METHOD` and not `SERVICE`. A `:filter` transformation would work, if the metric contained a secondary service dimension, which it does not. It can easily be added, though, by prepending the transformer `:parents`.
 
-`:parents` is not only suitable for adding application entities. The general contract of `:parents` is that for each monitored entity dimension, a new dimension will be added before the existing one, if the entity is naturally embedded inside a larger entity of which there can only be one. Disks are a good example. A disk needs a host, otherwise monitoring is not possible. The following have similar disk-host-like relations that `:parents` is suitable for:
-
-| Child Dimension Type | Child Synonyms | :parent Dimension Type | :parent Synonyms |
-|---|---|---|---|
-| `SERVICE_METHOD` | Key request | `SERVICE` | — |
-| `APPLICATION_METHOD` | Key user action  | `APPLICATION` | — |
-| `PROCESS_GROUP_INSTANCE` | Process Instance, Process, Instance | `HOST` | — |
-| `DISK` | — | `HOST` | — |
-| `SYNTHETIC_TEST_STEP` | — | `SYNTHETIC_TEST` | — |
+`:parents` is not only suitable for adding application entities. The general contract of `:parents` is that for each monitored entity dimension, a new dimension will be added before the existing one, if the entity is naturally embedded inside a larger entity of which there can only be one. Disks are a good example. A disk needs a host, otherwise monitoring is not possible. For a complete list of the available parent dimension have a look at the [public documentation of `parents` transformation](https://www.dynatrace.com/support/help/shortlink/api-metrics-v2-selector#parents).
 
 We try accessing the descriptor for `builtin:service.keyRequest.errors.fourxx.rate:parents` and observe that we have gained a new dimension `dt.entity.service`. We know the ID of the service we are interested in and reference it via the relevant dimension in a `:filter` transformer and see that the result data meets our expectations:
 ```
