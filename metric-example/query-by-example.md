@@ -453,24 +453,23 @@ If we want to lose the service dimension again after filtering, we can use a `:s
 >**Task**
 >We want to filter a secondary dimension (Operating System) by name, rather than by ID.
 
-Most metrics use entities in at least one dimension. The metric for Apdex split by operating system and version has two entity dimensions and one string dimension, namely the application (primary entity) being measured and the operating system (secondary entity) and version (string) for which the data is valid.
+Most metrics use entities in at least one dimension. The metric for Apdex split by operating system and version has two entity dimensions and one string dimension, namely the application (entity) being measured and the operating system (entity) and version (string) for which the data is valid.
 
-When we wish to only obtain data for a specific application, of which we know the name, we may use a scope expression with the `entity` predicate. We cannot use the same technique to instead filter operating systems by name, since scopes do not apply to secondary entities, but we may filter secondary entities by name using a transformer chain. For this, we use a combination of `:names` and `:filter`.
-
-Accessing the descriptor of `builtin:apps.other.apdex.osAndVersion`, we find out the names of the individual dimensions. The dimension `dt.entity.os` contains unique IDs for operating systems, but we do not know what the formal ID of iOS is, we only know that its name is `"iOS"`. To `:filter` against the display name version of `dt.entity.os`, we first append the transformer `:names` to the metric key, giving us the new dimensions `dt.entity.os.name` and `dt.entity.device_application.name`. As a next step, we can filter out the applications with name iOS. We end up with the following transformer chain:
+Accessing the descriptor of `builtin:apps.other.apdex.osAndVersion`, we find out the names of the individual dimensions. The dimension `dt.entity.os` contains unique IDs for operating systems, but we do not know what the formal ID of iOS is, we only know that its name is `"iOS"`. To `:filter` against the display name version of `dt.entity.os`, we leverage the embedded entity selector:
 ```
-:names:filter(eq(dt.entity.os.name,"iOS"))
+:filter(in("dt.entity.os", entitySelector("type(~"OS~"),entityName.equals(~"iOS~")")))
 ```
 The result now contains Apdex metrics only for iOS users. To limit the results to a specific major version, we can use a prefix matcher and form a logical conjunction:
 ```
-:names:filter(and(eq(dt.entity.os.name,iOS),prefix("App Version","6.")))
+:filter(and(in("dt.entity.os", entitySelector("type(~"OS~"),entityName.equals(~"iOS~")")),prefix("App Version","6.")))
 ```
-We have successfully matched against the names of secondary entities and against string dimensions, leaving us with iOS 6.x results:
+If we add the `names` transformation at the end of our query, we will get the iOS 6.x results including the pretty entity names:
 ```
 metricId,dt.entity.device_application.name,dt.entity.device_application,dt.entity.os.name,dt.entity.os,App Version,time,value  
-"builtin:apps.other.apdex.osAndVersion:names:filter(and(eq(dt.entity.os.name,iOS),prefix(App Version,6.)))",easyTravel Demo,MOBILE_APPLICATION-752C288D59734C79,iOS,OS-62028BEE737F03D4,6.8.7,1610993640000,0.87
+"builtin:apps.other.apdex.osAndVersion:filter(and(in(""dt.entity.os"",entitySelector(""type(~""OS~""),entityName.equals(~""iOS~"")"")),prefix(""App Version"",""6.""))):names",easyTravel Demo,MOBILE_APPLICATION-752C288D59734C79,iOS,OS-62028BEE737F03D4,6.8.7,1610993640000,0.87
 ...
 ```
+> ⚠️ Note that we used the embedded entity selector to filter for `"iOS"` instead of directly filtering on the `"dt.entity.os.name"` dimension. This approach **performs significantly better** than using `:names:filter(eq(dt.entity.os.name,"iOS"))`. Using a dimension added by the `names` transformation for filtering is performance anti-pattern!
 
 ## Scenario 16: Using Space and Time Aggregation with Disk Usages
 
@@ -524,16 +523,15 @@ Alternatively, we can rely entirely on escaping instead of quoting, but this get
 ```
 Host~ 14~.A~ "Alice"~ ~~80° ~(Europe~,~ North~ Africa~)
 ```
-To filter for this name, we can use a combination of `:names` and `:filter` and use our quoted version for the filter matcher to create a valid selector that uses special characters:
+To filter for this name, we can the `:filter` transformation and use our quoted version for the matcher to create a valid selector that uses special characters:
 ```
-builtin:host.disk.avail  
-: names  
-: filter(  
-	eq(  
-		dt.entity.host.name,  
-		"Host 14.A ~"Alice~" ~~80° (Europe, North Africa)"   
-	)  
- )
+custom_metric 
+  :filter(  
+	  eq(  
+		  host,  
+		  "Host 14.A ~"Alice~" ~~80° (Europe, North Africa)"   
+	  )  
+  )
 ```
 
 ## Scenario 19: Two Metrics with Two Different Entity Selectors
