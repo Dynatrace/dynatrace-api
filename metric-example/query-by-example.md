@@ -435,15 +435,17 @@ Consider the following problem: The metric `builtin:service.keyRequest.errors.fo
 
 We try accessing the descriptor for `builtin:service.keyRequest.errors.fourxx.rate:parents` and observe that we have gained a new dimension `dt.entity.service`. We know the ID of the service we are interested in and reference it via the relevant dimension in a `:filter` transformer and see that the result data meets our expectations:
 ```
-GET {{base}}/metrics/query?metricSelector=builtin:service.keyRequest.errors.fourxx.rate:parents:filter(eq(dt.entity.service,SERVICE-0123456789ABCDEF))
+GET {{base}}/metrics/query?metricSelector=builtin:service.keyRequest.errors.fourxx.rate:filter(in("dt.entity.service_method", entitySelector("type(~"SERVICE_METHOD~"),fromRelationship.isServiceMethodOfService(type(~"SERVICE~"),entityId(~"SERVICE-0123456789ABCDEF~"))"))):parents
 Accept: text/csv
 
 metricId,dt.entity.service,dt.entity.service_method,time,value
-"builtin:service.keyRequest.errors.fourxx.rate:parents:filter(eq(dt.entity.service,SERVICE-0123456789ABCDEF))",SERVICE-0123456789ABCDEF,SERVICE_METHOD-0730DE996E8AA425,2019-04-08 00:00:00,0.0
-"builtin:service.keyRequest.errors.fourxx.rate:parents:filter(eq(dt.entity.service,SERVICE-0123456789ABCDEF))",SERVICE-0123456789ABCDEF,SERVICE_METHOD-0730DE996E8AA425,2019-04-15 00:00:00,0.0
-"builtin:service.keyRequest.errors.fourxx.rate:parents:filter(eq(dt.entity.service,SERVICE-0123456789ABCDEF))",SERVICE-0123456789ABCDEF,SERVICE_METHOD-13A5BE527CDA803D,2019-04-08 00:00:00,0.0
-"builtin:service.keyRequest.errors.fourxx.rate:parents:filter(eq(dt.entity.service,SERVICE-0123456789ABCDEF))",SERVICE-0123456789ABCDEF,SERVICE_METHOD-13A5BE527CDA803D,2019-04-15 00:00:00,0.0
+"builtin:service.keyRequest.errors.fourxx.rate:filter(in(""dt.entity.service_method"",entitySelector(""type(~""SERVICE_METHOD~""),fromRelationship.isServiceMethodOfService(type(~""SERVICE~""),entityId(~""SERVICE-0123456789ABCDEF~""))""))):parents",SERVICE-0123456789ABCDEF,SERVICE_METHOD-0730DE996E8AA425,2019-04-08 00:00:00,0.0
+"builtin:service.keyRequest.errors.fourxx.rate:filter(in(""dt.entity.service_method"",entitySelector(""type(~""SERVICE_METHOD~""),fromRelationship.isServiceMethodOfService(type(~""SERVICE~""),entityId(~""SERVICE-0123456789ABCDEF~""))""))):parents",SERVICE-0123456789ABCDEF,SERVICE_METHOD-0730DE996E8AA425,2019-04-15 00:00:00,0.0
+"builtin:service.keyRequest.errors.fourxx.rate:filter(in(""dt.entity.service_method"",entitySelector(""type(~""SERVICE_METHOD~""),fromRelationship.isServiceMethodOfService(type(~""SERVICE~""),entityId(~""SERVICE-0123456789ABCDEF~""))""))):parents",SERVICE-0123456789ABCDEF,SERVICE_METHOD-13A5BE527CDA803D,2019-04-08 00:00:00,0.0
+"builtin:service.keyRequest.errors.fourxx.rate:filter(in(""dt.entity.service_method"",entitySelector(""type(~""SERVICE_METHOD~""),fromRelationship.isServiceMethodOfService(type(~""SERVICE~""),entityId(~""SERVICE-0123456789ABCDEF~""))""))):parents",SERVICE-0123456789ABCDEF,SERVICE_METHOD-13A5BE527CDA803D,2019-04-15 00:00:00,0.0
 ```
+> ⚠️ Note that we used the embedded entity selector to filter for `SERVICE-0123456789ABCDEF` instead of directly filtering on the parent dimension. This approach **performs significantly better** than using `:parents:filter(eq(dt.entity.service,SERVICE-0123456789ABCDEF))`. Using a dimension added by the `parents` transformation for filtering is performance anti-pattern!
+
 If we want to lose the service dimension again after filtering, we can use a `:splitBy(dt.entity.service_method)`. The order of transformations is again important. The filter cannot precede the `:parents`, since the dimension does not exist at that point.
 
 ## Scenario 15: Apdex for Users of iOS 6.x
