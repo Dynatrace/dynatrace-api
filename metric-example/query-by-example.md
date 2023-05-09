@@ -169,10 +169,6 @@ GET {base}/metrics/query?metricSelector=builtin:host.cpu.usage:max
 ```
 Note that each metric allows at least one value extraction function, but some may not be available or not make sense for a metric. Any attempt to use an incompatible technique results in an error.
 
-Multiple aggregation techniques can be specified in a tuple for a bulk query. This is often more performant than two individual queries since both are based on the same underlying data:
-```
-GET {base}/metrics/query/builtin:host.cpu.usage:(min,max)
-```
 To check for available aggregation techniques, obtain the array in `/metrics/<metric ID>` under the `"aggregationTypes"` field. Depending on the metric, any of the following might be supported and hence contained in the array:
 
 | Aggregation | Meaning | Uses |
