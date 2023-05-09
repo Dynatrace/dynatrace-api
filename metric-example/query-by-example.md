@@ -223,10 +223,10 @@ Back to our example with CPU utilizations: With just `:sort(avg, descending)`, w
 The solution is to combine `:sort` with `:limit(N)`, which keeps the first N results and drops the rest:
 ```
 builtin:host.cpu.usage  
-: sort(  
-	value(avg, descending)  
-)
-: limit(3)
+  :sort(  
+    value(avg, descending)  
+  )
+  :limit(3)
 ```
 The order of transformations is important for the overall meaning of the query. Transformations are evaluated left to right and line-wise top to bottom. Since limit is evaluated after sort, it will only cut off the low-CPU hosts. Writing multi-line selectors like the one in the example can make complex metric selectors more readable than the single-line version.
 
@@ -268,10 +268,10 @@ That's better. You can see that by combining transformations, we can design powe
 In the previous example we sorted a series based on a _rollup_ called `avg`. Now we want to check for outliers, so we use the `max` _rollup_, resulting in the series with the highest peaks appearing first:
 ```
 builtin:host.cpu.usage
-: sort(  
-	value(max, descending)  
-)
-: limit(3)
+  :sort(  
+    value(max, descending)  
+  )
+  :limit(3)
 ```
 
 This works, but how high was the peak, exactly, for the series shown? Just scanning through the three series in the result and getting the top value will give us a subtly wrong result for this example: since no time aggregation was specified, we rely on the default aggregation to aggregate the samples in the time slots to one value. For `builtin:host.cpu.usage`, the default aggregation is average, not maximum. Hence, we do not even see the exact value we used for sorting in the result.
@@ -281,11 +281,11 @@ Adding `:max` at the end of our selector would change the time aggregation so th
 Instead, let's add `:fold(max)` and let the metric API figure out the peak for us. The purpose of `fold` is to reduce series to a single value. A rollup function (`max`) may be provided as an argument. For example:
 ```
 builtin:host.cpu.usage
-: sort(  
-	value(max, descending)  
-)
-: limit(3)
-: fold(max)
+  :sort(  
+	  value(max, descending)  
+  )
+  :limit(3)
+  :fold(max)
 ```
 
 Now, each result holds exactly one value, and that value is the peak.
@@ -350,9 +350,11 @@ We get an error since we just merged the visitor type and then tried to filter o
 We regularly query `builtin:service.response.time` for the peak response time of our payment service during the last day. We use `:filter` to get just the payment service, `:max` to get the maximum per time slot, and we use `:fold(max)` to get just the peak value:
 ```
 builtin:service.response.time
-: filter(eq(dt.entity.service, "SERVICE-1234567890"))
-: max
-: fold(max)
+  :filter(
+    eq(dt.entity.service, "SERVICE-1234567890")
+  )
+  :max
+  :fold(max)
 ```
 
 This query worked well at first, but since a couple of days the pen testing crew of our company is running tests against our live payment service every 10 hours to verify that it is robust when hit by a nasty kind of DoS attack called [Slowloris](https://en.wikipedia.org/wiki/Slowloris_(computer_security)). The idea of this attack is to perform many parallel requests that only send headers but never finish the HTTP request. These requests are sent with the lowest possible bandwidth that does not time out the request. For a vulnerable system, this could block all threads that handle incoming requests since they are all waiting for a request to complete that will never be done.
@@ -362,9 +364,11 @@ Luckily, we are not experiencing any operational issues from the tests, but we n
 Put differently, we want to extract an estimation for the 90th percentile of the response times in the query time frame:
 ```
 builtin:service.response.time
-: filter(eq(dt.entity.service, "SERVICE-1234567890"))
-: max
-: fold(percentile(90))
+  :filter(
+    eq(dt.entity.service, "SERVICE-1234567890")
+  )
+  :max
+  :fold(percentile(90))
 ```
 
 Works like a charm, now our KPI is less sensitive to outliers.
@@ -389,8 +393,10 @@ Now we want to write the selector. All of the aggregation types kind of make sen
 Since we are interested in the average daily price for product 42, a first attempt might be to roll up the result for the last two weeks using `avg`:
 ```
 sales
-: filter(eq("id", "42"))
-: fold(avg)
+  :filter(
+    eq("id", "42")
+  )
+  :fold(avg)
 ```
 
 At first sight, this seems fine, but we have made a subtle mistake: `fold(avg)` on a gauge metric will give us an average that is weighted by the sample count, so if we sold 100 items of product 42 on Monday, just one on Tuesday, and nothing on Wednesday, then the impact of the sales on Monday will be 100 times higher than that of Tuesday, and Wednesday has no impact at all. Data gaps like Wednesday should not influence the total average sales price, so we can keep the `null` values as-is, but using cardinality as weight clearly skews our average towards Monday's value.
@@ -398,9 +404,11 @@ At first sight, this seems fine, but we have made a subtle mistake: `fold(avg)` 
 What we really want is the average of the per-timeslot averages, excluding time slots with no data, so that every time slot with non-null data has the same weight. We do that by first applying the time aggregation `avg` to get per-timeslot averages, and then we average those into a single value with `fold(avg)`:
 ```
 sales
-: filter(eq("id", "42"))
-: avg
-: fold(avg)
+  :filter(
+    eq("id", "42")
+  )
+  :avg
+  :fold(avg)
 ```
 
 Voilà.
@@ -408,10 +416,12 @@ Voilà.
 Next, we need the average daily revenue for product 42 in the query timeframe. To get the total revenue for the product on each day, we use `:sum` and we average the per-timeslot values using `:fold(avg)`, but this time we do not want to ignore data gaps. Instead, we want to include days where no sale was reported as 0 in the average calculation. `:default(0)` will do just that and replace data gaps (`null`) with the specified value. Putting it all together, we get the average revenue per time slot for product 42 in the query timeframe with:
 ```
 sales
-: filter(eq("id", "42"))
-: sum
-: default(0)
-: fold(avg)
+  :filter(
+    eq("id", "42")
+  )
+  :sum
+  :default(0)
+  :fold(avg)
 ```
 
 ## Scenario 14: All Service Methods of a Service
@@ -538,7 +548,7 @@ How can we query the PGI-based metric `builtin:tech.generic.cpu.usage` together 
 This is easily possible by embedding entity selectors into filters using the `in` matcher. The right-hand side of `in` can be supplied with an `entitySelector` function that runs an entity query from within a metric selector. Since entity selectors use a lot of special characters, the argument of the `entitySelector` function should always be quoted:
 ```
 builtin:tech.generic.cpu.usage
-: filter(  
+  :filter(  
     in(
       dt.entity.process_group_instance,  
       entitySelector("type(PROCESS_GROUP_INSTANCE),tag(business-critical)") 
@@ -546,12 +556,12 @@ builtin:tech.generic.cpu.usage
 ),
 
 builtin:host.cpu.usage  
-: filter(  
+  :filter(  
      in(  
        dt.entity.host,  
        entitySelector("type(HOST),tag(business-critical")  
      )  
-)
+  )
 ```
 
 ## Scenario 20: Does our Service use Less Memory after the Update
@@ -562,7 +572,7 @@ builtin:host.cpu.usage
 A specific process group instance ran on a new version yesterday. We want to display a graph of yesterday's CPU usage and for comparison, we want the day before layered on top of yesterday. We get yesterday with `from=now/d-d&to=now/d`. This time window can then be moved per each queried metric by using the `timeshift` operator, which takes a time interval to move the data by, but keeping the original timestamps, so that it can be layered on top of the other graph. In our case, with the timeframe from before we need `timeshift(-1d)`:
 ```
 builtin:tech.generic.cpu.usage,  
-builtin:tech.generic.cpu.usage:timeshift(-1d),
+builtin:tech.generic.cpu.usage:timeshift(-1d)
 ```
 The second time series is shifted one day into the past, showing data from the day before yesterday, but with the same timestamps as the first, un-shifted series. When charting these, they will be displayed on top of each other.
 
@@ -595,12 +605,12 @@ most one of the three new series, depending on their value. When a data point ha
 to one category, the same timeslot will be `null` for the other categories. Let's use the
 `partition` operator to achieve just that:
 ```
-: partition(
-    apdexCategory,
+:partition(
+  apdexCategory,
     value("satisfactory", range(0, 1.5)),
     value("tolerable",    range(1.5, 6)),
     value("frustrating",  otherwise) 
-  )
+)
 ```
 
 Now, the response time series for each series belongs to a new series with "dt.entity.service"
@@ -608,29 +618,29 @@ and "apdexCategory" as their dimensions. Now we want to merge all data with the 
 `:count` after the merge operation, instead of the values, we query just the data point count that
 made it into the merge of each timeslot:
 ```
-: splitBy("apdexCategory")
-: count
+:splitBy("apdexCategory")
+:count
 ```
 
 That's almost what we want, but if no data point was available for a timeslot of a
 category, the value will be a data gap, which is represented with `null`. `0` would be more
 correct for our use case, so let's replace nulls with zero:
 ```
-: default(0)
+:default(0)
 ```
 
 Putting it all together we get:
 ```
 builtin:service.response.time:percentile(99):toUnit(MicroSecond,Second)
-: partition(
+  :partition(
     apdexCategory,
-    value("satisfactory", range(0, 1.5)),
-    value("tolerable",    range(1.5, 6)),
-    value("frustrating",  otherwise) 
+      value("satisfactory", range(0, 1.5)),
+      value("tolerable",    range(1.5, 6)),
+      value("frustrating",  otherwise) 
   )
-: splitBy("apdexCategory")
-: count
-: default(0)
+  :splitBy("apdexCategory")
+  :count
+  :default(0)
 ```
 
 With the tools from this scenario at our disposal we can:
