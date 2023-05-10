@@ -1,8 +1,67 @@
 # Metric Selector Cheat Sheet
 This example-oriented document will teach you techniques with metric selectors that will enable you to implement advanced use cases quickly.
 
-## Get the number of distinct dimension values
+## Add the pretty entity name to the result
 
+If you query a metric, you'll get only the id of the entity dimensions in the result like `"HOST-0123456789ABCDEF"`. Using the [`names` transformation](https://www.dynatrace.com/support/help/shortlink/api-metrics-v2-selector#names), you can add the pretty name of the entity in your result:
+```
+builtin:host.cpu.user:names
+```
+The query result will then contain `dt.entity.host` and the `dt.entity.host.name` dimension.
+
+## Add the parent dimension to the result
+For some entity dimensions like `PROCESS_GROUP_INSTANCE` and `SERVICE_METHOD`, you can enrich the result with the "parent" of these dimension. For example, the metric `builtin:tech.generic.processCount` per default only provides the `dt.entity.process_group_instance` dimension. To get also the host dimension in the result, use the query:
+```
+builtin:tech.generic.processCount:parents
+```
+Moreover, you can combine the `names` and the `parents` transformations.
+```
+builtin:tech.generic.processCount:parents:names
+```
+will return both the `PROCESS_GROUP_INSTANCE` and `HOST` dimensions as well as the pretty names for both.
+
+## Add further dimensions to the result
+Besides enriching the metric dimensionality with the display name and the pre-configured parent of the entity dimensions, it is possible to add additional dimensions using the `partition` transformation. For example:
+```
+builtin:service.response.time
+    :avg
+    :partition(
+        "latency",
+            value("slow", gt(10000)),
+            value("good", otherwise)
+    )
+```
+Adds the dimension "latency" to the series of the result. The dimension value depends on the response time. Data points greater than 10,000 microseconds are categorized as slow and the others as good.
+
+When you apply a filter beforehand, you can _"misuse"_ the `partition` operator to map dimensions based on other dimension values. For example, consider a metric that has the HTTP status code as its dimension, and you want to map all requests to "success" unless their status code begins with 4 or 5 (i.e., they have 400 or 500 as their status code). 
+You can achieve that by the following query:
+```
+http_request
+    :filter(
+        and(
+            not(prefix(status_code,4)),not(prefix(status_code,5))
+        )
+    )
+    :auto
+    :partition("result",value("success",otherwise))
+    :splitBy("result")
+    :default(0)
++
+http_request
+    :filter(
+        and(
+            or(prefix(status_code,4),prefix(status_code,5))
+        )
+    )
+    :auto
+    :partition("result",value("failure",otherwise))
+    :splitBy("result")
+    :default(0)
+```
+
+Using the metric selector query language, there is no further way to enrich the series dimensionality. You'd need to leverage the [DQL](https://www.dynatrace.com/support/help/platform/grail/dynatrace-query-language) for more advanced us cases.
+
+## Get the number of distinct dimension values
 As no out-of-the-box metric gives you the number of hosts, you can use
 ```
 builtin:host.cpu.user
@@ -72,7 +131,7 @@ The query
 ```
 builtin:service.response.time
     :avg
-    :partition(latency,value(good,lt(10000)))
+    :partition("latency",value("good",lt(10000)))
     :splitBy()
     :count
     :default(0) 
