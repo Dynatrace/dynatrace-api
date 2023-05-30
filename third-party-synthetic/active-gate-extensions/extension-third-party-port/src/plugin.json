@@ -1,6 +1,6 @@
 {
   "name": "custom.remote.python.thirdparty_port",
-  "version": "1.016",
+  "version": "1.021",
   "metricGroup": "tech.Port",
   "type": "python",
   "entity": "CUSTOM_DEVICE",
@@ -9,7 +9,7 @@
   "source": {
     "package": "port_extension",
     "className": "PortExtension",
-    "install_requires": [ "dt", "pingparsing"],
+    "install_requires": [ "dt", "charset-normalizer<3.0.0"],
     "activation": "Remote"
   },
   "properties": [
@@ -37,7 +37,8 @@
     },
     {
       "key": "test_timeout",
-      "type": "Integer"
+      "type": "Integer",
+      "defaultValue": 2
     },
     {
       "key": "test_location",

@@ -1,7 +1,8 @@
 from datetime import datetime
-import logging
+import re
 
 from ruxit.api.base_plugin import RemoteBasePlugin
+from ruxit.api.exceptions import ConfigException
 from dynatrace import Dynatrace
 from dynatrace.environment_v1.synthetic_third_party import SYNTHETIC_EVENT_TYPE_OUTAGE
 
@@ -9,13 +10,24 @@ import pingparsing
 
 from ping_imports.environment import get_api_url
 
+DT_TIMEOUT_SECONDS = 10
+
 class PingExtension(RemoteBasePlugin):
     def initialize(self, **kwargs):
 
-        api_url = get_api_url()
-        self.dt_client = Dynatrace(api_url, self.config.get("api_token"), log=self.logger, proxies=self.build_proxy_url())
+        self.api_url = get_api_url()
+        self.dt_client = Dynatrace(self.api_url, self.config.get("api_token"), log=self.logger, proxies=self.build_proxy_url(), timeout=DT_TIMEOUT_SECONDS)
         self.executions = 0
         self.failures_detected = 0
+
+        valid_ip = r"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+        valid_hostname = r"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$"
+
+        target = self.config.get("test_target")
+        if not re.match(valid_ip, target) and not re.match(valid_hostname, target):
+            raise ConfigException(f"Invalid test_target: {target}, must be a valid IP or hostname")
+
+
 
     def build_proxy_url(self):
         proxy_address = self.config.get("proxy_address")
@@ -49,7 +61,7 @@ class PingExtension(RemoteBasePlugin):
         frequency = int(self.config.get("frequency")) if self.config.get("frequency") else 15
 
         if self.executions % frequency == 0:
-            timeout = self.config.get("test_timeout", 2)
+            timeout = int(self.config.get("test_timeout", 2)) or 2
             ping_result = ping(target, timeout)
             self.logger.info(ping_result.as_dict())
 
@@ -65,31 +77,34 @@ class PingExtension(RemoteBasePlugin):
 
             response_time = ping_result.rtt_avg or 0
 
-            self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test(
-                engine_name="Ping",
-                timestamp=datetime.now(),
-                location_id=location_id,
-                location_name=location,
-                test_id=self.activation.entity_id,
-                test_title=test_title,
-                step_title=step_title,
-                schedule_interval=frequency * 60,
-                success=success,
-                response_time=response_time,
-                edit_link=f"#settings/customextension;id={self.plugin_info.name}",
-                icon_url="https://raw.githubusercontent.com/Dynatrace/dynatrace-api/master/third-party-synthetic/active-gate-extensions/extension-third-party-ping/ping.png",
-            )
+            try:
+                self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test(
+                    engine_name="Ping",
+                    timestamp=datetime.now(),
+                    location_id=location_id,
+                    location_name=location,
+                    test_id=self.activation.entity_id,
+                    test_title=test_title,
+                    step_title=step_title,
+                    schedule_interval=frequency * 60,
+                    success=success,
+                    response_time=response_time,
+                    edit_link=f"#settings/customextension;id={self.plugin_info.name}",
+                    icon_url="https://raw.githubusercontent.com/Dynatrace/dynatrace-api/master/third-party-synthetic/active-gate-extensions/extension-third-party-ping/ping.png",
+                )
 
-            self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test_event(
-                test_id=self.activation.entity_id,
-                name=f"Ping failed for {step_title}",
-                location_id=location_id,
-                timestamp=datetime.now(),
-                state="open" if not success else "resolved",
-                event_type=SYNTHETIC_EVENT_TYPE_OUTAGE,
-                reason=f"Ping failed for {step_title}. Result: {str(ping_result.as_dict())}",
-                engine_name="Ping",
-            )
+                self.dt_client.third_part_synthetic_tests.report_simple_thirdparty_synthetic_test_event(
+                    test_id=self.activation.entity_id,
+                    name=f"Ping failed for {step_title}",
+                    location_id=location_id,
+                    timestamp=datetime.now(),
+                    state="open" if not success else "resolved",
+                    event_type=SYNTHETIC_EVENT_TYPE_OUTAGE,
+                    reason=f"Ping failed for {step_title}. Result: {str(ping_result.as_dict())}",
+                    engine_name="Ping",
+                )
+            except Exception as e:
+                self.logger.error(f"Error reporting third party test results to {self.api_url}: '{e}'")
 
         self.executions += 1
 

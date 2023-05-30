@@ -1,6 +1,6 @@
 {
   "name": "custom.remote.python.thirdparty_dns",
-  "version": "1.015",
+  "version": "1.021",
   "type": "python",
   "entity": "CUSTOM_DEVICE",
   "technologies": [
@@ -12,15 +12,12 @@
     "className": "DNSExtension",
     "install_requires": [
       "dnspython3",
-      "dt"
+      "dt>=1.1.58",
+      "charset-normalizer<3"
     ],
     "activation": "Remote"
   },
   "properties": [
-    {
-      "key": "api_url",
-      "type": "String"
-    },
     {
       "key": "api_token",
       "type": "Password"
@@ -40,6 +37,11 @@
     {
       "key": "test_location",
       "type": "String"
+    },
+    {
+      "key": "test_timeout",
+      "type": "Integer",
+      "defaultValue": 2
     },
     {
       "key": "log_level",
@@ -76,21 +78,15 @@
     "displayName": "DNS",
     "properties": [
       {
-        "key": "api_url",
-        "displayName": "Tenant URL",
-        "displayHint": "https://localhost:9999/e/<environment_id> or https://<my.managed.host>/e/<environment_id> or https://<environment_id>.live.dynatrace.com",
-        "displayOrder": 1
-      },
-      {
         "key": "api_token",
         "displayName": "API Token",
         "displayHint": "Requires \"Create and read synthetic monitors, locations, and nodes\" permission",
-        "displayOrder": 2
+        "displayOrder": 1
       },
       {
         "key": "test_name",
         "displayName": "(Optional) Synthetic monitor name",
-        "displayOrder": 5
+        "displayOrder": 2
       },
       {
         "key": "dns_server",
@@ -107,38 +103,44 @@
         "key": "frequency",
         "displayName": "(Optional) Frequency",
         "displayHint": "Frequency in minutes, default: 15",
-        "displayOrder": 6
+        "displayOrder": 5
+      },
+      {
+        "key": "test_timeout",
+        "displayName": "(Optional) Check Timeout",
+        "displayHint": "Check timeout in seconds, if empty default value is 2 seconds",
+        "displayOrder": 7
       },
       {
         "key": "test_location",
         "displayName": "(Optional) Location name",
         "displayHint": "Default: ActiveGate",
-        "displayOrder": 7
+        "displayOrder": 8
       },
       {
         "key": "proxy_address",
         "displayName": "(Optional) Proxy Address",
-        "displayOrder": 8
+        "displayOrder": 9
       },
       {
         "key": "proxy_username",
         "displayName": "(Optional) Proxy Username",
-        "displayOrder": 9
+        "displayOrder": 10
       },
       {
         "key": "proxy_password",
         "displayName": "(Optional) Proxy Password",
-        "displayOrder": 10
+        "displayOrder": 11
       },
       {
         "key": "log_level",
         "displayName": "Log level",
-        "displayOrder": 11
+        "displayOrder": 12
       },
       {
           "key":  "failure_count",
           "displayName":  "Failure count",
-          "displayOrder":  12,
+          "displayOrder":  13,
           "displayHint":  "Number of consecutive failures before reporting error"
       }
     ]

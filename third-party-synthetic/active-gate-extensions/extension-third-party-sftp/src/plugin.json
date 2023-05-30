@@ -1,6 +1,6 @@
 {
-    "name": "custom.remote.python.thirdparty_sftp",
-    "version": "1.015",
+    "name": "custom.remote.python.sftp",
+    "version": "1.021",
     "type": "python",
     "entity": "CUSTOM_DEVICE",
     "technologies": [
@@ -12,15 +12,13 @@
         "className": "SFTPExtension",
         "install_requires": [
             "paramiko",
-            "dt"
+            "dt>=1.1.58",
+            "charset-normalizer<3",
+            "cryptography<=37.0.4"
         ]
     },
     "activation": "Remote",
     "properties": [
-        {
-            "key": "api_url",
-            "type": "String"
-        },
         {
             "key": "api_token",
             "type": "Password"
@@ -115,12 +113,6 @@
                 "displayName": "(Optional) Synthetic test name",
                 "displayHint": "Custom test name. Defaults to \"<hostname>:<port>\"",
                 "displayOrder": 1
-            },
-            {
-                "key": "api_url",
-                "displayName": "Dynatrace tenant URL",
-                "displayHint": "https://localhost:9999/e/<environment_id> or https://<my.managed.host>/e/<environment_id> or https://<environment_id>.live.dynatrace.com",
-                "displayOrder": 2
             },
             {
                 "key": "api_token",
