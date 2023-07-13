@@ -7,7 +7,7 @@ If you query a metric, you'll get only the id of the entity dimensions in the re
 ```
 builtin:host.cpu.user:names
 ```
-The query result will then contain `dt.entity.host` and the `dt.entity.host.name` dimension.
+The query result will then contain `dt.entity.host` and the `dt.entity.host.name` dimensions.
 
 ## Remove single values from the result
 Let's say you want to keep only the timeslots with a value greater than zero. You can use the [`partition` transformation](https://www.dynatrace.com/support/help/dynatrace-api/environment-api/metric-v2/metric-selector#partition) for that:
@@ -135,7 +135,7 @@ number_errors:
 ```
 
 ## Add the parent dimension to the result
-For some entity dimensions like `PROCESS_GROUP_INSTANCE` and `SERVICE_METHOD`, you can enrich the result with the "parent" of these dimension. For example, the metric `builtin:tech.generic.processCount` per default only provides the `dt.entity.process_group_instance` dimension. To get also the host dimension in the result, use the query:
+For some entity dimensions like `PROCESS_GROUP_INSTANCE` and `SERVICE_METHOD`, you can enrich the result with the "parent" of these dimensions. For example, the metric `builtin:tech.generic.processCount` per default only provides the `dt.entity.process_group_instance` dimension. To get also the host dimension in the result, use the query:
 ```
 builtin:tech.generic.processCount:parents
 ```
@@ -143,10 +143,10 @@ Moreover, you can combine the `names` and the `parents` transformations.
 ```
 builtin:tech.generic.processCount:parents:names
 ```
-will return both the `PROCESS_GROUP_INSTANCE` and `HOST` dimensions as well as the pretty names for both.
+will return both the `PROCESS_GROUP_INSTANCE` and `HOST` dimensions and the pretty names for both.
 
 ## Add further dimensions to the result
-Besides enriching the metric dimensionality with the display name and the pre-configured parent of the entity dimensions, it is possible to add additional dimensions using the `partition` transformation. For example:
+Besides enriching the metric dimensionality with the display name and the pre-configured parent of the entity dimensions, adding additional dimensions using the [`partition` transformation](https://www.dynatrace.com/support/help/dynatrace-api/environment-api/metric-v2/metric-selector#partition) is possible. For example:
 ```
 builtin:service.response.time
     :avg
@@ -158,30 +158,15 @@ builtin:service.response.time
 ```
 Adds the dimension "latency" to the series of the result. The dimension value depends on the response time. Data points greater than 10,000 microseconds are categorized as slow and the others as good.
 
-When you apply a filter beforehand, you can _"misuse"_ the `partition` operator to map dimensions based on other dimension values. For example, consider a metric that has the HTTP status code as its dimension, and you want to map all requests to "success" unless their status code begins with 4 or 5 (i.e., they have 400 or 500 as their status code). 
+### Map dimensions to another one
+If you want to add a new dimension based on existing dimensions, you can also use the `partition` transformation. For example, consider a metric with the HTTP status code as its dimension, and you want to map all requests to "success" unless their status code begins with 4 or 5 (that is, they have 400 or 500 as their status code). 
 You can achieve that by the following query:
 ```
 http_request
-    :filter(
-        and(
-            not(prefix(status_code,4)),not(prefix(status_code,5))
-        )
-    )
-    :auto
-    :partition("result",value("success",otherwise))
-    :splitBy("result")
-    :default(0)
-+
-http_request
-    :filter(
-        and(
-            or(prefix(status_code,4),prefix(status_code,5))
-        )
-    )
-    :auto
-    :partition("result",value("failure",otherwise))
-    :splitBy("result")
-    :default(0)
+    :partition("status",
+        dimension("success", and(not(prefix("status_code", "4")), not(prefix("status_code", "5")))),
+        otherwise("error"))
+    :splitBy("status")
 ```
 
-Using the metric selector query language, there is no further way to enrich the series dimensionality. You'd need to leverage the [DQL](https://www.dynatrace.com/support/help/platform/grail/dynatrace-query-language) for more advanced us cases.    
+Using the metric selector query language, there is no further way to enrich the series dimensionality. You'd need to leverage the [DQL](https://www.dynatrace.com/support/help/platform/grail/dynatrace-query-language) for more advanced use cases.    
