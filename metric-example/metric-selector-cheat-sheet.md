@@ -134,6 +134,22 @@ number_errors:
     :default(0,always)
 ```
 
+## Non-matching dimensions in a metric expression
+
+For instance, when determining the store's revenue percentage within a city relative to the entire country's revenue, we can use the following expression:
+```
+revenue_city
+    :filter("city", "Berlin")
+    :splitBy("city")
+/
+revenue_country
+    :filter("country", "Germany")
+    :splitBy()
+* 100
+```
+It is essential to use `splitBy()` without any dimension key for the `revenue_country` metric. Without this, the series can't be properly joined. For a successful metric merge in a metric expression, the dimension tuples of both metrics must be identical, or at least one of the metrics needs to be dimensionless. See the [public documentation for details](https://www.dynatrace.com/support/help/dynatrace-api/environment-api/metric-v2/metric-expressions#resolving-expressions).
+
+
 ## Add the parent dimension to the result
 For some entity dimensions like `PROCESS_GROUP_INSTANCE` and `SERVICE_METHOD`, you can enrich the result with the "parent" of these dimensions. For example, the metric `builtin:tech.generic.processCount` per default only provides the `dt.entity.process_group_instance` dimension. To get also the host dimension in the result, use the query:
 ```
