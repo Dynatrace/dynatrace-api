@@ -48,7 +48,8 @@ class DNSExtension(RemoteBasePlugin):
         failure_count = self.config.get("failure_count", 1)
 
         if self.executions % frequency == 0:
-            success, response_time = test_dns(dns_server, host)
+            timeout = int(self.config.get("test_timeout", 2)) or 2
+            success, response_time = test_dns(dns_server, host, timeout)
             log.info(f"DNS test, DNS server: {dns_server}, host: {host}, success: {success}, time: {response_time} ")
 
             if not success:
@@ -88,10 +89,10 @@ class DNSExtension(RemoteBasePlugin):
         self.executions += 1
 
 
-def test_dns(dns_server: str, host: str) -> (bool, int):
+def test_dns(dns_server: str, host: str, timeout: int) -> (bool, int):
     res = resolver.Resolver(configure=False)
     res.nameservers = [dns_server]
-    res.lifetime = res.timeout = 2
+    res.lifetime = res.timeout = timeout
 
     start = datetime.now()
     try:
