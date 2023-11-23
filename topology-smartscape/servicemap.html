@@ -5,78 +5,131 @@
 -->
 <script src="https://rawgit.com/Linkurious/linkurious.js/develop/dist/sigma.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sigma.js/1.1.0/plugins/sigma.layout.forceAtlas2.min.js"></script>
+<script type="text/javascript"
+	src="https://cdnjs.cloudflare.com/ajax/libs/sigma.js/1.1.0/plugins/sigma.layout.forceAtlas2.min.js"></script>
 <div id="container">
-  <style>
-    #graph-container {
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      position: absolute;
-    }
-  </style>
-  <div id="graph-container"></div>
+	<style>
+		#graph-container {
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			position: absolute;
+		}
+	</style>
+	<div id="graph-container"></div>
 </div>
 <script>
-var YOUR_ENV_ID = 'ENTER YOUR ENVIRONMENT ID HERE',
-	YOUR_API_TOKEN = 'ENTER YOUR API TOKEN HERE',
-    CLUSTER = 'live.dynatrace.com',
-    i,
-    s,
-    g = {
-      nodes: [],
-      edges: []
-    };
-	
-	nodeIds = {};
-
-	$.get(
-		"https://" + YOUR_ENV_ID + "." + CLUSTER + "/api/v1/entity/services/?Api-Token=" + YOUR_API_TOKEN,
-		{},
-		function(data) {
-			var i = 0;
-			// two passes, first one to create all service nodes
-			data.forEach(function(entry) {
-				//console.log(entry);
-				g.nodes.push({
-					id: entry.entityId,
-					label: entry.displayName,
-					x: Math.random(),
-					y: Math.random(),
-					size: 200,
-					color: '#666'
-				});
-				nodeIds[entry.entityId] = true;
-			});
-			// second one to add only edges to existing service nodes 
-			data.forEach(function(entry) {
-				var callRel = entry.toRelationships.calls;
-				if(callRel) {
-					callRel.forEach(function(toId) {
-						if(nodeIds[toId]) {
-							g.edges.push({
-								id: 'e' + i,
-								source: entry.entityId,
-								target: toId,
-								size: 100,
-								color: '#ccc'
-							});
-							i++;
-						} 	
-					});
-				}
-			});
-			
-			// instantiate sigma
-			s = new sigma({
-				graph: g,
-				container: 'graph-container'
-			});
-			
-			// Start the ForceAtlas2 algorithm:
-			s.startForceAtlas2({worker: true, barnesHutOptimize: false});
-			
+	async function makeRequest(endpoint, parameters) {
+		var tenant = "https://xxxxxxxx.live.dynatrace.com"
+		var token = "dt0c01.xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+		// sanitize tenant URL
+		tmp = tenant.slice(-1);
+		if (tmp == '/') {
+			tenant = tenant.slice(0, -1);
 		}
-	);
+		var url = new URL(tenant + endpoint)
+		var params = parameters
+		url.search = new URLSearchParams(params).toString();
+
+		var response = await fetch(url, {
+			method: "GET",
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				"Authorization": "Api-Token " + token
+			},
+		}).then(res => res.json())
+		//return response
+		entity_list = response.entities
+		while (response.nextPageKey) {
+			params = { "nextPageKey": response.nextPageKey }
+			url.search = new URLSearchParams(params).toString();
+			var response = await fetch(url, {
+				method: "GET",
+				mode: 'cors',
+				headers: {
+					'Content-Type': 'application/json',
+					"Authorization": "Api-Token " + token
+				},
+			}).then(res => res.json())
+			entity_list = entity_list.concat(response.entities)
+		}
+		return entity_list 
+	}
+	async function searchEntities() {
+		//let selector = document.getElementById('text_entity_selector').value;
+		let selector = "type(SERVICE)"
+		params = {
+			"pageSize": 400,
+			"entitySelector": selector,
+			"fields": "+toRelationships",
+			"from": "-3M",
+			"to": "now"
+		}
+		endpoint = "/api/v2/entities"
+		const res = makeRequest(endpoint, params).then(response => {
+			//console.log(response)
+			return response
+		})
+		//console.log(res)
+		return res
+	}
+	var i,
+		s,
+		g = {
+			nodes: [],
+			edges: []
+		};
+
+	nodeIds = {};
+	let promise = searchEntities()
+	promise.then(function (result) {
+		// here you can use the result of promiseB
+		//console.log(result)
+		for (const i in result) {
+
+			g.nodes.push({
+				id: result[i].entityId,
+				label: result[i].displayName,
+				x: Math.random(),
+				y: Math.random(),
+				size: 200,
+				color: '#666'
+			});
+			nodeIds[result[i].entityId] = true;
+			//console.log(result.entities[i].fromRelationships)
+
+		}
+		var i = 0;
+		for (const j in result) {
+			//console.log(result.entities[j])
+			var callRel = result[j].toRelationships.calls;
+			if (callRel) {
+				callRel.forEach(function (serivce) {
+
+					if (nodeIds[serivce.id]) {
+						g.edges.push({
+							id: 'e' + i,
+							source: result[j].entityId,
+							target: serivce.id,
+							size: 100,
+							color: '#ccc'
+						});
+						i++;
+					}
+				});
+			}
+		}
+
+		// instantiate sigma
+		s = new sigma({
+			graph: g,
+			container: 'graph-container'
+		});
+
+		// Start the ForceAtlas2 algorithm:
+		s.startForceAtlas2({ worker: true, barnesHutOptimize: false });
+	});
+
 </script>
